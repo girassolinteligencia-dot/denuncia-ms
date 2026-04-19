@@ -10,7 +10,8 @@ import {
   CheckCircle2, 
   XCircle,
   Mail,
-  Zap
+  Zap,
+  AlertTriangle
 } from 'lucide-react'
 import { updateCategoria, createCategoria, deleteCategoria } from '@/lib/actions/admin-categorias'
 import type { Categoria } from '@/types'
@@ -50,14 +51,26 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
     if (!editingCat) return
     
     setLoading(true)
-    const result = await updateCategoria(editingCat.id, editingCat)
-
-    if (result.success) {
-      setCategorias(prev => prev.map(c => c.id === editingCat.id ? editingCat : c))
-      setEditingCat(null)
-      toast.success('Categoria parametrizada com sucesso!')
+    
+    // Se ID for vazio, trata como nova categoria
+    if (!editingCat.id) {
+      const result = await createCategoria(editingCat)
+      if (result.success && result.data) {
+        setCategorias(prev => [...prev, result.data as Categoria].sort((a, b) => a.ordem - b.ordem))
+        setEditingCat(null)
+        toast.success('Categoria criada com sucesso!')
+      } else {
+        toast.error(result.error || 'Erro ao criar categoria')
+      }
     } else {
-      toast.error(result.error || 'Erro ao salvar alterações')
+      const result = await updateCategoria(editingCat.id, editingCat)
+      if (result.success) {
+        setCategorias(prev => prev.map(c => c.id === editingCat.id ? editingCat : c))
+        setEditingCat(null)
+        toast.success('Categoria parametrizada com sucesso!')
+      } else {
+        toast.error(result.error || 'Erro ao salvar alterações')
+      }
     }
     setLoading(false)
   }
@@ -89,7 +102,23 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
             className="input pl-10 h-11"
           />
         </div>
-        <button className="btn-primary gap-2 h-11">
+        <button 
+          onClick={() => setEditingCat({
+            id: '',
+            slug: '',
+            label: 'Nova Categoria',
+            bloco: 'Geral',
+            emoji: '📂',
+            instrucao_publica: '',
+            aviso_legal: '',
+            template_descricao: [],
+            ativo: true,
+            ordem: categorias.length + 1,
+            criado_em: new Date().toISOString(),
+            atualizado_em: new Date().toISOString()
+          })}
+          className="btn-primary gap-2 h-11"
+        >
           <Plus size={20} />
           Nova Categoria
         </button>
@@ -230,15 +259,31 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
                    </p>
                 </div>
 
-                <div>
-                   <label className="label">Instrução ao Cidadão</label>
-                   <textarea 
-                     className="input min-h-[100px] py-3 text-sm" 
-                     placeholder="Explique o que o cidadão deve denunciar nesta categoria..."
-                     value={editingCat.instrucao_publica || ''} 
-                     onChange={e => setEditingCat({...editingCat, instrucao_publica: e.target.value})}
-                   />
-                </div>
+                 <div>
+                    <label className="label">Instrução ao Cidadão (Público)</label>
+                    <textarea 
+                      className="input min-h-[80px] py-3 text-sm" 
+                      placeholder="Explique o que o cidadão deve denunciar nesta categoria..."
+                      value={editingCat.instrucao_publica || ''} 
+                      onChange={e => setEditingCat({...editingCat, instrucao_publica: e.target.value})}
+                    />
+                 </div>
+ 
+                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-3">
+                    <label className="label text-amber-900 flex items-center gap-2">
+                       <AlertTriangle size={14} />
+                       Protocolo de Urgência (Aviso Legal)
+                    </label>
+                    <textarea 
+                      className="input bg-white border-amber-200 min-h-[80px] py-3 text-sm text-amber-900 placeholder:text-amber-300" 
+                      placeholder="Ex: 🚨 EMERGÊNCIA: Ligue 192 (SAMU) ou 190 (PM)."
+                      value={editingCat.aviso_legal || ''} 
+                      onChange={e => setEditingCat({...editingCat, aviso_legal: e.target.value})}
+                    />
+                    <p className="text-[9px] text-amber-700 font-bold uppercase tracking-tight italic">
+                       Se preenchido, exibirá um banner de alerta vermelho antes do formulário.
+                    </p>
+                 </div>
 
                 <div className="bg-surface rounded-xl p-4 border border-border">
                    <div className="flex items-center justify-between">

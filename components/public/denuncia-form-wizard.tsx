@@ -13,7 +13,8 @@ import {
   Send,
   Lock,
   Camera,
-  Shield
+  Shield,
+  AlertTriangle
 } from 'lucide-react'
 import type { Categoria, ConfigCampoFormulario, ConfigTipoArquivo } from '@/types'
 import { registrarDenuncia } from '@/lib/actions/denuncia'
@@ -277,6 +278,11 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                               <p className="text-[9px] text-muted font-bold truncate mt-1">
                                  {cat.instrucao_publica}
                               </p>
+                              {cat.aviso_legal && (
+                                 <div className="mt-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[8px] font-black rounded uppercase inline-block">
+                                   Protocolo de Urgência
+                                 </div>
+                              )}
                            </div>
                            {formData.categoria_id === cat.id && (
                               <div className="flex-shrink-0 text-primary">
@@ -289,6 +295,24 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                  </div>
                ))}
             </div>
+
+            {formData.categoria_id && categorias.find(c => c.id === formData.categoria_id)?.aviso_legal && (
+               <div className="p-6 bg-amber-50 border border-amber-200 rounded-3xl flex gap-4 animate-fade-in shadow-sm">
+                  <div className="p-3 bg-amber-100 text-amber-700 rounded-2xl h-fit">
+                     <AlertTriangle size={24} className="fill-amber-700/10" />
+                  </div>
+                  <div className="space-y-1">
+                     <p className="text-[10px] font-black text-amber-900 uppercase tracking-widest flex items-center gap-2">
+                        Atendimento de Emergência & Urgência
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+                     </p>
+                     <p className="text-sm font-black text-amber-800 leading-tight">
+                        {categorias.find(c => c.id === formData.categoria_id)?.aviso_legal}
+                     </p>
+                     <p className="text-[9px] text-amber-700/60 font-bold uppercase mt-1">Se houver risco imediato à vida, acione os órgãos acima antes de prosseguir com o relato digital.</p>
+                  </div>
+               </div>
+            )}
 
             <div ref={bottomRef} className="flex justify-end pt-4">
                <button 

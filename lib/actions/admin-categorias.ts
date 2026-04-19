@@ -19,6 +19,7 @@ export async function updateCategoria(id: string, updates: Partial<Categoria>) {
         slug: updates.slug,
         email_destino: updates.email_destino,
         instrucao_publica: updates.instrucao_publica,
+        aviso_legal: updates.aviso_legal,
         ativo: updates.ativo,
         ordem: updates.ordem,
         bloco: updates.bloco,

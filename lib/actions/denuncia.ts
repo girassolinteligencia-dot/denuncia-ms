@@ -8,10 +8,12 @@ import { dispatchWebhook } from '@/lib/webhook'
 import { sendEmail } from '@/lib/email'
 import { revalidatePath } from 'next/cache'
 
+import type { SubmitDenunciaRequest } from '@/types'
+
 /**
  * Registra uma nova denúncia no sistema
  */
-export async function registrarDenuncia(formData: any, arquivos: { name: string, type: string, buffer: Buffer }[]) {
+export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivos: { name: string, type: string, buffer: Buffer }[]) {
   const supabase = createAdminClient()
   
   try {
@@ -95,30 +97,48 @@ export async function registrarDenuncia(formData: any, arquivos: { name: string,
     }
 
     // 7. Dispara Integrações (Async)
-    const integracao = categoria.integracoes_destino?.[0]
-    if (integracao && integracao.ativo) {
-      
-      // Webhook
-      if (integracao.tipo === 'webhook' || integracao.tipo === 'ambos') {
-        dispatchWebhook({
-          url: integracao.webhook_url,
-          payload: { protocolo, titulo: formData.titulo, status: 'recebida' },
-          authType: integracao.webhook_auth_tipo,
-          authDataCrypted: integracao.webhook_auth_dados,
-          retryMax: integracao.webhook_retry_max
-        }).catch(err => console.error('Falha no webhook:', err))
-      }
-
-      // E-mail
-      if (integracao.tipo === 'email' || integracao.tipo === 'ambos') {
+    const integracoes = categoria.integracoes_destino || []
+    
+    // Se não houver integração específica, envia para o e-mail padrão do sistema
+    if (integracoes.length === 0) {
+      const defaultEmail = process.env.DEFAULT_DESTINY_EMAIL
+      if (defaultEmail) {
         sendEmail({
-          to: integracao.email_para,
-          subject: `NOVA DENÚNCIA: ${protocolo} - ${categoria.label}`,
-          text: `Uma nova denúncia foi registrada sob o protocolo ${protocolo}.`,
-          attachments: [
-            { filename: `denuncia-${protocolo}.pdf`, content: pdfBuffer }
-          ]
-        }).catch(err => console.error('Falha no e-mail:', err))
+          to: defaultEmail,
+          subject: `[LOG CONTINGÊNCIA] NOVA DENÚNCIA: ${protocolo} - ${categoria.label}`,
+          text: `Uma nova denúncia foi registrada sob o protocolo ${protocolo}. Esta categoria não possui integração configurada.`,
+          attachments: [{ filename: `denuncia-${protocolo}.pdf`, content: pdfBuffer }]
+        }).catch(err => console.error('Falha no e-mail de contingência:', err))
+      }
+    } else {
+      for (const integracao of integracoes) {
+        if (!integracao.ativo) continue
+
+        // Webhook
+        if (integracao.tipo === 'webhook' || integracao.tipo === 'ambos') {
+          dispatchWebhook({
+            url: integracao.webhook_url,
+            payload: { protocolo, titulo: formData.titulo, status: 'recebida' },
+            authType: integracao.webhook_auth_tipo,
+            authDataCrypted: integracao.webhook_auth_dados,
+            retryMax: integracao.webhook_retry_max
+          }).catch(err => console.error('Falha no webhook:', err))
+        }
+
+        // E-mail
+        if (integracao.tipo === 'email' || integracao.tipo === 'ambos') {
+          const destinatarios = integracao.email_para || []
+          if (destinatarios.length > 0) {
+            sendEmail({
+              to: destinatarios,
+              subject: `NOVA DENÚNCIA: ${protocolo} - ${categoria.label}`,
+              text: `Uma nova denúncia foi registrada sob o protocolo ${protocolo}. Segue documento em anexo.`,
+              attachments: [
+                { filename: `denuncia-${protocolo}.pdf`, content: pdfBuffer }
+              ]
+            }).catch(err => console.error('Falha no e-mail:', err))
+          }
+        }
       }
     }
 

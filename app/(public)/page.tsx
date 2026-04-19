@@ -27,16 +27,7 @@ export default async function PublicHomePage() {
       {/* Hero Section */}
       <section className="relative bg-white overflow-hidden min-h-[700px] flex items-center border-b border-border">
         {/* Decorative elements for Light Theme */}
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-surface/50 -skew-x-12 translate-x-32 z-0 hidden lg:block"></div>
-        
-        {/* Mascote como Fundo (Lado Direito) - Usando a imagem 100% original conforme solicitado */}
-        <div className="absolute right-0 bottom-0 top-0 w-1/2 hidden lg:flex items-end justify-end pointer-events-none z-10">
-           <img 
-             src="/assets/mascote.png" 
-             alt="Cidadão Denúncia MS" 
-             className="h-[105%] w-auto object-contain object-bottom animate-fade-in"
-           />
-        </div>
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-surface/50 -skew-x-12 translate-x-32 z-0 hidden lg:block border-l border-border/20"></div>
 
         <div className="container-page relative z-20 py-20">
           <div className="max-w-2xl text-center lg:text-left space-y-8">
@@ -142,7 +133,7 @@ export default async function PublicHomePage() {
   )
 }
 
-function StepCard({ num, title, desc, icon: Icon, color }: { num: string, title: string, desc: string, icon: any, color: string }) {
+function StepCard({ num, title, desc, icon: Icon, color }: { num: string, title: string, desc: string, icon: React.ElementType, color: string }) {
   return (
     <div className="space-y-4">
        <div className="flex items-center justify-between">

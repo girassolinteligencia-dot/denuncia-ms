@@ -12,7 +12,10 @@ export default function PublicLayout({
       <header className="h-20 bg-white border-b border-border sticky top-0 z-50 shadow-sm">
         <div className="container-page flex items-center justify-between h-full">
           <Link href="/" className="flex items-center gap-3 group">
-            <img src="/assets/logo.png" alt="Denúncia MS" className="h-12 w-auto transition-transform group-hover:scale-105" />
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-glow-cyan transform group-hover:scale-110 transition-transform">
+               <Megaphone size={20} className="fill-white" />
+            </div>
+            <span className="text-xl font-black text-dark tracking-tighter italic uppercase">DENUNCIA <span className="text-primary font-black">MS</span></span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -42,8 +45,11 @@ export default function PublicLayout({
          <div className="container-page">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-white/5 pb-12">
                <div className="md:col-span-2 space-y-6">
-                  <div className="flex items-center gap-3">
-                    <img src="/assets/logo.png" alt="Denúncia MS" className="h-10 w-auto brightness-0 invert opacity-80" />
+                  <div className="flex items-center gap-3 opacity-80">
+                    <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center text-white">
+                       <Megaphone size={16} className="fill-white" />
+                    </div>
+                    <span className="text-lg font-black text-white tracking-tighter italic uppercase">DENUNCIA <span className="text-primary">MS</span></span>
                   </div>
                   <p className="text-sm text-white/60 max-w-md leading-relaxed">
                      O DENUNCIA MS é uma plataforma independente que garante o anonimato e a segurança do cidadão ao reportar irregularidades. Nosso compromisso é com a transparência e a justiça em Mato Grosso do Sul.
