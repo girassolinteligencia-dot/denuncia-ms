@@ -74,7 +74,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
     }, {} as Record<string, Categoria[]>)
   }, [categorias])
 
-  const handleInputChange = (field: keyof DenunciaFormData, value: any) => {
+  const handleInputChange = (field: keyof DenunciaFormData, value: string | boolean | File[]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
@@ -267,8 +267,8 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                               <input 
                                 className="input h-12" 
                                 placeholder={campo.placeholder || undefined} 
-                                value={(formData as any)[campo.campo] || ''}
-                                onChange={(e) => handleInputChange(campo.campo as any, e.target.value)}
+                                value={(formData as unknown as Record<string, string>)[campo.campo] || ''}
+                                onChange={(e) => handleInputChange(campo.campo as keyof DenunciaFormData, e.target.value)}
                               />
                            )
                            }
