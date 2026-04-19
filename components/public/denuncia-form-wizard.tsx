@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { 
   ShieldCheck, 
@@ -46,6 +46,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [protocoloGerado, setProtocoloGerado] = useState<string | null>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   const [formData, setFormData] = useState<DenunciaFormData>({
     categoria_id: categorias.find(c => c.slug === initialCat)?.id || '',
@@ -118,6 +119,13 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
 
   const handleInputChange = (field: keyof DenunciaFormData, value: string | boolean | File[]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    
+    // Autoscroll para o botão se for categoria
+    if (field === 'categoria_id') {
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
   }
 
   const handleNext = () => setStep(s => s + 1)
@@ -238,8 +246,8 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {cats.map(cat => (
                         <button 
-                         key={cat.slug} // Usando slug como key para evitar problemas se ids mudarem
-                         onClick={() => setFormData({ ...formData, categoria_id: cat.id })}
+                         key={cat.slug} 
+                         onClick={() => handleInputChange('categoria_id', cat.id)}
                          className={`p-4 rounded-xl border-2 text-left transition-all flex items-center gap-4 group ${formData.categoria_id === cat.id ? 'border-primary bg-primary-50 ring-2 ring-primary/10' : 'border-border hover:border-primary/30 hover:bg-surface'}`}
                         >
                            <div className="text-3xl group-hover:scale-110 transition-transform flex-shrink-0">
@@ -263,7 +271,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                ))}
             </div>
 
-            <div className="flex justify-end pt-4">
+            <div ref={bottomRef} className="flex justify-end pt-4">
                <button 
                 onClick={handleNext}
                 disabled={!formData.categoria_id}
