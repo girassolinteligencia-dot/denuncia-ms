@@ -65,6 +65,48 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
   const camposVisiveis = campos.filter(c => c.visivel).sort((a, b) => a.ordem - b.ordem)
   
   // Agrupa as categorias por bloco para exibição organizada
+  interface NominatimResult {
+    display_name: string
+    address?: {
+      state?: string
+    }
+  }
+
+  const [sugestoesEndereco, setSugestoesEndereco] = useState<NominatimResult[]>([])
+  const [loadingEnderecos, setLoadingEnderecos] = useState(false)
+
+  const handleSearchEndereco = async (query: string) => {
+    handleInputChange('local', query)
+    
+    if (query.length < 4) {
+      setSugestoesEndereco([])
+      return
+    }
+
+    setLoadingEnderecos(true)
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=br&viewbox=-58.16,-24.04,-50.92,-17.15&bounded=1`
+      )
+      const data = await response.json()
+      // Filtro extra opcional para garantir MS caso a viewbox falhe em ser estrita
+      const filtered = data.filter((item: NominatimResult) => 
+        item.address?.state === 'Mato Grosso do Sul' || 
+        item.display_name.includes('Mato Grosso do Sul')
+      )
+      setSugestoesEndereco(filtered)
+    } catch (error) {
+      console.error('Erro ao buscar endereços:', error)
+    } finally {
+      setLoadingEnderecos(false)
+    }
+  }
+
+  const handleSelectEndereco = (suggestion: NominatimResult) => {
+    handleInputChange('local', suggestion.display_name)
+    setSugestoesEndereco([])
+  }
+
   const categoriasPorBloco = React.useMemo(() => {
     return categorias.reduce((acc, cat) => {
       const b = cat.bloco || 'Geral'
@@ -263,6 +305,48 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                                 value={formData.data_ocorrido}
                                 onChange={(e) => handleInputChange('data_ocorrido', e.target.value)}
                               />
+                           ) : campo.campo === 'local' ? (
+                              <div className="relative">
+                                 <input 
+                                   className="input h-12 pr-10" 
+                                   placeholder={campo.placeholder || undefined} 
+                                   value={formData.local}
+                                   onChange={(e) => handleSearchEndereco(e.target.value)}
+                                   autoComplete="off"
+                                 />
+                                 {loadingEnderecos && (
+                                   <div className="absolute right-3 top-3.5">
+                                      <Loader2 size={18} className="animate-spin text-primary" />
+                                   </div>
+                                 )}
+                                 
+                                 {sugestoesEndereco.length > 0 && (
+                                   <div className="absolute z-50 w-full mt-2 bg-white border border-border rounded-xl shadow-2xl overflow-hidden animate-slide-up">
+                                      {sugestoesEndereco.map((s, idx) => (
+                                         <button
+                                           key={idx}
+                                           onClick={() => handleSelectEndereco(s)}
+                                           className="w-full p-4 text-left hover:bg-surface border-b border-border last:border-none flex items-start gap-3 transition-colors group"
+                                         >
+                                            <div className="mt-1 p-1.5 bg-primary/5 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
+                                               <Camera size={14} />
+                                            </div>
+                                            <div className="flex-grow min-w-0">
+                                               <p className="text-[11px] font-black text-dark uppercase tracking-tighter leading-none mb-1">
+                                                  {s.display_name.split(',')[0]}
+                                               </p>
+                                               <p className="text-[10px] text-muted font-bold truncate">
+                                                  {s.display_name}
+                                               </p>
+                                            </div>
+                                         </button>
+                                      ))}
+                                      <div className="p-2 bg-surface text-center">
+                                         <p className="text-[8px] font-black text-muted/50 uppercase tracking-[0.2em]">OpenStreetMap Contributors</p>
+                                      </div>
+                                   </div>
+                                 )}
+                              </div>
                            ) : (
                               <input 
                                 className="input h-12" 
