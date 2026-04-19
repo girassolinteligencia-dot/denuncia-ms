@@ -12,7 +12,8 @@ import {
   Loader2,
   Send,
   Lock,
-  Camera
+  Camera,
+  Shield
 } from 'lucide-react'
 import type { Categoria, ConfigCampoFormulario, ConfigTipoArquivo } from '@/types'
 import { registrarDenuncia } from '@/lib/actions/denuncia'
@@ -31,6 +32,7 @@ interface DenunciaFormData {
   telefone: string
   cpf: string
   arquivos: File[]
+  consentimento: boolean
 }
 
 interface Props {
@@ -59,7 +61,8 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
     email: '',
     telefone: '',
     cpf: '',
-    arquivos: [] as File[]
+    arquivos: [] as File[],
+    consentimento: false
   })
 
   // Filtra campos visíveis
@@ -434,6 +437,31 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                     </div>
                   )}
                </div>
+
+               {/* Seção de Consentimento Jurídico (LAI/LGPD) */}
+               <div className={`mt-6 p-6 rounded-2xl border transition-all ${formData.consentimento ? 'bg-primary/5 border-primary/20 shadow-glow-cyan' : 'bg-surface border-border'}`}>
+                  <label className="flex items-start gap-4 cursor-pointer group">
+                     <div className="pt-1">
+                        <input 
+                          type="checkbox" 
+                          className="w-5 h-5 rounded border-2 border-border text-primary focus:ring-primary transition-all cursor-pointer"
+                          checked={formData.consentimento}
+                          onChange={(e) => handleInputChange('consentimento', e.target.checked)}
+                        />
+                     </div>
+                     <div className="space-y-2">
+                        <p className="text-[11px] font-black text-dark uppercase tracking-widest flex items-center gap-2">
+                           Termo de Responsabilidade e Ciência
+                           <Shield size={14} className="text-primary" />
+                        </p>
+                        <p className="text-[10px] text-muted leading-relaxed font-bold text-justify">
+                           Ao prosseguir, declaro estar ciente de que sou o único responsável pela veracidade dos fatos narrados e pela autenticidade das evidências anexadas, sob as penas da lei. 
+                           Compreendo que esta plataforma atua exclusivamente como meio de conexão e encaminhamento da denúncia aos órgãos competentes 
+                           (conforme <strong>Lei nº 12.527/2011 - LAI</strong> e <strong>Lei nº 13.709/2018 - LGPD</strong>), não possuindo responsabilidade sobre o teor da denúncia ou sobre a conduta das partes envolvidas.
+                        </p>
+                     </div>
+                  </label>
+               </div>
             </div>
 
             <div className="flex items-center justify-between pt-6">
@@ -446,9 +474,14 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                       toast.error("Preencha o título e a descrição")
                       return
                    }
+                   if (!formData.consentimento) {
+                      toast.error("Você precisa concordar com os termos de responsabilidade")
+                      return
+                   }
                    handleNext()
                 }}
-                className="btn-primary btn-lg gap-3 min-w-[200px]"
+                disabled={!formData.consentimento}
+                className={`btn-primary btn-lg gap-3 min-w-[200px] transition-all ${!formData.consentimento ? 'opacity-50 grayscale' : 'shadow-glow-cyan'}`}
                >
                   Enviar Evidências
                   <ArrowRight size={20} />
