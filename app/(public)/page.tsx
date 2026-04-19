@@ -25,47 +25,58 @@ export default async function PublicHomePage() {
     <div className="flex flex-col">
       
       {/* Hero Section */}
-      <section className="relative bg-dark overflow-hidden py-24 sm:py-32">
+      <section className="relative bg-dark overflow-hidden min-h-[600px] flex items-center">
         {/* Background Gradients inspirado no logo */}
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-neon opacity-20"></div>
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-electric/20 rounded-full blur-[120px]"></div>
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-secondary/20 rounded-full blur-[120px]"></div>
 
-        <div className="container-page relative z-10 text-center space-y-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-electric text-xs font-black uppercase tracking-[0.2em] shadow-glow-cyan animate-fade-in">
-             <Zap size={14} className="fill-electric" />
-             Canal Oficial de Ouvidoria — Mato Grosso do Sul
+        <div className="container-page relative z-10 flex flex-col lg:flex-row items-center gap-12 py-20">
+          <div className="flex-1 text-center lg:text-left space-y-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-electric text-xs font-black uppercase tracking-[0.2em] shadow-glow-cyan animate-fade-in">
+               <Zap size={14} className="fill-electric" />
+               Canal Independente de Ouvidoria — Mato Grosso do Sul
+            </div>
+            
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tighter leading-none animate-slide-up">
+              Sua voz tem poder. <br />
+              Sua denúncia tem <span className="text-secondary drop-shadow-glow-green">impacto.</span>
+            </h1>
+
+            <p className="text-lg text-white/50 max-w-2xl lg:mx-0 mx-auto leading-relaxed animate-fade-in">
+              A plataforma <span className="text-white font-bold">DENUNCIA MS</span> permite que qualquer cidadão registre irregularidades de forma 100% anônima e segura. Transparência para quem fiscaliza, proteção para quem informa.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-4 pt-4">
+               <Link href="/denunciar" className="btn-primary btn-lg w-full sm:w-auto gap-3 text-lg py-5 bg-secondary hover:bg-secondary-600 border-none shadow-glow-green group">
+                  INICIAR DENÚNCIA AGORA
+                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+               </Link>
+               <Link href="/acompanhar" className="btn-outline btn-lg w-full sm:w-auto gap-3 text-white border-white/20 hover:bg-white/5 backdrop-blur-sm">
+                  Consultar Protocolo
+               </Link>
+            </div>
+
+            <div className="flex items-center lg:justify-start justify-center gap-8 pt-8 text-[10px] sm:text-xs font-black text-white/40 uppercase tracking-[0.3em]">
+               <div className="flex items-center gap-2">
+                  <Lock size={14} className="text-secondary" />
+                  Anonimato Garantido
+               </div>
+               <div className="w-1.5 h-1.5 rounded-full bg-white/10"></div>
+               <div className="flex items-center gap-2">
+                  <CheckCircle2 size={14} className="text-electric" />
+                  Segurança de Dados
+               </div>
+            </div>
           </div>
-          
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tighter leading-none animate-slide-up">
-            Sua voz tem poder. <br />
-            Sua denúncia tem <span className="text-secondary drop-shadow-glow-green">impacto.</span>
-          </h1>
 
-          <p className="text-lg text-white/50 max-w-2xl mx-auto leading-relaxed animate-fade-in">
-            A plataforma <span className="text-white font-bold">DENUNCIA MS</span> permite que qualquer cidadão registre irregularidades de forma 100% anônima e segura. Transparência para quem fiscaliza, proteção para quem informa.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-             <Link href="/denunciar" className="btn-primary btn-lg w-full sm:w-auto gap-3 text-lg py-5 bg-secondary hover:bg-secondary-600 border-none shadow-glow-green group">
-                INICIAR DENÚNCIA AGORA
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-             </Link>
-             <Link href="/acompanhar" className="btn-outline btn-lg w-full sm:w-auto gap-3 text-white border-white/20 hover:bg-white/5 backdrop-blur-sm">
-                Consultar Protocolo
-             </Link>
-          </div>
-
-          <div className="flex items-center justify-center gap-8 pt-8 text-[10px] sm:text-xs font-black text-white/40 uppercase tracking-[0.3em]">
-             <div className="flex items-center gap-2">
-                <Lock size={14} className="text-secondary" />
-                Anonimato Garantido
-             </div>
-             <div className="w-1.5 h-1.5 rounded-full bg-white/10"></div>
-             <div className="flex items-center gap-2">
-                <CheckCircle2 size={14} className="text-electric" />
-                Segurança de Dados
-             </div>
+          <div className="flex-1 relative animate-fade-in hidden lg:block">
+             <div className="absolute inset-0 bg-gradient-radial from-electric/20 to-transparent blur-3xl -z-10"></div>
+             <img 
+               src="/assets/mascote.png" 
+               alt="Garoto Propaganda Denúncia MS" 
+               className="w-full max-w-2xl mx-auto drop-shadow-2xl hover:scale-105 transition-transform duration-700"
+             />
           </div>
         </div>
       </section>

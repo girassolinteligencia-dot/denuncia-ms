@@ -12,13 +12,7 @@ export default function PublicLayout({
       <header className="h-20 bg-white border-b border-border sticky top-0 z-50 shadow-sm">
         <div className="container-page flex items-center justify-between h-full">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-accent shadow-glow-cyan transition-transform group-hover:scale-110">
-              <Megaphone size={24} className="fill-accent" />
-            </div>
-            <div>
-              <h1 className="font-black text-dark text-lg leading-none tracking-tighter">DENUNCIA MS</h1>
-              <p className="text-[9px] text-secondary font-black uppercase tracking-[0.2em] mt-1">Mato Grosso do Sul</p>
-            </div>
+            <img src="/assets/logo.png" alt="Denúncia MS" className="h-12 w-auto transition-transform group-hover:scale-105" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -49,13 +43,7 @@ export default function PublicLayout({
             <div className="grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-white/5 pb-12">
                <div className="md:col-span-2 space-y-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-accent shadow-glow-cyan border border-white/10">
-                      <Megaphone size={24} className="fill-accent" />
-                    </div>
-                    <div>
-                      <h2 className="font-black text-white text-lg leading-none tracking-tighter">DENUNCIA MS</h2>
-                      <p className="text-[9px] text-electric font-black uppercase tracking-[0.2em] mt-1">Plataforma Cívica</p>
-                    </div>
+                    <img src="/assets/logo.png" alt="Denúncia MS" className="h-10 w-auto brightness-0 invert opacity-80" />
                   </div>
                   <p className="text-sm text-white/60 max-w-md leading-relaxed">
                      O DENUNCIA MS é uma plataforma independente que garante o anonimato e a segurança do cidadão ao reportar irregularidades. Nosso compromisso é com a transparência e a justiça em Mato Grosso do Sul.
