@@ -74,6 +74,10 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
     }, {} as Record<string, Categoria[]>)
   }, [categorias])
 
+  const handleInputChange = (field: keyof DenunciaFormData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
   const handleNext = () => setStep(s => s + 1)
   const handleBack = () => setStep(s => s - 1)
 
@@ -81,7 +85,14 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
     setLoading(true)
     
     try {
-      // Prepara os arquivos para a Action (precisam ser buffers ou FormData)
+      // Validação básica
+      if (!formData.titulo || !formData.descricao_original) {
+        toast.error("Por favor, preencha o título e a descrição.")
+        setLoading(false)
+        return
+      }
+
+      // Prepara os arquivos para a Action
       const arquivosFiles = formData.arquivos as File[]
       const bufferData = await Promise.all(arquivosFiles.map(async (file) => {
         const arrayBuffer = await file.arrayBuffer()
@@ -106,6 +117,14 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
       toast.error("Erro inesperado no envio")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files)
+      setFormData(prev => ({ ...prev, arquivos: [...prev.arquivos, ...newFiles] }))
+      toast.success(`${newFiles.length} arquivo(s) adicionado(s)`)
     }
   }
 
@@ -219,29 +238,38 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
           <div className="space-y-8 animate-slide-up">
             <div className="flex items-center justify-between">
                <div>
-                  <h2 className="text-xl font-black text-dark tracking-tight italic">Relato do Ocorrido</h2>
-                  <p className="text-muted text-sm">Conte-nos os detalhes do que aconteceu.</p>
+                  <h2 className="text-2xl font-black text-dark tracking-tighter italic uppercase">Relato do Ocorrido</h2>
+                  <p className="text-muted text-sm font-medium">Conte-nos os detalhes fundamentais para a apuração.</p>
                </div>
-               <div className="p-3 bg-secondary/5 text-secondary rounded-xl border border-secondary/10">
-                  <FileText size={24} />
+               <div className="p-4 bg-primary/10 text-primary rounded-2xl border border-primary/20 shadow-glow-cyan">
+                  <FileText size={28} />
                </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-8">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {camposVisiveis.map(campo => {
-                     // Lógica simplificada de render de campos dinâmicos
                      if (['nome', 'email', 'telefone', 'cpf'].includes(campo.campo)) return null;
 
                      return (
                         <div key={campo.id} className="space-y-2">
-                           <label className={`label ${campo.obrigatorio ? 'label-required' : ''}`}>
+                           <label className={`label text-[10px] font-black uppercase tracking-widest ${campo.obrigatorio ? 'label-required' : ''}`}>
                               {campo.label}
                            </label>
                            {campo.campo === 'data_ocorrido' ? (
-                              <input type="date" className="input" />
+                              <input 
+                                type="date" 
+                                className="input h-12" 
+                                value={formData.data_ocorrido}
+                                onChange={(e) => handleInputChange('data_ocorrido', e.target.value)}
+                              />
                            ) : (
-                              <input className="input" placeholder={campo.placeholder || undefined} />
+                              <input 
+                                className="input h-12" 
+                                placeholder={campo.placeholder || undefined} 
+                                value={(formData as any)[campo.campo] || ''}
+                                onChange={(e) => handleInputChange(campo.campo as any, e.target.value)}
+                              />
                            )
                            }
                         </div>
@@ -249,66 +277,89 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                   })}
                </div>
 
-               <div>
-                  <label className="label label-required">Descrição Detalhada</label>
+               <div className="space-y-2">
+                  <label className="label label-required text-[10px] font-black uppercase tracking-widest">Descrição Detalhada</label>
                   <textarea 
-                    className="input min-h-[150px] py-4 leading-relaxed" 
+                    className="input min-h-[180px] py-4 leading-relaxed text-sm" 
                     placeholder="Descreva aqui os fatos, pessoas envolvidas e qualquer detalhe que ajude na investigação."
+                    value={formData.descricao_original}
+                    onChange={(e) => handleInputChange('descricao_original', e.target.value)}
                   />
                </div>
 
-               <div className="p-6 bg-dark text-white rounded-xl space-y-4">
-                  <div className="flex items-center gap-2">
-                     <Lock size={18} className="text-secondary" />
-                     <h3 className="font-bold text-sm">Deseja manter o anonimato?</h3>
+               <div className="p-8 bg-dark text-white rounded-3xl space-y-6 shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full blur-3xl"></div>
+                  
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 bg-secondary/20 rounded-lg">
+                        <Lock size={20} className="text-secondary" />
+                     </div>
+                     <h3 className="font-extrabold text-sm uppercase tracking-tighter">Privacidade e Identificação</h3>
                   </div>
-                  <div className="flex items-center gap-6">
-                     <label className="flex items-center gap-2 cursor-pointer group">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${formData.anonima ? 'border-secondary bg-secondary' : 'border-white/20'}`}>
-                           {formData.anonima && <div className="w-2 h-2 rounded-full bg-white"></div>}
-                        </div>
-                        <input 
-                         type="radio" 
-                         className="hidden" 
-                         checked={formData.anonima} 
-                         onChange={() => setFormData({...formData, anonima: true})} 
-                        />
-                        <span className="text-xs font-bold uppercase tracking-widest text-white">Sim, manter anônimo</span>
-                     </label>
 
-                     <label className="flex items-center gap-2 cursor-pointer group">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${!formData.anonima ? 'border-secondary bg-secondary' : 'border-white/20'}`}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     <button 
+                      onClick={() => handleInputChange('anonima', true)}
+                      className={`p-4 rounded-xl border-2 flex items-center justify-center gap-3 transition-all ${formData.anonima ? 'border-secondary bg-secondary/10 text-white shadow-glow-green' : 'border-white/10 text-white/40 hover:border-white/20'}`}
+                     >
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${formData.anonima ? 'border-secondary bg-secondary' : 'border-white/20'}`}>
+                           {formData.anonima && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
+                        </div>
+                        <span className="text-[11px] font-black uppercase tracking-widest">Manter Anônimo</span>
+                     </button>
+
+                     <button 
+                      onClick={() => handleInputChange('anonima', false)}
+                      className={`p-4 rounded-xl border-2 flex items-center justify-center gap-3 transition-all ${!formData.anonima ? 'border-secondary bg-secondary/10 text-white shadow-glow-green' : 'border-white/10 text-white/40 hover:border-white/20'}`}
+                     >
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${!formData.anonima ? 'border-secondary bg-secondary' : 'border-white/20'}`}>
                            {!formData.anonima && <div className="w-2 h-2 rounded-full bg-white"></div>}
                         </div>
-                        <input 
-                         type="radio" 
-                         className="hidden" 
-                         checked={!formData.anonima} 
-                         onChange={() => setFormData({...formData, anonima: false})} 
-                        />
-                        <span className="text-xs font-bold uppercase tracking-widest text-white/50 group-hover:text-white transition-colors">Não, identificar-me</span>
-                     </label>
+                        <span className="text-[11px] font-black uppercase tracking-widest">Identificar-me</span>
+                     </button>
                   </div>
 
                   {!formData.anonima && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 animate-fade-in">
-                       <input className="bg-white/5 border border-white/10 rounded-btn p-3 text-sm focus:outline-none focus:ring-1 focus:ring-secondary" placeholder="Seu nome completo" />
-                       <input className="bg-white/5 border border-white/10 rounded-btn p-3 text-sm focus:outline-none focus:ring-1 focus:ring-secondary" placeholder="Seu e-mail" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 animate-slide-up">
+                       <div className="space-y-1">
+                          <p className="text-[9px] font-bold text-white/40 uppercase pl-1">Nome Completo</p>
+                          <input 
+                            className="bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary w-full transition-all" 
+                            placeholder="Seu nome completo" 
+                            value={formData.nome}
+                            onChange={(e) => handleInputChange('nome', e.target.value)}
+                          />
+                       </div>
+                       <div className="space-y-1">
+                          <p className="text-[9px] font-bold text-white/40 uppercase pl-1">E-mail para Contato</p>
+                          <input 
+                            className="bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary w-full transition-all" 
+                            placeholder="seu@email.com" 
+                            value={formData.email}
+                            onChange={(e) => handleInputChange('email', e.target.value)}
+                          />
+                       </div>
                     </div>
                   )}
                </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4">
-               <button onClick={handleBack} className="btn-ghost flex items-center gap-2 text-xs uppercase font-black">
+            <div className="flex items-center justify-between pt-6">
+               <button onClick={handleBack} className="flex items-center gap-2 text-[10px] uppercase font-black text-muted hover:text-dark transition-colors">
                   <ArrowLeft size={16} /> Voltar
                </button>
                <button 
-                onClick={handleNext}
-                className="btn-primary btn-lg gap-2 min-w-[200px]"
+                onClick={() => {
+                   if (!formData.titulo || !formData.descricao_original) {
+                      toast.error("Preencha o título e a descrição")
+                      return
+                   }
+                   handleNext()
+                }}
+                className="btn-primary btn-lg gap-3 min-w-[200px]"
                >
                   Enviar Evidências
-                  <ArrowRight size={18} />
+                  <ArrowRight size={20} />
                </button>
             </div>
           </div>
@@ -318,48 +369,66 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
           <div className="space-y-8 animate-slide-up">
              <div className="flex items-center justify-between">
                <div>
-                  <h2 className="text-xl font-black text-dark tracking-tight">Fotos, Vídeos e Áudios</h2>
-                  <p className="text-muted text-sm">Anexe provas que ajudem a fundamentar sua denúncia.</p>
+                  <h2 className="text-2xl font-black text-dark tracking-tighter italic uppercase">Provas & Evidências</h2>
+                  <p className="text-muted text-sm font-medium">Anexe fotos, vídeos ou documentos que ajudem no caso.</p>
                </div>
-               <div className="p-3 bg-electric/5 text-electric rounded-xl border border-electric/10">
-                  <Camera size={24} />
+               <div className="p-4 bg-electric/10 text-electric rounded-2xl border border-electric/20 shadow-glow-cyan">
+                  <Camera size={28} />
                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                {politicasArquivo.filter(t => t.ativo).map(tipo => (
-                 <div key={tipo.tipo} className="border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center text-center gap-2 hover:bg-surface hover:border-primary/30 transition-all cursor-pointer">
-                    <div className="p-3 bg-surface rounded-full text-muted group-hover:text-primary">
-                       <Paperclip size={24} />
+                 <label 
+                  key={tipo.tipo} 
+                  className="border-2 border-dashed border-border rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3 hover:bg-surface hover:border-primary/50 transition-all cursor-pointer group"
+                 >
+                    <input type="file" multiple className="hidden" onChange={handleFileChange} />
+                    <div className="p-4 bg-surface rounded-full text-muted group-hover:text-primary transition-colors">
+                       <Paperclip size={28} />
                     </div>
                     <div>
-                       <p className="font-bold text-dark uppercase text-xs">Anexar {tipo.tipo}</p>
-                       <p className="text-[10px] text-muted">Até {tipo.qtd_maxima} arquivos de {tipo.tamanho_max_mb}MB</p>
+                       <p className="font-extrabold text-dark uppercase text-xs tracking-tight">Anexar {tipo.tipo}</p>
+                       <p className="text-[10px] text-muted font-bold mt-1">Até {tipo.qtd_maxima} arquivos de {tipo.tamanho_max_mb}MB</p>
                     </div>
-                 </div>
+                 </label>
                ))}
             </div>
 
-            <div className="p-6 bg-blue-50 border border-blue-100 rounded-xl flex gap-4 text-primary-700 text-xs">
-               <ShieldCheck size={20} className="shrink-0" />
-               <p>Seus arquivos serão criptografados e armazenados em servidores seguros. Metadados de localização de fotos são preservados para fins de auditoria interna, caso necessário.</p>
+            {formData.arquivos.length > 0 && (
+               <div className="bg-surface rounded-2xl p-4 space-y-2 border border-border">
+                  <p className="text-[10px] font-black uppercase text-secondary">Arquivos Selecionados ({formData.arquivos.length})</p>
+                  <div className="flex flex-wrap gap-2">
+                     {formData.arquivos.map((f, i) => (
+                        <div key={i} className="px-3 py-1.5 bg-white border border-border rounded-lg text-[10px] font-bold flex items-center gap-2">
+                           <FileText size={12} className="text-primary" />
+                           <span className="truncate max-w-[100px]">{f.name}</span>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+            )}
+
+            <div className="p-6 bg-primary/5 border border-primary/10 rounded-2xl flex gap-4 text-primary-900 text-xs leading-relaxed">
+               <ShieldCheck size={24} className="shrink-0 text-primary" />
+               <p className="font-medium">Seus arquivos serão criptografados e armazenados em servidores seguros de alta disponibilidade em Mato Grosso do Sul. Anonimato técnico garantido.</p>
             </div>
 
-            <div className="flex items-center justify-between pt-4">
-               <button onClick={handleBack} className="btn-ghost flex items-center gap-2 text-xs uppercase font-black">
+            <div className="flex items-center justify-between pt-6">
+               <button onClick={handleBack} className="flex items-center gap-2 text-[10px] uppercase font-black text-muted hover:text-dark transition-colors">
                   <ArrowLeft size={16} /> Voltar
                </button>
                <button 
                 onClick={handleSubmit}
                 disabled={loading}
-                className="btn-primary btn-lg gap-2 min-w-[250px] bg-secondary hover:bg-secondary-600 border-none shadow-glow-green"
+                className="btn-primary btn-lg gap-3 min-w-[280px] bg-secondary hover:bg-secondary-600 border-none shadow-glow-green"
                >
                   {loading ? (
                     <Loader2 size={24} className="animate-spin" />
                   ) : (
                     <>
                       PROTOCOLAR DENÚNCIA
-                      <Send size={18} />
+                      <Send size={20} />
                     </>
                   )}
                </button>
