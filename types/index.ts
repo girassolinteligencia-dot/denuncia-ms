@@ -96,6 +96,7 @@ export interface Categoria {
   instrucao_publica: string | null
   aviso_legal: string | null
   template_descricao: TopicoDescricao[]
+  email_destino?: string
   ativo: boolean
   ordem: number
   criado_em: string
