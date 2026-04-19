@@ -15,8 +15,8 @@ export async function registrarDenuncia(formData: any, arquivos: { name: string,
   const supabase = createAdminClient()
   
   try {
-    // 1. Gera Protocolo Atômico
-    const protocolo = await gerarProtocolo()
+    // 1. Gera Protocolo Atômico com Token de Segurança e Chave de Acesso
+    const { protocolo, chaveAcesso } = await gerarProtocolo()
     const sessaoId = crypto.randomUUID()
 
     // 2. Busca Categoria e Integrações
@@ -62,6 +62,7 @@ export async function registrarDenuncia(formData: any, arquivos: { name: string,
       .from('denuncias')
       .insert({
         protocolo,
+        chave_acesso: chaveAcesso,
         categoria_id: formData.categoria_id,
         titulo: formData.titulo,
         descricao_original: formData.descricao_original,
@@ -69,6 +70,10 @@ export async function registrarDenuncia(formData: any, arquivos: { name: string,
         local: formData.local,
         data_ocorrido: formData.data_ocorrido,
         anonima: formData.anonima,
+        denunciante_nome: formData.anonima ? null : formData.nome,
+        denunciante_email: formData.anonima ? null : formData.email,
+        denunciante_telefone: formData.anonima ? null : formData.telefone,
+        denunciante_cpf: formData.anonima ? null : formData.cpf,
         status: 'recebida'
       })
       .select()
@@ -118,7 +123,7 @@ export async function registrarDenuncia(formData: any, arquivos: { name: string,
     }
 
     revalidatePath('/admin/denuncias')
-    return { success: true, protocolo }
+    return { success: true, protocolo, chaveAcesso }
 
   } catch (err: any) {
     console.error('Erro ao processar denúncia:', err)

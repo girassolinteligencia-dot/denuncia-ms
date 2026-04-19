@@ -12,6 +12,7 @@ import {
   Mail,
   Zap
 } from 'lucide-react'
+import { updateCategoria, createCategoria, deleteCategoria } from '@/lib/actions/admin-categorias'
 import type { Categoria } from '@/types'
 import { toast } from 'sonner'
 
@@ -29,8 +30,19 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
   )
 
   const handleToggleActive = async (id: string) => {
-    setCategorias(prev => prev.map(c => c.id === id ? { ...c, ativo: !c.ativo } : c))
-    toast.success('Visibilidade da categoria atualizada')
+    const cat = categorias.find(c => c.id === id)
+    if (!cat) return
+
+    setLoading(true)
+    const result = await updateCategoria(id, { ativo: !cat.ativo })
+    
+    if (result.success) {
+      setCategorias(prev => prev.map(c => c.id === id ? { ...c, ativo: !c.ativo } : c))
+      toast.success(`Categoria ${!cat.ativo ? 'ativada' : 'desativada'} com sucesso`)
+    } else {
+      toast.error('Erro ao atualizar visibilidade')
+    }
+    setLoading(false)
   }
 
   const handleUpdateCategory = async (e: React.FormEvent) => {
@@ -38,17 +50,30 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
     if (!editingCat) return
     
     setLoading(true)
-    try {
-      // Simulação de salvamento (em breve integrado com Server Action)
-      await new Promise(r => setTimeout(r, 600))
+    const result = await updateCategoria(editingCat.id, editingCat)
+
+    if (result.success) {
       setCategorias(prev => prev.map(c => c.id === editingCat.id ? editingCat : c))
       setEditingCat(null)
       toast.success('Categoria parametrizada com sucesso!')
-    } catch (err) {
-      toast.error('Erro ao salvar alterações')
-    } finally {
-      setLoading(false)
+    } else {
+      toast.error(result.error || 'Erro ao salvar alterações')
     }
+    setLoading(false)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta categoria? Esta ação não poderá ser desfeita.')) return
+
+    setLoading(true)
+    const result = await deleteCategoria(id)
+    if (result.success) {
+      setCategorias(prev => prev.filter(c => c.id !== id))
+      toast.success('Categoria excluída')
+    } else {
+      toast.error(result.error || 'Erro ao excluir')
+    }
+    setLoading(false)
   }
 
   return (
@@ -123,6 +148,7 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
                   <Edit2 size={18} />
                 </button>
                 <button 
+                  onClick={() => handleDelete(cat.id)}
                   className="p-2 text-muted hover:text-error hover:bg-red-50 rounded-lg transition-all"
                   title="Excluir Categoria"
                 >

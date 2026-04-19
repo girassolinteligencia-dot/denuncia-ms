@@ -1,5 +1,4 @@
 import React from 'react'
-import { createAdminClient } from '@/lib/supabase-admin'
 import { 
   CheckCircle2, 
   Clock, 
@@ -56,25 +55,43 @@ const STATUS_MAP: any = {
   }
 }
 
-export default async function DetalhesProtocoloPage({ params }: { params: { protocolo: string } }) {
-  const supabase = createAdminClient()
-  
-  const { data: denuncia, error } = await supabase
-    .from('denuncias')
-    .select('*, categorias(label)')
-    .eq('protocolo', params.protocolo)
-    .single()
+import { consultarStatusDenuncia } from '@/lib/actions/consulta'
 
-  if (!denuncia || error) {
+export default async function DetalhesProtocoloPage({ 
+  params,
+  searchParams 
+}: { 
+  params: { protocolo: string },
+  searchParams: { key?: string }
+}) {
+  const chaveAcesso = searchParams.key
+  
+  if (!chaveAcesso) {
     return (
       <div className="container-page py-20 text-center space-y-6">
-        <h1 className="text-4xl font-black text-dark tracking-tighter uppercase italic">Protocolo não encontrado</h1>
-        <p className="text-muted">Verifique se o código <span className="font-bold text-primary">{params.protocolo}</span> está correto.</p>
-        <Link href="/acompanhar" className="btn-primary inline-flex gap-2">Tentar novamente</Link>
+        <h1 className="text-4xl font-black text-dark tracking-tighter uppercase italic text-red-600">Acesso Negado</h1>
+        <p className="text-muted">É necessário informar a Chave de Acesso para visualizar os detalhes desta denúncia.</p>
+        <Link href="/acompanhar" className="btn-primary inline-flex gap-2 bg-dark border-none">Voltar para Consulta</Link>
       </div>
     )
   }
 
+  const result = await consultarStatusDenuncia(params.protocolo, chaveAcesso)
+
+  if (!result.success || !result.denuncia) {
+    return (
+      <div className="container-page py-20 text-center space-y-6">
+        <h1 className="text-4xl font-black text-dark tracking-tighter uppercase italic">Credenciais Inválidas</h1>
+        <p className="text-muted font-medium">{result.error || 'Verifique se o protocolo e a chave estão corretos.'}</p>
+        <div className="bg-amber-50 p-4 rounded-xl max-w-md mx-auto border border-amber-100 mt-4">
+           <p className="text-xs text-amber-900 font-bold">Por segurança, após 5 tentativas falhas seu IP será bloqueado temporariamente.</p>
+        </div>
+        <Link href="/acompanhar" className="btn-primary inline-flex gap-2 mt-8">Tentar novamente</Link>
+      </div>
+    )
+  }
+
+  const denuncia = result.denuncia
   const status = STATUS_MAP[denuncia.status] || STATUS_MAP.recebida
 
   return (
@@ -87,7 +104,7 @@ export default async function DetalhesProtocoloPage({ params }: { params: { prot
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h1 className="text-4xl font-black text-dark tracking-tighter uppercase italic">Status da <span className="text-primary underline decoration-secondary decoration-4 underline-offset-8">Denúncia</span></h1>
-            <p className="text-muted text-sm mt-3">Protocolo: <span className="font-bold text-dark">{denuncia.protocolo}</span> • Registrado em {new Date(denuncia.criado_em).toLocaleDateString()}</p>
+            <p className="text-muted text-sm mt-3">Protocolo: <span className="font-bold text-dark">{denuncia.protocolo}</span> • Registrado em {new Date((denuncia as any).criado_at).toLocaleDateString()}</p>
           </div>
           <div className="flex items-center gap-3 p-4 bg-white rounded-xl shadow-card border border-border">
              <div className={`p-2 rounded-lg ${status.bgColor} ${status.color}`}>

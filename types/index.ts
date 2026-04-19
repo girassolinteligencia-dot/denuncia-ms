@@ -155,6 +155,10 @@ export interface Denuncia {
   data_ocorrido: string | null
   status: StatusDenuncia
   anonima: boolean
+  denunciante_nome: string | null
+  denunciante_email: string | null
+  denunciante_telefone: string | null
+  denunciante_cpf: string | null
   denunciante_id: string | null
   cabecalho_snapshot: string | null
   rodape_snapshot: string | null

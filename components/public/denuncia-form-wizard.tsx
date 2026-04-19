@@ -48,6 +48,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [protocoloGerado, setProtocoloGerado] = useState<string | null>(null)
+  const [chaveGerada, setChaveGerada] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const [formData, setFormData] = useState<DenunciaFormData>({
@@ -160,6 +161,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
 
       if (result.success && result.protocolo) {
         setProtocoloGerado(result.protocolo)
+        setChaveGerada(result.chaveAcesso)
         setStep(4)
         toast.success("Denúncia registrada com sucesso!")
       } else {
@@ -183,30 +185,44 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
 
   if (step === 4) {
     return (
-      <div className="max-w-xl mx-auto py-12 text-center space-y-8 animate-fade-in">
-         <div className="w-24 h-24 bg-secondary text-white rounded-full flex items-center justify-center mx-auto shadow-glow-green transform scale-125">
+      <div className="max-w-2xl mx-auto py-12 text-center space-y-8 animate-fade-in px-4">
+         <div className="w-24 h-24 bg-secondary text-white rounded-full flex items-center justify-center mx-auto shadow-glow-green transform scale-110">
             <CheckCircle2 size={48} />
          </div>
          <div className="space-y-2">
-            <h2 className="text-3xl font-black text-dark">Denúncia Protocolada!</h2>
-            <p className="text-muted text-sm">Sua denúncia foi recebida e encaminhada aos órgãos responsáveis.</p>
+            <h2 className="text-3xl font-black text-dark tracking-tighter uppercase italic">Protocolo Realizado!</h2>
+            <p className="text-muted text-sm font-medium">Sua denúncia foi enviada com sucesso para a Ouvidoria MS.</p>
          </div>
 
-         <div className="bg-dark p-8 rounded-card border-t-4 border-secondary shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-2 text-white/5 group-hover:text-white/10 transition-colors">
-               <ShieldCheck size={120} />
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white p-6 rounded-3xl border border-border shadow-card-sm space-y-4">
+               <p className="text-[10px] text-muted font-black uppercase tracking-widest">Número do Protocolo</p>
+               <div className="text-xl font-black text-dark tracking-wider select-all bg-surface p-3 rounded-xl border border-border/50">
+                  {protocoloGerado}
+               </div>
             </div>
-            <p className="text-[10px] text-secondary font-black uppercase tracking-[0.3em] mb-4">Número do seu Protocolo</p>
-            <div className="text-4xl font-black text-white tracking-widest">{protocoloGerado}</div>
-            <p className="text-[10px] text-white/40 mt-6 uppercase font-bold">Guarde esse código para acompanhar o status</p>
+            <div className="bg-primary p-6 rounded-3xl shadow-glow-cyan space-y-4">
+               <p className="text-[10px] text-white/70 font-black uppercase tracking-widest">Chave de Acesso</p>
+               <div className="text-xl font-black text-white tracking-widest select-all bg-white/10 p-3 rounded-xl border border-white/20">
+                  {chaveGerada}
+               </div>
+            </div>
          </div>
 
-         <div className="flex flex-col gap-3 pt-8">
-            <button className="btn-primary w-full h-12 gap-2 bg-secondary hover:bg-secondary-600 border-none">
-               Baixar PDF da Denúncia
-            </button>
-            <Link href="/" className="btn-ghost text-xs uppercase font-bold tracking-widest">
+         <div className="bg-amber-50 border border-amber-100 p-6 rounded-3xl flex gap-4 text-left">
+            <Lock size={24} className="text-amber-600 shrink-0" />
+            <p className="text-[11px] text-amber-900 font-bold leading-relaxed">
+               <span className="block text-amber-950 mb-1">ATENÇÃO: ANOTE ESTES DADOS!</span>
+               Por motivos de segurança e para garantir seu total anonimato, estas credenciais são geradas apenas uma vez e são a única forma de consultar o andamento da sua denúncia.
+            </p>
+         </div>
+
+         <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <Link href="/" className="btn-outline flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px]">
                Voltar ao Início
+            </Link>
+            <Link href="/acompanhar" className="btn-primary flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] bg-dark border-none hover:bg-black">
+               Consultar Status
             </Link>
          </div>
       </div>

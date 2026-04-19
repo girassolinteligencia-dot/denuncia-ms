@@ -1,8 +1,10 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Save, RefreshCw, Eye, EyeOff, Lock, AlertCircle } from 'lucide-react'
+import { Save, RefreshCw, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { updateConfigCampos } from '@/lib/actions/admin-config'
 import type { ConfigCampoFormulario } from '@/types'
+import { toast } from 'sonner'
 
 export const CamposFormularioTable: React.FC<{ initialCampos: ConfigCampoFormulario[] }> = ({ initialCampos }) => {
   const [campos, setCampos] = useState<ConfigCampoFormulario[]>(
@@ -30,11 +32,18 @@ export const CamposFormularioTable: React.FC<{ initialCampos: ConfigCampoFormula
   const handleSubmit = async () => {
     setLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      console.log('Salvando campos:', campos)
-      alert('Configuração de campos salva com sucesso!')
-    } catch (err) {
-      alert('Erro ao salvar')
+      // Salva todos os campos em paralelo
+      const promises = campos.map(campo => updateConfigCampos(campo.id, campo))
+      const results = await Promise.all(promises)
+
+      if (results.every(r => r.success)) {
+        toast.success('Configuração de campos salva com sucesso!')
+      } else {
+        toast.error('Ocorreu um erro ao salvar alguns campos.')
+      }
+    } catch (error) {
+       console.error(error)
+       toast.error('Erro de conexão ao salvar')
     } finally {
       setLoading(false)
     }

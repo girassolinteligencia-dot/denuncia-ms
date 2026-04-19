@@ -133,6 +133,10 @@ CREATE TABLE IF NOT EXISTS denuncias (
   status                    text DEFAULT 'recebida'
                               CHECK (status IN ('recebida','em_analise','encaminhada','resolvida','arquivada')),
   anonima                   boolean DEFAULT false,
+  denunciante_nome          text,
+  denunciante_email         text,
+  denunciante_telefone      text,
+  denunciante_cpf           text,
   denunciante_id            uuid REFERENCES profiles(id) ON DELETE SET NULL,
   cabecalho_snapshot        text,
   rodape_snapshot           text,

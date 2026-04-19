@@ -9,7 +9,7 @@ import type { ConfigProtocolo } from '@/types'
  * Usa UPDATE ... RETURNING para garantir atomicidade e evitar
  * duplicatas em cenários de alta concorrência.
  */
-export async function gerarProtocolo(): Promise<string> {
+export async function gerarProtocolo(): Promise<{ protocolo: string, chaveAcesso: string }> {
   const supabase = createAdminClient()
 
   // Incrementa atomicamente e retorna o novo valor
@@ -28,7 +28,18 @@ export async function gerarProtocolo(): Promise<string> {
     .toString()
     .padStart(config.digitos_seq, '0')
 
-  return [config.prefixo, ano, seq].join(config.separador)
+  // Gera sufixo aleatório para segurança (Salt)
+  const salt = Math.random().toString(36).substring(2, 6).toUpperCase()
+  
+  // Gera Chave de Acesso única para o cidadão
+  const chaveAcesso = Math.random().toString(36).substring(2, 8).toUpperCase()
+
+  const protocoloFinal = [config.prefixo, ano, seq, salt].join(config.separador)
+  
+  return { 
+    protocolo: protocoloFinal, 
+    chaveAcesso 
+  }
 }
 
 /**

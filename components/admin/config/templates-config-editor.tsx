@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react'
 import { Save, RefreshCw, FileText, Code, CheckCircle2, QrCode } from 'lucide-react'
+import { updateTemplate } from '@/lib/actions/admin-config'
 import type { ConfigTemplate, TipoTemplate } from '@/types'
+import { toast } from 'sonner'
 
 export const TemplatesConfigEditor: React.FC<{ initialTemplates: ConfigTemplate[] }> = ({ initialTemplates }) => {
   const [templates, setTemplates] = useState<ConfigTemplate[]>(initialTemplates)
@@ -40,8 +42,15 @@ export const TemplatesConfigEditor: React.FC<{ initialTemplates: ConfigTemplate[
   const handleSubmit = async () => {
     setLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      alert('Templates de documento atualizados!')
+      const result = await updateTemplate(templateAtivo.id, templateAtivo)
+      if (result.success) {
+        toast.success(`Template ${activeTab.replace('_', ' ')} salvo com sucesso!`)
+      } else {
+        toast.error('Erro ao salvar template')
+      }
+    } catch (error) {
+       console.error(error)
+       toast.error('Erro de conexão ao salvar')
     } finally {
       setLoading(false)
     }
