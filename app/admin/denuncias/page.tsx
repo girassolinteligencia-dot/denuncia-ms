@@ -14,7 +14,7 @@ export default async function DenunciasAdminPage() {
   const { data: denuncias, error } = await supabase
     .from('denuncias')
     .select('*, categorias(label, emoji)')
-    .order('criado_at', { ascending: false })
+    .order('criado_em', { ascending: false })
 
   if (error) {
     return <div className="p-8 text-error">Erro ao carregar denúncias: {error.message}</div>

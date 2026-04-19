@@ -182,7 +182,7 @@ export default async function DetalheDenunciaPage({ params }: { params: { id: st
                  <div className="relative pl-8">
                     <div className="absolute left-0 top-1 w-5 h-5 rounded-full bg-primary border-4 border-primary-100"></div>
                     <p className="text-[10px] font-black text-dark uppercase">Denúncia Recebida</p>
-                    <p className="text-[9px] text-muted font-bold">{new Date(denuncia.criado_at).toLocaleString()}</p>
+                    <p className="text-[9px] text-muted font-bold">{new Date(denuncia.criado_em).toLocaleString()}</p>
                  </div>
                  <div className="relative pl-8 opacity-40">
                     <div className="absolute left-0 top-1 w-5 h-5 rounded-full bg-surface border-4 border-white"></div>

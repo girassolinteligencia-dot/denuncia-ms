@@ -59,8 +59,8 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-xs font-semibold text-muted">
-                      {new Date(denuncia.criado_at).toLocaleDateString()}
-                      <span className="text-[10px] ml-1 opacity-60">{new Date(denuncia.criado_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      {new Date(denuncia.criado_em).toLocaleDateString()}
+                      <span className="text-[10px] ml-1 opacity-60">{new Date(denuncia.criado_em).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </span>
                   </td>
                   <td className="px-6 py-4">
