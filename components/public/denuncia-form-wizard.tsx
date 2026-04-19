@@ -457,7 +457,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                         <p className="text-[10px] text-muted leading-relaxed font-bold text-justify">
                            Ao prosseguir, declaro estar ciente de que sou o único responsável pela veracidade dos fatos narrados e pela autenticidade das evidências anexadas, sob as penas da lei. 
                            Compreendo que esta plataforma atua exclusivamente como meio de conexão e encaminhamento da denúncia aos órgãos competentes 
-                           (conforme <strong>Lei nº 12.527/2011 - LAI</strong> e <strong>Lei nº 13.709/2018 - LGPD</strong>), não possuindo responsabilidade sobre o teor da denúncia ou sobre a conduta das partes envolvidas.
+                           (conforme <Link href="/termos" target="_blank" className="text-primary underline">Lei nº 12.527/2011 - LAI</Link> e <Link href="/termos" target="_blank" className="text-primary underline">Lei nº 13.709/2018 - LGPD</Link>), não possuindo responsabilidade sobre o teor da denúncia ou sobre a conduta das partes envolvidas.
                         </p>
                      </div>
                   </label>
