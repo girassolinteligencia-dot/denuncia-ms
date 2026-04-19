@@ -25,56 +25,53 @@ export default async function PublicHomePage() {
     <div className="flex flex-col">
       
       {/* Hero Section */}
-      <section className="relative bg-dark overflow-hidden min-h-[700px] flex items-center">
-        {/* Background Gradients inspirado no logo */}
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-neon opacity-20"></div>
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-electric/20 rounded-full blur-[120px]"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-secondary/20 rounded-full blur-[120px]"></div>
-
-        {/* Mascote como Fundo (Lado Direito) */}
-        <div className="absolute right-0 bottom-0 top-0 w-1/2 hidden lg:flex items-end justify-end pointer-events-none z-0">
-           <div className="absolute inset-0 bg-gradient-to-l from-dark/80 via-transparent to-transparent z-10"></div>
+      <section className="relative bg-white overflow-hidden min-h-[700px] flex items-center border-b border-border">
+        {/* Decorative elements for Light Theme */}
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-surface/50 -skew-x-12 translate-x-32 z-0 hidden lg:block"></div>
+        
+        {/* Mascote como Fundo (Lado Direito) - Usando a imagem 100% original conforme solicitado */}
+        <div className="absolute right-0 bottom-0 top-0 w-1/2 hidden lg:flex items-end justify-end pointer-events-none z-10">
            <img 
              src="/assets/mascote.png" 
-             alt="" 
-             className="h-[110%] w-auto object-contain object-bottom animate-fade-in drop-shadow-[0_20px_50px_rgba(0,210,211,0.3)]"
+             alt="Cidadão Denúncia MS" 
+             className="h-[105%] w-auto object-contain object-bottom animate-fade-in"
            />
         </div>
 
-        <div className="container-page relative z-10 py-20">
+        <div className="container-page relative z-20 py-20">
           <div className="max-w-2xl text-center lg:text-left space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-electric text-xs font-black uppercase tracking-[0.2em] shadow-glow-cyan animate-fade-in">
-               <Zap size={14} className="fill-electric" />
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-border text-primary text-xs font-black uppercase tracking-[0.2em] animate-fade-in">
+               <Zap size={14} className="fill-primary" />
                Canal Independente de Ouvidoria — Mato Grosso do Sul
             </div>
             
-            <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[0.9] animate-slide-up">
+            <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black text-dark tracking-tighter leading-[0.9] animate-slide-up italic">
               Sua voz tem poder. <br />
-              Sua denúncia tem <span className="text-secondary drop-shadow-glow-green">impacto.</span>
+              Sua denúncia tem <span className="text-secondary">impacto.</span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-white/50 max-w-xl lg:mx-0 mx-auto leading-relaxed animate-fade-in">
-              A plataforma <span className="text-white font-bold">DENUNCIA MS</span> permite que qualquer cidadão registre irregularidades de forma 100% anônima e segura. Transparência para quem fiscaliza, proteção para quem informa.
+            <p className="text-lg sm:text-xl text-muted max-w-xl lg:mx-0 mx-auto leading-relaxed animate-fade-in font-medium">
+              A plataforma <span className="text-primary font-black">DENUNCIA MS</span> permite que qualquer cidadão registre irregularidades de forma 100% anônima e segura. Transparência para quem fiscaliza, proteção para quem informa.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-4 pt-4">
-               <Link href="/denunciar" className="btn-primary btn-lg w-full sm:w-auto gap-3 text-lg py-5 bg-secondary hover:bg-secondary-600 border-none shadow-glow-green group">
+               <Link href="/denunciar" className="btn-primary btn-lg w-full sm:w-auto gap-3 text-lg py-5 bg-primary hover:bg-primary-dark border-none shadow-lg group">
                   INICIAR DENÚNCIA AGORA
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                </Link>
-               <Link href="/acompanhar" className="btn-outline btn-lg w-full sm:w-auto gap-3 text-white border-white/20 hover:bg-white/5 backdrop-blur-sm">
+               <Link href="/acompanhar" className="btn-outline btn-lg w-full sm:w-auto gap-3 text-dark border-border hover:bg-surface">
                   Consultar Protocolo
                </Link>
             </div>
 
-            <div className="flex items-center lg:justify-start justify-center gap-8 pt-8 text-[10px] sm:text-xs font-black text-white/40 uppercase tracking-[0.3em]">
+            <div className="flex items-center lg:justify-start justify-center gap-8 pt-8 text-[10px] sm:text-xs font-black text-muted uppercase tracking-[0.3em]">
                <div className="flex items-center gap-2">
-                  <Lock size={14} className="text-secondary" />
+                  <Lock size={14} className="text-primary" />
                   Anonimato Garantido
                </div>
-               <div className="w-1.5 h-1.5 rounded-full bg-white/10"></div>
+               <div className="w-1.5 h-1.5 rounded-full bg-border"></div>
                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={14} className="text-electric" />
+                  <CheckCircle2 size={14} className="text-secondary" />
                   Segurança de Dados
                </div>
             </div>
