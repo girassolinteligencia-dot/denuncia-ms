@@ -42,10 +42,15 @@ export default async function PublicHomePage() {
                Canal Independente de Ouvidoria — Mato Grosso do Sul
             </div>
             
-            <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[0.9] animate-slide-up italic">
-              Sua voz tem poder. <br />
-              Sua denúncia tem <span className="text-secondary underline decoration-4 decoration-secondary/30 underline-offset-8">impacto.</span>
-            </h1>
+            <div className="space-y-4">
+              <span className="text-secondary font-bold text-lg sm:text-2xl tracking-tight block animate-fade-in italic">
+                Olá, eu sou Bruno Ortiz
+              </span>
+              <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[0.9] animate-slide-up italic">
+                Sua voz tem poder. <br />
+                Sua denúncia tem <span className="text-secondary underline decoration-4 decoration-secondary/30 underline-offset-8">impacto.</span>
+              </h1>
+            </div>
 
             <p className="text-base sm:text-xl text-white/70 max-w-xl lg:mx-0 mx-auto leading-relaxed animate-fade-in font-medium">
               A plataforma <span className="text-white font-black uppercase tracking-tighter">Denúncia MS</span> permite que qualquer cidadão registre irregularidades de forma 100% anônima, segura e auditável.
