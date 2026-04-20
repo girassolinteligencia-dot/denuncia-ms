@@ -1,6 +1,5 @@
 import React from 'react'
 import { createAdminClient } from '@/lib/supabase-admin'
-import { getConfig } from '@/lib/config'
 import Link from 'next/link'
 import { 
   ShieldCheck, 
@@ -9,11 +8,7 @@ import {
   ArrowRight, 
   CheckCircle2, 
   Lock,
-  ArrowUpRight,
-  Info,
-  Calendar,
-  Newspaper,
-  ChevronRight
+  ArrowUpRight
 } from 'lucide-react'
 
 export default async function PublicHomePage() {
@@ -26,35 +21,9 @@ export default async function PublicHomePage() {
     .eq('ativo', true)
     .order('ordem', { ascending: true })
 
-  // Busca as 3 notícias mais recentes
-  const { data: noticias } = await supabase
-    .from('noticias')
-    .select('*')
-    .eq('foi_publicado', true)
-    .order('data_publicacao', { ascending: false })
-    .limit(3)
-
-  // Busca o texto do letreiro (ticker)
-  const tickerText = await getConfig<string>('identidade.ticker', '')
-
   return (
     <div className="flex flex-col">
       
-      {/* Letreiro Institucional (Ticker) - Estático */}
-      {tickerText && (
-        <div className="bg-primary text-white border-b border-white/10 shadow-sm relative z-[60]">
-           <div className="container-page py-3 flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/20 text-[10px] font-black uppercase tracking-widest shrink-0">
-                 <Info size={14} className="text-secondary" />
-                 Aviso
-              </div>
-              <p className="text-xs sm:text-sm font-bold tracking-tight leading-none truncate">
-                 {tickerText}
-              </p>
-           </div>
-        </div>
-      )}
-
       {/* Hero Section - Restauração Blue Deep */}
       <section className="relative bg-[#021691] overflow-hidden min-h-[500px] sm:min-h-[700px] flex items-center border-b border-white/5 transition-all">
         {/* Efeitos de Fundo Modernos */}
@@ -145,70 +114,6 @@ export default async function PublicHomePage() {
           </div>
         </div>
       </section>
-
-      {/* Seção de Notícias - Grid de 3 */}
-      {noticias && noticias.length > 0 && (
-        <section className="section bg-white border-t border-border">
-          <div className="container-page space-y-10">
-            <div className="flex flex-col sm:flex-row items-end justify-between gap-4">
-               <div className="space-y-1 text-center sm:text-left">
-                  <div className="inline-flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-widest mb-1">
-                     <Newspaper size={14} />
-                     Informativos e Transparência
-                  </div>
-                  <h2 className="text-3xl font-black text-dark tracking-tighter italic uppercase">Últimas Publicações</h2>
-               </div>
-               <Link href="/noticias" className="text-xs font-black uppercase text-primary hover:text-dark transition-colors flex items-center gap-2 group">
-                  Ver todas as notícias
-                  <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-               </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-               {noticias.map((post) => (
-                  <Link 
-                    key={post.id} 
-                    href={`/noticias/${post.slug}`}
-                    className="group flex flex-col h-full bg-surface rounded-3xl overflow-hidden border border-border hover:border-primary/30 transition-all hover:shadow-card-md"
-                  >
-                     <div className="aspect-video bg-muted relative overflow-hidden">
-                        {post.capa_url ? (
-                           <img src={post.capa_url} alt={post.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        ) : (
-                           <div className="w-full h-full flex items-center justify-center text-muted/30">
-                              <Newspaper size={48} />
-                           </div>
-                        )}
-                        <div className="absolute top-4 left-4">
-                           <span className="px-3 py-1 bg-white/90 backdrop-blur rounded-full text-[9px] font-black uppercase tracking-widest text-dark shadow-sm">
-                              {post.categoria || 'Geral'}
-                           </span>
-                        </div>
-                     </div>
-                     <div className="p-6 flex flex-col flex-1 gap-4">
-                        <div className="flex items-center gap-4 text-muted text-[10px] font-bold uppercase">
-                           <div className="flex items-center gap-1.5">
-                              <Calendar size={12} className="text-primary" />
-                              {new Date(post.data_publicacao).toLocaleDateString('pt-BR')}
-                           </div>
-                        </div>
-                        <h3 className="text-xl font-black text-dark tracking-tight leading-tight group-hover:text-primary transition-colors line-clamp-2 uppercase">
-                           {post.titulo}
-                        </h3>
-                        <p className="text-sm text-muted font-medium line-clamp-2 leading-relaxed">
-                           {post.resumo}
-                        </p>
-                        <div className="mt-auto pt-4 border-t border-border/50 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-primary">
-                           Ler Matéria Completa
-                           <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                        </div>
-                     </div>
-                  </Link>
-               ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Como funciona */}
       <section className="section bg-surface border-y border-border">

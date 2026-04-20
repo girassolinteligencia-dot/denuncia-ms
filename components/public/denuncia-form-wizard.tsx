@@ -207,7 +207,6 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
       if (result.success && result.protocolo) {
         setProtocoloGerado(result.protocolo)
         setChaveGerada(result.chaveAcesso)
-        setStep(4)
         toast.success("Denúncia registrada com sucesso!")
       } else {
         toast.error(result.error || "Erro ao registrar denúncia")
@@ -228,7 +227,8 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
     }
   }
 
-  if (step === 4) {
+  // --- TELA DE SUCESSO ---
+  if (protocoloGerado) {
     return (
       <div className="max-w-2xl mx-auto py-12 text-center space-y-8 animate-fade-in px-4">
          <div className="w-24 h-24 bg-secondary text-white rounded-full flex items-center justify-center mx-auto shadow-glow-green transform scale-110">
@@ -274,19 +274,22 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
     )
   }
 
+  // Helper para renderizar o resumo da revisão
+  const currentCategory = categorias.find(c => c.id === formData.categoria_id)
+
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
       
       {/* Progress Stepper */}
       <div className="flex items-center justify-between mb-12 relative px-4">
          <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -z-10 -translate-y-1/2"></div>
-         {[1, 2, 3].map(s => (
+         {[1, 2, 3, 4].map(s => (
            <div key={s} className="flex flex-col items-center gap-2">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all border-2 ${step >= s ? 'bg-primary border-primary text-white shadow-glow-cyan' : 'bg-white border-border text-muted'}`}>
                  {step > s ? <CheckCircle2 size={20} /> : s}
               </div>
               <span className={`text-[10px] font-black uppercase tracking-widest ${step >= s ? 'text-primary' : 'text-muted/50'}`}>
-                 {s === 1 ? 'Categoria' : s === 2 ? 'Detalhes' : 'Evidências'}
+                 {s === 1 ? 'Tipo' : s === 2 ? 'Fatos' : s === 3 ? 'Anexos' : 'Revisão'}
               </span>
            </div>
          ))}
@@ -335,7 +338,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                ))}
             </div>
 
-            {formData.categoria_id && categorias.find(c => c.id === formData.categoria_id)?.aviso_legal && (
+            {formData.categoria_id && currentCategory?.aviso_legal && (
                <div className="p-6 bg-amber-50 border border-amber-200 rounded-3xl flex gap-4 animate-fade-in shadow-sm">
                   <div className="p-3 bg-amber-100 text-amber-700 rounded-2xl h-fit">
                      <AlertTriangle size={24} className="fill-amber-700/10" />
@@ -346,7 +349,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                         <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
                      </p>
                      <p className="text-sm font-black text-amber-800 leading-tight">
-                        {categorias.find(c => c.id === formData.categoria_id)?.aviso_legal}
+                        {currentCategory?.aviso_legal}
                      </p>
                      <p className="text-[9px] text-amber-700/60 font-bold uppercase mt-1">Se houver risco imediato à vida, acione os órgãos acima antes de prosseguir com o relato digital.</p>
                   </div>
@@ -601,7 +604,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                 onClick={() => {
                    if (!formData.titulo || !formData.descricao_original) {
                       toast.error("Preencha o título e a descrição")
-                      return
+                       return
                    }
                    if (!formData.consentimento) {
                       toast.error("Você precisa concordar com os termos de responsabilidade")
@@ -673,15 +676,86 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                   <ArrowLeft size={16} /> Voltar
                </button>
                <button 
+                onClick={handleNext}
+                className="btn-primary btn-md sm:btn-lg gap-3 flex-1 sm:flex-none sm:min-w-[280px] bg-dark hover:bg-black border-none"
+               >
+                  REVISAR DENÚNCIA
+                  <ArrowRight size={20} />
+               </button>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="space-y-8 animate-slide-up">
+             <div className="flex items-center justify-between">
+               <div>
+                  <h2 className="text-2xl font-black text-dark tracking-tighter italic uppercase text-primary">Revisão Final</h2>
+                  <p className="text-muted text-sm font-medium">Confira os dados antes de gerar o protocolo oficial.</p>
+               </div>
+               <div className="p-4 bg-secondary/10 text-secondary rounded-2xl">
+                  <ShieldCheck size={32} />
+               </div>
+            </div>
+
+            <div className="space-y-4">
+               {/* Resumo Card */}
+               <div className="bg-surface rounded-3xl p-6 border border-border space-y-6">
+                  <div className="flex items-center gap-4 border-b border-border pb-4">
+                     <span className="text-4xl">{currentCategory?.emoji}</span>
+                     <div>
+                        <p className="text-[10px] font-black uppercase text-muted tracking-widest">Categoria Selecionada</p>
+                        <h4 className="text-lg font-black text-dark leading-tight">{currentCategory?.label}</h4>
+                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                     <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase text-muted tracking-widest">Localização</p>
+                        <p className="font-bold text-dark">{formData.local}, {formData.numero}</p>
+                        <p className="text-xs text-muted font-medium">{formData.bairro} — {formData.cidade} / MS</p>
+                     </div>
+                     <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase text-muted tracking-widest">Identificação</p>
+                        <p className="font-bold text-dark">{formData.anonima ? 'MANTIDO EM TOTAL ANONIMATO' : formData.nome}</p>
+                        {!formData.anonima && <p className="text-xs text-muted font-medium">{formData.email}</p>}
+                     </div>
+                  </div>
+
+                  <div className="space-y-2 border-t border-border pt-4">
+                     <p className="text-[10px] font-black uppercase text-muted tracking-widest">Relato Principal</p>
+                     <h5 className="font-black text-dark text-base">{formData.titulo}</h5>
+                     <p className="text-xs text-muted font-medium line-clamp-3 leading-relaxed italic">&quot;{formData.descricao_original}&quot;</p>
+                  </div>
+
+                  {formData.arquivos.length > 0 && (
+                     <div className="pt-4 border-t border-border flex items-center justify-between">
+                         <p className="text-[10px] font-black uppercase text-muted tracking-widest">Evidências Anexadas</p>
+                         <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black">{formData.arquivos.length} ARQUIVO(S)</span>
+                     </div>
+                  )}
+               </div>
+
+               <div className="bg-primary/5 border border-primary/10 p-4 rounded-2xl flex gap-3 items-center">
+                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                  <p className="text-[10px] font-bold text-primary uppercase tracking-tight">Ao clicar em confirmar, um protocolo oficial e imutável será gerado.</p>
+               </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-6 gap-4">
+               <button onClick={handleBack} disabled={loading} className="flex items-center gap-2 text-[10px] uppercase font-black text-muted hover:text-dark transition-colors">
+                  <ArrowLeft size={16} /> Corrigir Algo
+               </button>
+               <button 
                 onClick={handleSubmit}
                 disabled={loading}
-                className="btn-primary btn-md sm:btn-lg gap-3 flex-1 sm:flex-none sm:min-w-[280px] bg-secondary hover:bg-secondary-600 border-none"
+                className="btn-primary btn-md sm:btn-lg gap-3 flex-1 sm:flex-none sm:min-w-[300px] bg-secondary hover:bg-secondary-600 border-none shadow-glow-green"
                >
                   {loading ? (
                     <Loader2 size={24} className="animate-spin" />
                   ) : (
                     <>
-                      PROTOCOLAR DENÚNCIA
+                      CONFIRMAR E PROTOCOLAR
                       <Send size={20} />
                     </>
                   )}
