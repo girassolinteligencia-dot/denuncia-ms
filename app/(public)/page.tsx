@@ -33,11 +33,11 @@ export default async function PublicHomePage() {
         
         {/* Mascote como Fundo (Lado Direito) */}
         <div className="absolute right-0 bottom-0 top-0 w-1/2 hidden lg:flex items-end justify-end pointer-events-none z-10">
-           <img 
-             src="/assets/mascote.png" 
-             alt="Cidadão Denúncia MS" 
-             className="h-[105%] w-auto object-contain object-bottom animate-fade-in opacity-90 brightness-110"
-           />
+            <img 
+              src="/assets/mascote.png" 
+              alt="Representante Denúncia MS" 
+              className="h-[105%] sm:h-[110%] w-auto object-contain object-bottom animate-fade-in drop-shadow-2xl"
+            />
         </div>
 
         <div className="container-page relative z-20 py-12 sm:py-20 lg:py-32">

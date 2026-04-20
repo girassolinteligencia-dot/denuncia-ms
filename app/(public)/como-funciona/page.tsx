@@ -51,7 +51,7 @@ export default function ComoFuncionaPage() {
              <div className="absolute inset-0 bg-secondary/5 rounded-full blur-3xl animate-pulse"></div>
              <img 
                src="/assets/mascote.png" 
-               alt="Guia Denúncia MS" 
+               alt="Representante Denúncia MS" 
                className="w-full max-w-md h-auto object-contain drop-shadow-2xl animate-float"
              />
           </div>
