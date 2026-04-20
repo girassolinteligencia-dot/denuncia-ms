@@ -43,7 +43,7 @@ export default async function PublicHomePage() {
             </div>
             
             <div className="space-y-4">
-              <span className="text-secondary font-bold text-lg sm:text-2xl tracking-tight block animate-fade-in italic">
+              <span className="text-[#FFD700] font-black text-2xl sm:text-4xl tracking-tighter block animate-slide-up italic uppercase">
                 Olá, eu sou Bruno Ortiz
               </span>
               <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[0.9] animate-slide-up italic">
