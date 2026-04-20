@@ -223,7 +223,7 @@ export default function ComoFuncionaPage() {
             </div>
             
             <div className="mt-8 text-center uppercase text-[10px] font-black text-muted tracking-[0.3em]">
-               Governo do Estado de Mato Grosso do Sul — Inteligência Cívica
+               Plataforma Independente — Transparência e Inteligência Cívica
             </div>
          </div>
       </section>

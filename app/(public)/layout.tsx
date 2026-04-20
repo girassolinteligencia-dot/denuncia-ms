@@ -61,7 +61,7 @@ export default function PublicLayout({
                </div>
 
                <div>
-                  <h3 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Contato Institucional</h3>
+                  <h3 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Informações</h3>
                   <ul className="space-y-4 text-sm text-white/50">
                      <li>contato@denunciams.com.br</li>
                      <li>Mato Grosso do Sul, Brasil</li>

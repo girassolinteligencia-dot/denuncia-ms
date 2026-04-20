@@ -7,19 +7,19 @@ const APP_URL  = process.env.NEXT_PUBLIC_APP_URL  ?? 'https://denunciams.com.br'
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: `${APP_NAME} — Plataforma Cívica de Ouvidoria de Mato Grosso do Sul`,
+    default: `${APP_NAME} — Plataforma Cívica Independente de Mato Grosso do Sul`,
     template: `%s | ${APP_NAME}`,
   },
   description:
-    'Registre denúncias de forma segura e anônima. Plataforma oficial de ouvidoria digital para cidadãos de Mato Grosso do Sul.',
-  keywords: ['denúncia', 'ouvidoria', 'Mato Grosso do Sul', 'cidadania', 'transparência', 'MS'],
-  authors: [{ name: 'DENUNCIA MS' }],
+    'Registre denúncias de forma segura, anônima e independente. Iniciativa cívica de ouvidoria digital para cidadãos de Mato Grosso do Sul.',
+  keywords: ['denúncia', 'ouvidoria independente', 'Mato Grosso do Sul', 'cidadania', 'transparência', 'inteligência cívica'],
+  authors: [{ name: 'DENUNCIA MS (Iniciativa Independente)' }],
   openGraph: {
     type: 'website',
     locale: 'pt_BR',
     siteName: APP_NAME,
-    title: `${APP_NAME} — Ouvidoria Digital de Mato Grosso do Sul`,
-    description: 'Registre denúncias de forma segura e anônima.',
+    title: `${APP_NAME} — Ouvidoria Cívica Independente`,
+    description: 'Registre denúncias de forma segura, anônima e cívica.',
   },
   twitter: {
     card: 'summary_large_image',
