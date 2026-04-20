@@ -10,6 +10,7 @@ import {
   Lock,
   ArrowUpRight
 } from 'lucide-react'
+import { PainelImpacto } from '@/components/public/painel-impacto'
 
 export default async function PublicHomePage() {
   const supabase = createAdminClient()
@@ -39,36 +40,36 @@ export default async function PublicHomePage() {
            />
         </div>
 
-        <div className="container-page relative z-20 py-12 sm:py-20">
-          <div className="max-w-2xl text-center lg:text-left space-y-6 sm:space-y-8">
-            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] animate-fade-in mx-auto lg:mx-0">
+        <div className="container-page relative z-20 py-12 sm:py-20 lg:py-32">
+          <div className="max-w-2xl text-center lg:text-left space-y-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white text-xs font-black uppercase tracking-[0.2em] animate-fade-in mx-auto lg:mx-0">
                <Zap size={14} className="text-secondary fill-secondary" />
                Canal Independente de Ouvidoria — Mato Grosso do Sul
             </div>
             
             <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[0.9] animate-slide-up italic">
               Sua voz tem poder. <br />
-              Sua denúncia tem <span className="text-secondary">impacto.</span>
+              Sua denúncia tem <span className="text-secondary underline decoration-4 decoration-secondary/30 underline-offset-8">impacto.</span>
             </h1>
 
             <p className="text-base sm:text-xl text-white/70 max-w-xl lg:mx-0 mx-auto leading-relaxed animate-fade-in font-medium">
-              A plataforma <span className="text-white font-black">DENUNCIA MS</span> permite que qualquer cidadão registre irregularidades de forma 100% anônima e segura.
+              A plataforma <span className="text-white font-black uppercase tracking-tighter">Denúncia MS</span> permite que qualquer cidadão registre irregularidades de forma 100% anônima, segura e auditável.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-3 sm:gap-4 pt-2 sm:pt-4">
+            <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-4 pt-4">
                 <Link 
                   href="/denunciar" 
-                  className="btn-primary w-full sm:w-auto gap-3 text-sm sm:text-lg py-4 sm:py-5 bg-secondary hover:bg-secondary-600 border-none text-dark shadow-glow-green group"
+                  className="btn-primary w-full sm:w-auto gap-3 text-lg py-5 bg-secondary hover:bg-secondary-600 border-none text-dark shadow-glow-green group"
                 >
                    INICIAR DENÚNCIA
                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
-               <Link href="/acompanhar" className="btn-outline w-full sm:w-auto gap-3 text-white border-white/20 hover:bg-white/10 bg-white/5 backdrop-blur-sm">
+               <Link href="/acompanhar" className="btn-outline w-full sm:w-auto gap-3 text-white border-white/20 hover:bg-white/10 bg-white/5 backdrop-blur-sm h-[60px] px-8">
                   Consultar Protocolo
                </Link>
             </div>
 
-            <div className="flex items-center lg:justify-start justify-center gap-8 pt-8 text-[10px] sm:text-xs font-black text-white/40 uppercase tracking-[0.3em]">
+            <div className="flex items-center lg:justify-start justify-center gap-8 pt-8 text-xs font-black text-white/40 uppercase tracking-[0.3em]">
                <div className="flex items-center gap-2">
                   <Lock size={14} className="text-secondary" />
                   Anonimato Garantido
@@ -141,6 +142,9 @@ export default async function PublicHomePage() {
             />
          </div>
       </section>
+
+      {/* Painel de Impacto e Inteligência (Nova Localização) */}
+      <PainelImpacto />
 
     </div>
   )
