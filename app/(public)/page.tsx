@@ -11,6 +11,7 @@ import {
   ArrowUpRight
 } from 'lucide-react'
 import { PainelImpacto } from '@/components/public/painel-impacto'
+import { MascoteParallax } from '@/components/public/mascote-parallax'
 
 export default async function PublicHomePage() {
   const supabase = createAdminClient()
@@ -32,13 +33,7 @@ export default async function PublicHomePage() {
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/5 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 z-0"></div>
         
         {/* Mascote como Fundo (Lado Direito) */}
-        <div className="absolute right-0 bottom-0 top-0 w-1/2 hidden lg:flex items-end justify-end pointer-events-none z-10">
-            <img 
-              src="/assets/mascote.png" 
-              alt="Representante Denúncia MS" 
-              className="h-[105%] sm:h-[110%] w-auto object-contain object-bottom animate-fade-in drop-shadow-2xl"
-            />
-        </div>
+        <MascoteParallax />
 
         <div className="container-page relative z-20 py-12 sm:py-20 lg:py-32">
           <div className="max-w-2xl text-center lg:text-left space-y-8">

@@ -52,7 +52,7 @@ export default function ComoFuncionaPage() {
              <img 
                src="/assets/mascote.png" 
                alt="Representante Denúncia MS" 
-               className="w-full max-w-md h-auto object-contain drop-shadow-2xl animate-float"
+               className="w-full max-w-md h-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-float"
              />
           </div>
         </div>
