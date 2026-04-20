@@ -73,3 +73,52 @@ export async function getDenunciaDetalhes(id: string) {
     return { success: false, error: err.message }
   }
 }
+
+/**
+ * Busca estatísticas consolidadas para o Dashboard
+ */
+export async function getDashboardStats() {
+  const supabase = createAdminClient()
+
+  try {
+    const { data: counts, error } = await supabase
+      .from('denuncias')
+      .select('status')
+
+    if (error) throw error
+
+    const stats = {
+      total: counts.length,
+      recebida: counts.filter(d => d.status === 'recebida').length,
+      em_analise: counts.filter(d => d.status === 'em_analise').length,
+      resolvida: counts.filter(d => d.status === 'resolvida').length,
+      arquivada: counts.filter(d => d.status === 'arquivada').length,
+    }
+
+    return { success: true, stats }
+  } catch (err: any) {
+    console.error('Erro ao buscar stats:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Busca as últimas atividades do log de auditoria
+ */
+export async function getRecentActivities() {
+  const supabase = createAdminClient()
+
+  try {
+    const { data, error } = await supabase
+      .from('log_auditoria')
+      .select('*, usuario:profiles(nome)')
+      .order('criado_em', { ascending: false })
+      .limit(6)
+
+    if (error) throw error
+    return { success: true, data }
+  } catch (err: any) {
+    console.error('Erro ao buscar atividades:', err)
+    return { success: false, error: err.message }
+  }
+}

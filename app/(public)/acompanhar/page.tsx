@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, ShieldCheck, ChevronRight, Lock, Loader2 } from 'lucide-react'
+import { Search, ChevronRight, Lock, Loader2 } from 'lucide-react'
 
 export default function AcompanharPage() {
   const [protocolo, setProtocolo] = useState('')
@@ -28,11 +28,8 @@ export default function AcompanharPage() {
 
   return (
     <div className="bg-surface min-h-[70vh] flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-8 animate-fade-in">
-        <div className="text-center space-y-4">
-           <div className="w-16 h-16 bg-white rounded-2xl shadow-glow-cyan flex items-center justify-center text-primary mx-auto mb-6">
-              <ShieldCheck size={32} />
-           </div>
+      <div className="max-w-md w-full space-y-6 animate-fade-in">
+        <div className="text-center space-y-2">
            <h1 className="text-3xl font-black text-dark tracking-tighter uppercase italic">Consultar Denúncia</h1>
            <p className="text-muted text-sm font-medium">Insira suas credenciais geradas no momento do registro.</p>
         </div>
@@ -73,7 +70,7 @@ export default function AcompanharPage() {
            <button 
              type="submit" 
              disabled={loading}
-             className="btn-primary w-full h-14 text-lg gap-2 bg-secondary hover:bg-secondary-600 border-none shadow-glow-green uppercase italic font-black disabled:opacity-50"
+             className="btn-primary w-full h-14 text-lg gap-2 bg-secondary hover:bg-secondary-600 border-none uppercase italic font-black disabled:opacity-50"
            >
               {loading ? <Loader2 className="animate-spin" /> : (
                  <>
@@ -83,11 +80,6 @@ export default function AcompanharPage() {
               )}
            </button>
         </form>
-
-        <div className="flex items-center justify-center gap-4 text-[10px] text-muted font-black uppercase tracking-[0.2em] pt-4">
-           <Lock size={14} className="text-secondary" />
-           Consulta Segura e Privada
-        </div>
       </div>
     </div>
   )

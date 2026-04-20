@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { Megaphone, Search, ShieldCheck } from 'lucide-react'
+import { Search, ShieldCheck } from 'lucide-react'
 
 export default function PublicLayout({
   children,
@@ -9,13 +9,10 @@ export default function PublicLayout({
 }) {
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="h-20 bg-white border-b border-border sticky top-0 z-50 shadow-sm">
-        <div className="container-page flex items-center justify-between h-full">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-glow-cyan transform group-hover:scale-110 transition-transform">
-               <Megaphone size={20} className="fill-white" />
-            </div>
-            <span className="text-xl font-black text-dark tracking-tighter italic uppercase">DENUNCIA <span className="text-primary font-black">MS</span></span>
+      <header className="h-16 sm:h-20 bg-white border-b border-border sticky top-0 z-50 shadow-sm">
+        <div className="container-page flex items-center justify-between h-full gap-2">
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
+            <img src="/assets/logo.png" alt="Denúncia MS" className="h-8 sm:h-12 w-auto transition-transform group-hover:scale-105" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -24,14 +21,14 @@ export default function PublicLayout({
             <Link href="/noticias" className="text-sm font-bold text-dark hover:text-primary transition-colors">Notícias</Link>
           </nav>
 
-          <div className="flex items-center gap-4">
-             <Link href="/acompanhar" className="btn-outline btn-sm gap-2">
-                <Search size={16} />
-                Acompanhar Protocolo
+          <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto no-scrollbar">
+             <Link href="/acompanhar" className="btn-outline px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs gap-1 sm:gap-2 shrink-0">
+                <Search size={14} className="sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">Acompanhar</span>
              </Link>
-             <Link href="/denunciar" className="btn-primary btn-sm gap-2 bg-secondary hover:bg-secondary-600 border-none shadow-glow-green">
-                <ShieldCheck size={16} />
-                Fazer Denúncia
+             <Link href="/denunciar" className="btn-primary px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs gap-1 sm:gap-2 bg-secondary hover:bg-secondary-600 border-none shadow-glow-green shrink-0">
+                <ShieldCheck size={14} className="sm:w-4 sm:h-4" />
+                <span>Denunciar</span>
              </Link>
           </div>
         </div>
@@ -45,14 +42,11 @@ export default function PublicLayout({
          <div className="container-page">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-white/5 pb-12">
                <div className="md:col-span-2 space-y-6">
-                  <div className="flex items-center gap-3 opacity-80">
-                    <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center text-white">
-                       <Megaphone size={16} className="fill-white" />
-                    </div>
-                    <span className="text-lg font-black text-white tracking-tighter italic uppercase">DENUNCIA <span className="text-primary">MS</span></span>
+                  <div className="flex items-center gap-3">
+                    <img src="/assets/logo.png" alt="Denúncia MS" className="h-10 w-auto brightness-0 invert opacity-80" />
                   </div>
-                  <p className="text-sm text-white/60 max-w-md leading-relaxed">
-                     O DENUNCIA MS é uma plataforma independente que garante o anonimato e a segurança do cidadão ao reportar irregularidades. Nosso compromisso é com a transparência e a justiça em Mato Grosso do Sul.
+                  <p className="text-sm text-white/60 max-w-md leading-relaxed text-justify">
+                     O <strong>DENUNCIA MS</strong> opera como uma plataforma cívica estritamente independente, sem vínculo com entes públicos ou políticos. Atuamos como um elo tecnológico que conecta o cidadão de MS diretamente aos órgãos competentes, facilitando a fiscalização e a transparência em todo o Estado.
                   </p>
                </div>
                

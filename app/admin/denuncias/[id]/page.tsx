@@ -57,7 +57,14 @@ export default async function DetalheDenunciaPage({ params }: { params: { id: st
                     <div className="flex items-center gap-6 mt-4 pb-6 border-b border-border">
                        <div className="flex items-center gap-2 text-muted text-xs font-bold">
                           <MapPin size={16} className="text-primary" />
-                          {denuncia.local || 'Local não informado'}
+                          {denuncia.local ? (
+                            <span>
+                               {denuncia.local}, {denuncia.numero || 'S/N'}<br/>
+                               <span className="text-[10px] opacity-70">
+                                  {denuncia.bairro} — {denuncia.cidade} {denuncia.cep && `(CEP: ${denuncia.cep})`}
+                                </span>
+                            </span>
+                          ) : 'Local não informado'}
                        </div>
                        <div className="flex items-center gap-2 text-muted text-xs font-bold">
                           <Calendar size={16} className="text-primary" />

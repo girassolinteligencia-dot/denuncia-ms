@@ -25,6 +25,10 @@ interface DenunciaFormData {
   categoria_id: string
   titulo: string
   local: string
+  cep: string
+  numero: string
+  bairro: string
+  cidade: string
   data_ocorrido: string
   descricao_original: string
   anonima: boolean
@@ -50,12 +54,17 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
   const [loading, setLoading] = useState(false)
   const [protocoloGerado, setProtocoloGerado] = useState<string | null>(null)
   const [chaveGerada, setChaveGerada] = useState<string | null>(null)
+  const topRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const [formData, setFormData] = useState<DenunciaFormData>({
     categoria_id: categorias.find(c => c.slug === initialCat)?.id || '',
     titulo: '',
     local: '',
+    cep: '',
+    numero: '',
+    bairro: '',
+    cidade: '',
     data_ocorrido: '',
     descricao_original: '',
     anonima: true,
@@ -74,7 +83,15 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
   interface NominatimResult {
     display_name: string
     address?: {
+      road?: string
+      house_number?: string
+      suburb?: string
+      neighbourhood?: string
+      city?: string
+      town?: string
+      village?: string
       state?: string
+      postcode?: string
     }
   }
 
@@ -109,7 +126,22 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
   }
 
   const handleSelectEndereco = (suggestion: NominatimResult) => {
-    handleInputChange('local', suggestion.display_name)
+    const addr = suggestion.address
+    const road = addr?.road || suggestion.display_name.split(',')[0]
+    const cidade = addr?.city || addr?.town || addr?.village || ''
+    const bairro = addr?.suburb || addr?.neighbourhood || ''
+    const cep = addr?.postcode || ''
+    const numero = addr?.house_number || ''
+
+    setFormData(prev => ({
+      ...prev,
+      local: road,
+      cidade: cidade || prev.cidade,
+      bairro: bairro || prev.bairro,
+      cep: cep || prev.cep,
+      numero: numero || prev.numero
+    }))
+    
     setSugestoesEndereco([])
   }
 
@@ -128,13 +160,25 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
     // Autoscroll para o botão se for categoria
     if (field === 'categoria_id') {
       setTimeout(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
       }, 100)
     }
   }
 
-  const handleNext = () => setStep(s => s + 1)
-  const handleBack = () => setStep(s => s - 1)
+  const scrollToTop = () => {
+    setTimeout(() => {
+      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
+  }
+
+  const handleNext = () => {
+    setStep(s => s + 1)
+    scrollToTop()
+  }
+  const handleBack = () => {
+    setStep(s => s - 1)
+    scrollToTop()
+  }
 
   const handleSubmit = async () => {
     setLoading(true)
@@ -248,7 +292,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
          ))}
       </div>
 
-      <div className="card shadow-card-lg border-t-4 border-primary">
+      <div ref={topRef} className="card shadow-card-lg border-t-4 border-primary">
         
         {step === 1 && (
           <div className="space-y-8 animate-slide-up">
@@ -263,29 +307,24 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-primary/70 border-l-4 border-secondary pl-3">
                       Bloco: {bloco}
                    </h3>
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                   <div className="grid grid-cols-3 sm:grid-cols-2 gap-2 sm:gap-3">
                       {cats.map(cat => (
                         <button 
                          key={cat.slug} 
                          onClick={() => handleInputChange('categoria_id', cat.id)}
-                         className={`p-4 rounded-xl border-2 text-left transition-all flex items-center gap-4 group ${formData.categoria_id === cat.id ? 'border-primary bg-primary-50 ring-2 ring-primary/10' : 'border-border hover:border-primary/30 hover:bg-surface'}`}
+                         className={`p-2 sm:p-4 rounded-xl border-2 text-center sm:text-left transition-all flex flex-col sm:flex-row items-center gap-2 sm:gap-4 group ${formData.categoria_id === cat.id ? 'border-primary bg-primary-50 ring-2 ring-primary/10' : 'border-border hover:border-primary/30 hover:bg-surface'}`}
                         >
-                           <div className="text-3xl group-hover:scale-110 transition-transform flex-shrink-0">
+                           <div className="text-2xl sm:text-3xl group-hover:scale-110 transition-transform flex-shrink-0">
                               {cat.emoji}
                            </div>
                            <div className="flex-grow min-w-0">
-                              <h4 className="font-extrabold text-xs text-dark uppercase tracking-tight leading-tight truncate">{cat.label}</h4>
-                              <p className="text-[9px] text-muted font-bold truncate mt-1">
+                              <h4 className="font-extrabold text-[9px] sm:text-xs text-dark uppercase tracking-tight leading-tight sm:truncate">{cat.label}</h4>
+                              <p className="hidden sm:block text-[9px] text-muted font-bold truncate mt-1">
                                  {cat.instrucao_publica}
                               </p>
-                              {cat.aviso_legal && (
-                                 <div className="mt-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[8px] font-black rounded uppercase inline-block">
-                                   Protocolo de Urgência
-                                 </div>
-                              )}
                            </div>
                            {formData.categoria_id === cat.id && (
-                              <div className="flex-shrink-0 text-primary">
+                              <div className="hidden sm:block flex-shrink-0 text-primary">
                                  <CheckCircle2 size={16} />
                               </div>
                            )}
@@ -318,7 +357,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                <button 
                 onClick={handleNext}
                 disabled={!formData.categoria_id}
-                className="btn-primary btn-lg gap-2 min-w-[200px]"
+                className="btn-primary btn-md sm:btn-lg gap-2 w-full sm:w-auto sm:min-w-[200px]"
                >
                   Próximo Passo
                   <ArrowRight size={18} />
@@ -341,82 +380,132 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
 
             <div className="space-y-8">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Bloco de Endereço Consolidado */}
+                  <div className="md:col-span-2 space-y-4">
+                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                        <div className="sm:col-span-3 relative">
+                           <label className="label text-[10px] font-black uppercase tracking-widest label-required">Local / Rua / Logradouro</label>
+                           <input 
+                             className="input h-12 pr-10" 
+                             placeholder="Ex: Av. Afonso Pena" 
+                             value={formData.local}
+                             onChange={(e) => handleSearchEndereco(e.target.value)}
+                             autoComplete="off"
+                           />
+                           {loadingEnderecos && (
+                             <div className="absolute right-3 top-10">
+                                <Loader2 size={18} className="animate-spin text-primary" />
+                             </div>
+                           )}
+                           
+                           {sugestoesEndereco.length > 0 && (
+                             <div className="absolute z-50 w-full mt-2 bg-white border-2 border-primary shadow-2xl rounded-2xl overflow-hidden animate-slide-up">
+                                {sugestoesEndereco.map((s, idx) => (
+                                   <button
+                                     key={idx}
+                                     type="button"
+                                     onClick={() => handleSelectEndereco(s)}
+                                     className="w-full p-4 text-left hover:bg-surface border-b border-border last:border-none flex items-start gap-3 transition-colors group"
+                                   >
+                                      <div className="mt-1 p-1.5 bg-primary/5 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
+                                         <Camera size={14} />
+                                      </div>
+                                      <div className="flex-grow min-w-0">
+                                         <p className="text-[11px] font-black text-dark uppercase tracking-tighter leading-none mb-1">
+                                            {s.display_name.split(',')[0]}
+                                         </p>
+                                         <p className="text-[10px] text-muted font-bold truncate">
+                                            {s.display_name}
+                                         </p>
+                                      </div>
+                                   </button>
+                                ))}
+                             </div>
+                           )}
+                        </div>
+                        <div className="sm:col-span-1">
+                           <label className="label text-[10px] font-black uppercase tracking-widest label-required">Número</label>
+                           <input 
+                             className="input h-12" 
+                             placeholder="Ex: 123" 
+                             value={formData.numero}
+                             onChange={(e) => handleInputChange('numero', e.target.value)}
+                           />
+                        </div>
+                     </div>
+
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                           <label className="label text-[10px] font-black uppercase tracking-widest label-required">Bairro</label>
+                           <input 
+                             className="input h-12" 
+                             placeholder="Ex: Centro" 
+                             value={formData.bairro}
+                             onChange={(e) => handleInputChange('bairro', e.target.value)}
+                           />
+                        </div>
+                        <div>
+                           <label className="label text-[10px] font-black uppercase tracking-widest label-required">Cidade / Município</label>
+                           <input 
+                             className="input h-12" 
+                             placeholder="Ex: Campo Grande" 
+                             value={formData.cidade}
+                             onChange={(e) => handleInputChange('cidade', e.target.value)}
+                           />
+                        </div>
+                        <div>
+                           <label className="label text-[10px] font-black uppercase tracking-widest label-required">CEP</label>
+                           <input 
+                             className="input h-12" 
+                             placeholder="00000-000" 
+                             value={formData.cep}
+                             onChange={(e) => handleInputChange('cep', e.target.value)}
+                           />
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Outros campos dinâmicos que não sejam de endereço ou identificação */}
                   {camposVisiveis.map(campo => {
-                     if (['nome', 'email', 'telefone', 'cpf'].includes(campo.campo)) return null;
+                     const isEndereco = ['local', 'numero', 'bairro', 'cidade', 'cep'].includes(campo.campo);
+                     const isIdentificacao = ['nome', 'email', 'telefone', 'cpf'].includes(campo.campo);
+                     
+                     if (isEndereco || isIdentificacao || campo.campo === 'data_ocorrido') return null;
 
                      return (
                         <div key={campo.id} className="space-y-2">
                            <label className={`label text-[10px] font-black uppercase tracking-widest ${campo.obrigatorio ? 'label-required' : ''}`}>
                               {campo.label}
                            </label>
-                           {campo.campo === 'data_ocorrido' ? (
-                              <input 
-                                type="date" 
-                                className="input h-12" 
-                                value={formData.data_ocorrido}
-                                onChange={(e) => handleInputChange('data_ocorrido', e.target.value)}
-                              />
-                           ) : campo.campo === 'local' ? (
-                              <div className="relative">
-                                 <input 
-                                   className="input h-12 pr-10" 
-                                   placeholder={campo.placeholder || undefined} 
-                                   value={formData.local}
-                                   onChange={(e) => handleSearchEndereco(e.target.value)}
-                                   autoComplete="off"
-                                 />
-                                 {loadingEnderecos && (
-                                   <div className="absolute right-3 top-3.5">
-                                      <Loader2 size={18} className="animate-spin text-primary" />
-                                   </div>
-                                 )}
-                                 
-                                 {sugestoesEndereco.length > 0 && (
-                                   <div className="absolute z-50 w-full mt-2 bg-white border border-border rounded-xl shadow-2xl overflow-hidden animate-slide-up">
-                                      {sugestoesEndereco.map((s, idx) => (
-                                         <button
-                                           key={idx}
-                                           onClick={() => handleSelectEndereco(s)}
-                                           className="w-full p-4 text-left hover:bg-surface border-b border-border last:border-none flex items-start gap-3 transition-colors group"
-                                         >
-                                            <div className="mt-1 p-1.5 bg-primary/5 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
-                                               <Camera size={14} />
-                                            </div>
-                                            <div className="flex-grow min-w-0">
-                                               <p className="text-[11px] font-black text-dark uppercase tracking-tighter leading-none mb-1">
-                                                  {s.display_name.split(',')[0]}
-                                               </p>
-                                               <p className="text-[10px] text-muted font-bold truncate">
-                                                  {s.display_name}
-                                               </p>
-                                            </div>
-                                         </button>
-                                      ))}
-                                      <div className="p-2 bg-surface text-center">
-                                         <p className="text-[8px] font-black text-muted/50 uppercase tracking-[0.2em]">OpenStreetMap Contributors</p>
-                                      </div>
-                                   </div>
-                                 )}
-                              </div>
-                           ) : (
-                              <input 
-                                className="input h-12" 
-                                placeholder={campo.placeholder || undefined} 
-                                value={(formData as unknown as Record<string, string>)[campo.campo] || ''}
-                                onChange={(e) => handleInputChange(campo.campo as keyof DenunciaFormData, e.target.value)}
-                              />
-                           )
-                           }
+                           <input 
+                             className="input h-12" 
+                             placeholder={campo.placeholder || undefined} 
+                             value={(formData as unknown as Record<string, string>)[campo.campo] || ''}
+                             onChange={(e) => handleInputChange(campo.campo as keyof DenunciaFormData, e.target.value)}
+                           />
                         </div>
                      )
                   })}
+
+                  {/* Data do Ocorrido (Sempre visível se configurada) */}
+                  {camposVisiveis.find(c => c.campo === 'data_ocorrido') && (
+                     <div className="space-y-2">
+                        <label className="label text-[10px] font-black uppercase tracking-widest label-required">Data do Ocorrido</label>
+                        <input 
+                          type="date" 
+                          className="input h-12" 
+                          value={formData.data_ocorrido}
+                          onChange={(e) => handleInputChange('data_ocorrido', e.target.value)}
+                        />
+                     </div>
+                  )}
                </div>
 
                <div className="space-y-2">
                   <label className="label label-required text-[10px] font-black uppercase tracking-widest">Descrição Detalhada</label>
                   <textarea 
                     className="input min-h-[180px] py-4 leading-relaxed text-sm" 
-                    placeholder="Descreva aqui os fatos, pessoas envolvidas e qualquer detalhe que ajude na investigação."
+                    placeholder="Descreva aqui os fatos, pessoas envolvidas, endereços e qualquer detalhe que ajude na investigação."
                     value={formData.descricao_original}
                     onChange={(e) => handleInputChange('descricao_original', e.target.value)}
                   />
@@ -479,7 +568,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                </div>
 
                {/* Seção de Consentimento Jurídico (LAI/LGPD) */}
-               <div className={`mt-6 p-6 rounded-2xl border transition-all ${formData.consentimento ? 'bg-primary/5 border-primary/20 shadow-glow-cyan' : 'bg-surface border-border'}`}>
+               <div className={`mt-6 p-6 rounded-2xl border transition-all ${formData.consentimento ? 'bg-white border-primary' : 'bg-surface border-border'}`}>
                   <label className="flex items-start gap-4 cursor-pointer group">
                      <div className="pt-1">
                         <input 
@@ -504,7 +593,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                </div>
             </div>
 
-            <div className="flex items-center justify-between pt-6">
+            <div className="flex items-center justify-between pt-6 gap-4">
                <button onClick={handleBack} className="flex items-center gap-2 text-[10px] uppercase font-black text-muted hover:text-dark transition-colors">
                   <ArrowLeft size={16} /> Voltar
                </button>
@@ -521,7 +610,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                    handleNext()
                 }}
                 disabled={!formData.consentimento}
-                className={`btn-primary btn-lg gap-3 min-w-[200px] transition-all ${!formData.consentimento ? 'opacity-50 grayscale' : 'shadow-glow-cyan'}`}
+                className={`btn-primary btn-md sm:btn-lg gap-3 flex-1 sm:flex-none sm:min-w-[200px] transition-all ${!formData.consentimento ? 'opacity-50 grayscale' : ''}`}
                >
                   Enviar Evidências
                   <ArrowRight size={20} />
@@ -537,7 +626,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                   <h2 className="text-2xl font-black text-dark tracking-tighter italic uppercase">Provas & Evidências</h2>
                   <p className="text-muted text-sm font-medium">Anexe fotos, vídeos ou documentos que ajudem no caso.</p>
                </div>
-               <div className="p-4 bg-electric/10 text-electric rounded-2xl border border-electric/20 shadow-glow-cyan">
+               <div className="text-primary">
                   <Camera size={28} />
                </div>
             </div>
@@ -549,7 +638,7 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                   className="border-2 border-dashed border-border rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3 hover:bg-surface hover:border-primary/50 transition-all cursor-pointer group"
                  >
                     <input type="file" multiple className="hidden" onChange={handleFileChange} />
-                    <div className="p-4 bg-surface rounded-full text-muted group-hover:text-primary transition-colors">
+                    <div className="text-muted group-hover:text-primary transition-colors">
                        <Paperclip size={28} />
                     </div>
                     <div>
@@ -574,19 +663,19 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                </div>
             )}
 
-            <div className="p-6 bg-primary/5 border border-primary/10 rounded-2xl flex gap-4 text-primary-900 text-xs leading-relaxed">
+            <div className="p-6 bg-surface border border-border rounded-2xl flex gap-4 text-muted text-xs leading-relaxed">
                <ShieldCheck size={24} className="shrink-0 text-primary" />
                <p className="font-medium">Seus arquivos serão criptografados e armazenados em servidores seguros de alta disponibilidade em Mato Grosso do Sul. Anonimato técnico garantido.</p>
             </div>
 
-            <div className="flex items-center justify-between pt-6">
+            <div className="flex items-center justify-between pt-6 gap-4">
                <button onClick={handleBack} className="flex items-center gap-2 text-[10px] uppercase font-black text-muted hover:text-dark transition-colors">
                   <ArrowLeft size={16} /> Voltar
                </button>
                <button 
                 onClick={handleSubmit}
                 disabled={loading}
-                className="btn-primary btn-lg gap-3 min-w-[280px] bg-secondary hover:bg-secondary-600 border-none shadow-glow-green"
+                className="btn-primary btn-md sm:btn-lg gap-3 flex-1 sm:flex-none sm:min-w-[280px] bg-secondary hover:bg-secondary-600 border-none"
                >
                   {loading ? (
                     <Loader2 size={24} className="animate-spin" />

@@ -33,7 +33,7 @@ export async function consultarStatusDenuncia(protocolo: string, chaveAcesso: st
     // 2. Buscar a denúncia validando Ambas as Credenciais
     const { data: denuncia, error } = await supabase
       .from('denuncias')
-      .select('id, protocolo, status, criado_at, titulo, local, categoria_id, categorias(label)')
+      .select('id, protocolo, status, criado_at, titulo, local, cep, numero, bairro, cidade, categoria_id, categorias(label)')
       .eq('protocolo', protocolo.trim().toUpperCase())
       .eq('chave_acesso', chaveAcesso.trim())
       .single()

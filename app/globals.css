@@ -185,16 +185,16 @@ body {
 
   /* Containers */
   .container-page {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-7xl mx-auto px-6 sm:px-6 lg:px-8;
   }
 
   .container-narrow {
-    @apply max-w-2xl mx-auto px-4 sm:px-6;
+    @apply max-w-2xl mx-auto px-6 sm:px-6;
   }
 
   /* Seção */
   .section {
-    @apply py-12 sm:py-16 lg:py-20;
+    @apply py-8 sm:py-16 lg:py-20;
   }
 
   /* Skeleton loader */

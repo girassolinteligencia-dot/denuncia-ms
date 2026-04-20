@@ -2,14 +2,17 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Save, RefreshCw, Palette, Globe, Mail, Info } from 'lucide-react'
-import { toast } from 'sonner' // I'll need to install sonner or use a custom toast
+import { Save, RefreshCw, Palette, Globe, Mail, Info, Upload } from 'lucide-react'
+import { toast } from 'sonner'
+import { savePlatformConfigs } from '@/lib/actions/config'
+import { uploadArquivo } from '@/lib/storage'
 
 interface PlataformaConfigData {
   'identidade.nome': string
   'identidade.slogan': string
   'identidade.email': string
   'identidade.rodape': string
+  'identidade.ticker': string
   'cores.primaria': string
   'cores.secundaria': string
 }
@@ -21,6 +24,7 @@ export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialDa
     'identidade.slogan': initialData['identidade.slogan'] || '',
     'identidade.email': initialData['identidade.email'] || '',
     'identidade.rodape': initialData['identidade.rodape'] || '',
+    'identidade.ticker': initialData['identidade.ticker'] || '',
     'cores.primaria': initialData['cores.primaria'] || '#1535C9',
     'cores.secundaria': initialData['cores.secundaria'] || '#F5C800',
   })
@@ -30,18 +34,66 @@ export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialDa
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [faviconFile, setFaviconFile] = useState<File | null>(null)
+  const [previews, setPreviews] = useState<{ logo: string; favicon: string }>({
+    logo: initialData['identidade.logo'] || '',
+    favicon: initialData['identidade.favicon'] || ''
+  })
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'favicon') => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (type === 'logo') {
+      setLogoFile(file)
+      setPreviews(prev => ({ ...prev, logo: URL.createObjectURL(file) }))
+    } else {
+      setFaviconFile(file)
+      setPreviews(prev => ({ ...prev, favicon: URL.createObjectURL(file) }))
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     
     try {
-      // Aqui chamaremos a Server Action que implementarei para salvar configs em lote
-      // Por enquanto, simulamos o sucesso
-      await new Promise(resolve => setTimeout(resolve, 800))
-      console.log('Salvando configs:', formData)
-      alert('Configurações salvas com sucesso!')
-    } catch (err) {
-      alert('Erro ao salvar configurações')
+      const updates: Record<string, any> = { ...formData }
+
+      // 1. Processar Upload da Logo se houver
+      if (logoFile) {
+        const upload = await uploadArquivo({
+          file: logoFile,
+          fileName: `logo_${Date.now()}`,
+          contentType: logoFile.type,
+          bucket: 'config',
+          path: 'identidade/logo.png'
+        })
+        updates['identidade.logo'] = upload.url
+      }
+
+      // 2. Processar Upload do Favicon se houver
+      if (faviconFile) {
+        const upload = await uploadArquivo({
+          file: faviconFile,
+          fileName: `favicon_${Date.now()}`,
+          contentType: faviconFile.type,
+          bucket: 'config',
+          path: 'identidade/favicon.png'
+        })
+        updates['identidade.favicon'] = upload.url
+      }
+
+      const result = await savePlatformConfigs(updates)
+      
+      if (result.success) {
+        toast.success('Configurações salvas com sucesso!')
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (err: any) {
+      toast.error('Erro ao salvar: ' + err.message)
     } finally {
       setLoading(false)
     }
@@ -105,9 +157,26 @@ export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialDa
                   name="identidade.rodape"
                   value={formData['identidade.rodape']}
                   onChange={handleChange}
-                  className="input min-h-[100px] py-3" 
+                  className="input min-h-[100px] py-3 text-xs" 
                   placeholder="Texto que aparecerá no rodapé de todas as páginas..."
                 />
+              </div>
+
+              <div className="pt-4 border-t border-border">
+                <label className="label text-primary font-black flex items-center gap-2 mb-2">
+                   <Info size={14} />
+                   Letreiro de Avisos (Landing Page)
+                </label>
+                <textarea 
+                  name="identidade.ticker"
+                  value={formData['identidade.ticker']}
+                  onChange={handleChange}
+                  className="input min-h-[80px] py-3 bg-primary/5 border-primary/20 text-dark font-bold" 
+                  placeholder="Ex: Plantão especial de feriado: 24h ativos. | Nova atualização na lei de proteção..."
+                />
+                <p className="text-[10px] text-muted mt-2">
+                  DICA: Se deixar este campo vazio, a barra de avisos não será exibida na página inicial.
+                </p>
               </div>
             </div>
           </section>
@@ -192,26 +261,46 @@ export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialDa
             <div className="p-6 space-y-6">
               <div>
                 <label className="label">Logotipo Principal (PNG/SVG)</label>
-                <div className="mt-2 border-2 border-dashed border-border rounded-lg p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-surface transition-colors">
-                  <div className="bg-primary-50 text-primary p-3 rounded-full mb-3">
-                    <RefreshCw size={24} />
-                  </div>
-                  <p className="text-sm font-bold text-dark">Clique para enviar</p>
+                <label className="mt-2 border-2 border-dashed border-border rounded-lg p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-surface transition-colors relative overflow-hidden group">
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={(e) => handleFileChange(e, 'logo')} 
+                  />
+                  {previews.logo ? (
+                    <img src={previews.logo} alt="Preview Logo" className="max-h-20 object-contain mb-4" />
+                  ) : (
+                    <div className="bg-primary-50 text-primary p-3 rounded-full mb-3">
+                      <Upload size={24} />
+                    </div>
+                  )}
+                  <p className="text-sm font-bold text-dark">{previews.logo ? 'Trocar Logotipo' : 'Clique para enviar'}</p>
                   <p className="text-[10px] text-muted mt-1">Recomendado: 240x80px</p>
-                </div>
+                </label>
               </div>
 
               <div>
                 <label className="label">Favicon (16x16 / 32x32)</label>
-                <div className="mt-2 border-2 border-dashed border-border rounded-lg p-4 flex items-center justify-center gap-4 cursor-pointer hover:bg-surface transition-colors">
-                  <div className="w-8 h-8 bg-surface rounded flex items-center justify-center text-muted">
-                    <ImageIcon size={16} />
+                <label className="mt-2 border-2 border-dashed border-border rounded-lg p-4 flex items-center justify-center gap-4 cursor-pointer hover:bg-surface transition-colors">
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/x-icon,image/png" 
+                    onChange={(e) => handleFileChange(e, 'favicon')} 
+                  />
+                  <div className="w-8 h-8 bg-surface rounded flex items-center justify-center text-muted overflow-hidden border border-border">
+                    {previews.favicon ? (
+                      <img src={previews.favicon} alt="Favicon" className="w-full h-full object-contain" />
+                    ) : (
+                      <Upload size={16} />
+                    )}
                   </div>
                   <div className="text-left">
-                     <p className="text-xs font-bold text-dark">Enviar favicon</p>
+                     <p className="text-xs font-bold text-dark">{previews.favicon ? 'Trocar Favicon' : 'Enviar favicon'}</p>
                      <p className="text-[10px] text-muted">Apenas arquivos .ico ou .png</p>
                   </div>
-                </div>
+                </label>
               </div>
             </div>
           </section>

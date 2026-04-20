@@ -161,7 +161,12 @@ export default async function DetalhesProtocoloPage({
                  </div>
                  <div>
                     <p className="text-[10px] text-muted font-bold uppercase mb-1">Localização</p>
-                    <p className="text-sm font-medium text-dark">{denuncia.local || 'Não informado'}</p>
+                    <p className="text-sm font-medium text-dark leading-relaxed">
+                        {denuncia.local}, {denuncia.numero || 'S/N'}<br/>
+                        <span className="text-[11px] opacity-60">
+                           {denuncia.bairro} — {denuncia.cidade} {denuncia.cep && `(CEP: ${denuncia.cep})`}
+                        </span>
+                    </p>
                  </div>
               </div>
            </div>

@@ -152,6 +152,10 @@ export interface Denuncia {
   descricao_original: string
   documento_final: string
   local: string | null
+  cep: string | null
+  numero: string | null
+  bairro: string | null
+  cidade: string | null
   data_ocorrido: string | null
   status: StatusDenuncia
   anonima: boolean
@@ -264,6 +268,10 @@ export interface SubmitDenunciaRequest {
   titulo: string
   descricao_original: string
   local?: string
+  cep?: string
+  numero?: string
+  bairro?: string
+  cidade?: string
   data_ocorrido?: string
   anonima: boolean
   nome?: string

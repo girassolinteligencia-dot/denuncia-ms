@@ -338,12 +338,11 @@ ON CONFLICT (campo) DO NOTHING;
 -- Config: templates padrão
 INSERT INTO config_templates (tipo, conteudo, variaveis_disponiveis) VALUES
   ('cabecalho',
-   'DENÚNCIA FORMAL — {{categoria}}
+   'REGISTRO TÉCNICO DE DENÚNCIA — {{categoria}}
 Protocolo: {{protocolo}}
-Data: {{data_envio}} às {{hora_envio}} (horário de Brasília)
-Órgão Destinatário: {{orgao_nome}}
-Município/Local: {{local}}
-Situação do Denunciante: {{anonima}}',
+Data/Hora do Envio: {{data_envio}} às {{hora_envio}} (Horário de Brasília)
+
+Este documento formaliza o relato do cidadão e o encaminha ao destinatário competente para as providências administrativas e legais cabíveis.',
    '[
      {"chave":"{{protocolo}}","descricao":"Número do protocolo"},
      {"chave":"{{categoria}}","descricao":"Categoria da denúncia"},
@@ -355,12 +354,10 @@ Situação do Denunciante: {{anonima}}',
    ]'
   ),
   ('rodape',
-   'Esta denúncia foi registrada na plataforma {{app_nome}} em {{data_envio}} às {{hora_envio}} (horário de Brasília).
-Para acompanhamento, utilize o protocolo {{protocolo}} em {{app_url}}/acompanhar.
-{{#unless anonima}}
-Denunciante: {{nome}} — Contato: {{email}}
-{{/unless}}
-Documento gerado automaticamente. Não requer assinatura.',
+   'NATUREZA DO SERVIÇO: O DENUNCIA MS opera como uma plataforma cívica estritamente independente e neutra, sem vínculo com entes públicos, políticos ou estatais. Atuamos exclusivamente como um elo tecnológico facilitador que conecta o cidadão de Mato Grosso do Sul aos órgãos competentes. A responsabilidade pela análise técnica, investigação e adoção de medidas cabe integralmente ao destinatário desta denúncia conforme a legislação vigente.
+
+Registro efetuado em {{data_envio}} às {{hora_envio}}.
+Autenticidade disponível em: {{app_url}}/acompanhar/{{protocolo}}',
    '[
      {"chave":"{{protocolo}}","descricao":"Número do protocolo"},
      {"chave":"{{app_nome}}","descricao":"Nome da plataforma"},

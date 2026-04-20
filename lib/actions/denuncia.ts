@@ -37,8 +37,8 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
         file: file.buffer,
         fileName: file.name,
         contentType: file.type,
-        sessaoId,
-        tipo: 'foto', // Simplificado para o exemplo
+        bucket: 'denuncias',
+        path: `denuncias/${sessaoId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
       })
       linksArquivos.push(upload)
     }
@@ -47,15 +47,15 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
     const pdfBuffer = await gerarPDFDenuncia({
       protocolo,
       categoria: categoria.label,
-      titulo: formData.titulo,
-      descricao: formData.descricao_original,
-      local: formData.local,
-      data_ocorrido: formData.data_ocorrido,
+      titulo: formData.titulo || 'Sem Título',
+      descricao: formData.descricao_original || 'Sem Descrição',
+      local: `${formData.local || ''}, ${formData.numero || ''} - ${formData.bairro || ''}, ${formData.cidade || ''}${formData.cep ? ` - CEP: ${formData.cep}` : ''}`,
+      data_ocorrido: formData.data_ocorrido || '',
       criado_em: new Date().toISOString(),
       anonima: formData.anonima,
-      nome: formData.nome,
-      email: formData.email,
-      telefone: formData.telefone,
+      nome: formData.nome || '',
+      email: formData.email || '',
+      telefone: formData.telefone || '',
       orgao_nome: 'Ouvidoria Geral MS' // Placeholder dinâmico
     })
 
@@ -70,6 +70,10 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
         descricao_original: formData.descricao_original,
         documento_final: '', // Será atualizado com a URL se necessário ou gerado on-the-fly
         local: formData.local,
+        cep: formData.cep,
+        numero: formData.numero,
+        bairro: formData.bairro,
+        cidade: formData.cidade,
         data_ocorrido: formData.data_ocorrido,
         anonima: formData.anonima,
         denunciante_nome: formData.anonima ? null : formData.nome,
