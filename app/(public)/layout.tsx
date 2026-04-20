@@ -17,7 +17,7 @@ export default function PublicLayout({
 
           <nav className="hidden md:flex items-center gap-8">
             <Link href="/" className="text-sm font-bold text-dark hover:text-primary transition-colors">Início</Link>
-            <Link href="/sobre" className="text-sm font-bold text-dark hover:text-primary transition-colors">Como funciona</Link>
+            <Link href="/como-funciona" className="text-sm font-bold text-dark hover:text-primary transition-colors">Como funciona</Link>
             <Link href="/noticias" className="text-sm font-bold text-dark hover:text-primary transition-colors">Notícias</Link>
           </nav>
 

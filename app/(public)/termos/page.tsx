@@ -87,11 +87,12 @@ export default function TermosPage() {
               <div className="bg-red-50 border border-red-100 p-6 rounded-2xl space-y-4">
                  <div className="flex items-center gap-2 text-error font-black text-xs uppercase tracking-widest">
                     <Info size={16} />
-                    Atenção Crítica
+                    Atenção Crítica & Deveres Legais
                  </div>
                  <p className="text-error text-sm font-bold leading-relaxed">
-                   De acordo com o Código Penal Brasileiro e o Marco Civil da Internet (Lei nº 12.965/2014), o usuário é o único e exclusivo responsável pela veracidade dos fatos narrados. 
-                   A denúncia caluniosa ou a apresentação de evidências falsas configura crime e sujeita o infrator a sanções civis e criminais.
+                   De acordo com o Código Penal Brasileiro, o usuário é o único e exclusivo responsável pela veracidade dos fatos narrados. 
+                   A plataforma adverte que: &quot;Denúncia caluniosa é crime (Art. 339 do Código Penal)&quot; e &quot;Falsa denúncia é crime (Art. 340 do Código Penal)&quot;. 
+                   A utilização indevida sujeita o infrator a sanções civis e criminais imediatas.
                  </p>
               </div>
               <p className="text-muted text-sm text-justify">

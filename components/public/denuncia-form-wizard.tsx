@@ -546,6 +546,17 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                      </button>
                   </div>
 
+                  {/* Informativo MPMS sobre Anonimato */}
+                  <div className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-2">
+                     <p className="text-[10px] font-black text-secondary uppercase tracking-widest flex items-center gap-2">
+                        <Shield size={14} />
+                        Informativo sobre Sigilo
+                     </p>
+                     <p className="text-[11px] text-white/70 leading-relaxed font-medium italic">
+                        Ao optar pelo anonimato, saiba que &quot;o manifestante não será identificado, porém a manifestação poderá não ser atendida. O manifestante poderá optar por não fornecer dados sobre sua identificação. Atenção! Isso prejudica a investigação dos fatos&quot;.
+                     </p>
+                  </div>
+
                   {!formData.anonima && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 animate-slide-up">
                        <div className="space-y-1">
@@ -587,7 +598,8 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                            <Shield size={14} className="text-primary" />
                         </p>
                         <p className="text-[10px] text-muted leading-relaxed font-bold text-justify">
-                           Ao prosseguir, declaro estar ciente de que sou o único responsável pela veracidade dos fatos narrados e pela autenticidade das evidências anexadas, sob as penas da lei. 
+                           Ao prosseguir, declaro estar ciente de que sou o único responsável pela veracidade dos fatos narrados. 
+                           O uso de má-fé neste canal é proibido: &quot;Denúncia caluniosa é crime (Art. 339 do Código Penal)&quot; e &quot;Falsa denúncia é crime (Art. 340 do Código Penal)&quot;.
                            Compreendo que esta plataforma atua exclusivamente como meio de conexão e encaminhamento da denúncia aos órgãos competentes 
                            (conforme <Link href="/termos" target="_blank" className="text-primary underline">Lei nº 12.527/2011 - LAI</Link> e <Link href="/termos" target="_blank" className="text-primary underline">Lei nº 13.709/2018 - LGPD</Link>), não possuindo responsabilidade sobre o teor da denúncia ou sobre a conduta das partes envolvidas.
                         </p>
