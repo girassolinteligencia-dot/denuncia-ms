@@ -1,104 +1,52 @@
-import { createServerClient } from '@supabase/ssr'
+// middleware.ts — RAIZ do projeto (não confundir com utils/supabase/middleware.ts)
+// Arquivo NOVO — crie na raiz ao lado de next.config.js
+//
+// Responsabilidades:
+//   1. Remove headers de IP antes de chegar nas API routes (LGPD Art. 5º)
+//   2. Delega o refresh de sessão Supabase ao helper existente
+
 import { NextResponse, type NextRequest } from 'next/server'
-import type { UserRole } from '@/types'
+import { updateSession } from '@/utils/supabase/middleware' // seu helper existente
 
-const ROLE_HIERARCHY: Record<UserRole, number> = {
-  moderador: 1,
-  admin: 2,
-  superadmin: 3,
-}
-
-const ROUTE_PERMISSIONS: Record<string, UserRole> = {
-  '/admin/configuracoes': 'superadmin',
-  '/admin/usuarios': 'superadmin',
-  '/admin/logs': 'superadmin',
-  '/admin/categorias': 'admin',
-  '/admin/integracoes': 'admin',
-  '/admin/noticias': 'admin',
-  '/admin/banners': 'admin',
-  // rotas base — qualquer role admin
-  '/admin': 'moderador',
-}
+// Headers que expõem o IP real do visitante
+const IP_HEADERS = [
+  'x-forwarded-for',
+  'x-real-ip',
+  'cf-connecting-ip',
+  'true-client-ip',
+  'x-client-ip',
+  'x-cluster-client-ip',
+]
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  // --- 1. Anonimizar IP em rotas de denúncia ---
+  const isDenunciaRoute = request.nextUrl.pathname.startsWith('/api/denuncia')
+    || request.nextUrl.pathname.startsWith('/denunciar')
 
-  // Apenas rotas /admin precisam de proteção
-  if (!pathname.startsWith('/admin')) {
-    return NextResponse.next()
+  if (isDenunciaRoute) {
+    // Clona os headers e remove identificadores de rede
+    const headers = new Headers(request.headers)
+    IP_HEADERS.forEach(h => headers.delete(h))
+
+    // Reconstrói a request sem os headers de IP
+    const anonRequest = new Request(request.url, {
+      method: request.method,
+      headers,
+      body: request.body,
+      duplex: 'half',
+    } as RequestInit)
+
+    // Delega para o updateSession do Supabase com a request anonimizada
+    return await updateSession(anonRequest as unknown as NextRequest)
   }
 
-  const response = NextResponse.next({
-    request: { headers: request.headers },
-  })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
-
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // Redireciona para login se não autenticado
-  if (!user) {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('redirect', pathname)
-    return NextResponse.redirect(loginUrl)
-  }
-
-  // Busca o role do usuário
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  const userRole = profile.role as UserRole
-  const userLevel = ROLE_HIERARCHY[userRole] ?? 0
-
-  // Verifica permissão para a rota mais específica
-  const rotaPermissao = encontrarRotaPermissao(pathname)
-  const nivelNecessario = ROLE_HIERARCHY[rotaPermissao] ?? 1
-
-  if (userLevel < nivelNecessario) {
-    return NextResponse.redirect(new URL('/admin/dashboard', request.url))
-  }
-
-  return response
-}
-
-function encontrarRotaPermissao(pathname: string): UserRole {
-  // Encontra a rota mais específica que corresponde ao pathname
-  const rotas = Object.keys(ROUTE_PERMISSIONS).sort((a, b) => b.length - a.length)
-
-  for (const rota of rotas) {
-    if (pathname.startsWith(rota)) {
-      return ROUTE_PERMISSIONS[rota]
-    }
-  }
-
-  return 'moderador'
+  // --- 2. Para todas as outras rotas: apenas refresh de sessão ---
+  return await updateSession(request)
 }
 
 export const config = {
   matcher: [
-    '/admin/:path*',
+    // Exclui arquivos estáticos e rotas internas do Next.js
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

@@ -1,12 +1,4 @@
-// =====================================================
-// DENUNCIA MS — Tipagens TypeScript Globais
-// =====================================================
-
-// ─────────────────────────────────────────────────────────
-// Roles e Auth
-// ─────────────────────────────────────────────────────────
-
-export type UserRole = 'superadmin' | 'admin' | 'moderador'
+export type UserRole = 'superadmin' | 'admin' | 'moderador' | 'gestor_cupula'
 
 export interface Profile {
   id: string
@@ -15,14 +7,10 @@ export interface Profile {
   criado_em: string
 }
 
-// ─────────────────────────────────────────────────────────
-// Configuração Central (Módulo 0)
-// ─────────────────────────────────────────────────────────
-
 export interface PlataformaConfig {
   id: string
   chave: string
-  valor: unknown // jsonb — tipado nos helpers específicos
+  valor: unknown
   atualizado_em: string
   atualizado_por: string | null
 }
@@ -50,14 +38,14 @@ export interface ConfigTemplate {
 }
 
 export interface VariavelTemplate {
-  chave: string       // ex: "{{protocolo}}"
-  descricao: string   // ex: "Número do protocolo"
+  chave: string
+  descricao: string
 }
 
 export interface ConfigProtocolo {
   id: string
-  prefixo: string       // padrão: "DNS"
-  separador: string     // padrão: "-"
+  prefixo: string
+  separador: string
   formato_ano: 'YYYY' | 'YY'
   digitos_seq: 4 | 5 | 6
   sequencia_atual: number
@@ -78,15 +66,6 @@ export interface ConfigCampoFormulario {
   atualizado_em: string
 }
 
-// ─────────────────────────────────────────────────────────
-// Categorias e Integrações
-// ─────────────────────────────────────────────────────────
-
-export interface TopicoDescricao {
-  topico: string
-  placeholder: string
-}
-
 export interface Categoria {
   id: string
   slug: string
@@ -95,7 +74,7 @@ export interface Categoria {
   emoji: string | null
   instrucao_publica: string | null
   aviso_legal: string | null
-  template_descricao: TopicoDescricao[]
+  template_descricao: { topico: string; placeholder: string }[]
   email_destino?: string
   ativo: boolean
   ordem: number
@@ -112,30 +91,14 @@ export interface IntegracaoDestino {
   id: string
   categoria_id: string
   tipo: TipoIntegracao
-  // e-mail
   email_para: string[] | null
-  email_cc: string[] | null
-  email_bcc: string[] | null
-  email_assunto_template: string | null
-  prioridade: PrioridadeEmail
-  // webhook
   webhook_url: string | null
   webhook_metodo: MetodoWebhook
-  webhook_headers: Record<string, string> | null
   webhook_auth_tipo: TipoAuthWebhook
-  webhook_auth_dados: unknown | null  // criptografado em repouso
-  webhook_body_template: string | null
-  webhook_timeout: number
+  webhook_auth_dados: unknown | null
   webhook_retry_max: number
-  // controle
   ativo: boolean
-  criado_em: string
-  atualizado_em: string
 }
-
-// ─────────────────────────────────────────────────────────
-// Denúncias
-// ─────────────────────────────────────────────────────────
 
 export type StatusDenuncia =
   | 'recebida'
@@ -147,6 +110,7 @@ export type StatusDenuncia =
 export interface Denuncia {
   id: string
   protocolo: string
+  chave_acesso?: string
   categoria_id: string
   titulo: string
   descricao_original: string
@@ -159,35 +123,56 @@ export interface Denuncia {
   data_ocorrido: string | null
   status: StatusDenuncia
   anonima: boolean
-  denunciante_nome: string | null
-  denunciante_email: string | null
-  denunciante_telefone: string | null
-  denunciante_cpf: string | null
-  denunciante_id: string | null
-  cabecalho_snapshot: string | null
-  rodape_snapshot: string | null
-  protocolo_config_snapshot: ConfigProtocolo | null
   criado_em: string
   atualizado_em: string
-  // joins opcionais
-  categoria?: Categoria
   arquivos?: ArquivoDenuncia[]
 }
 
 export interface ArquivoDenuncia {
   id: string
   denuncia_id: string
-  tipo: ConfigTipoArquivo['tipo']
+  tipo: string
   url: string
   bucket_path: string
   tamanho_bytes: number | null
-  ordem: number
   criado_em: string
 }
 
-// ─────────────────────────────────────────────────────────
-// Log de Integrações
-// ─────────────────────────────────────────────────────────
+export interface IdentidadeDenuncia {
+  id: string
+  denuncia_id: string
+  nome_enc: string
+  email_enc: string
+  email_hash: string
+  criado_em: string
+}
+
+export interface PdfAssinatura {
+  id: string
+  denuncia_id: string
+  protocolo: string
+  sha256: string
+  gerado_em: string
+}
+
+export type StatusDespacho =
+  | 'pendente'
+  | 'pendente_pdf'
+  | 'processando'
+  | 'despachado'
+  | 'erro'
+  | 'falha_definitiva'
+
+export interface DespachoQueue {
+  id: string
+  denuncia_id: string
+  pdf_base64: string | null
+  tentativas: number
+  status: StatusDespacho
+  ultimo_erro: string | null
+  criado_em: string
+  despachado_em: string | null
+}
 
 export type StatusIntegracao = 'sucesso' | 'falha' | 'pendente'
 
@@ -197,15 +182,10 @@ export interface LogIntegracao {
   integracao_id: string
   tipo: TipoIntegracao
   status: StatusIntegracao
-  resposta_http: number | null
   resposta_body: string | null
   tentativa: number
   disparado_em: string
 }
-
-// ─────────────────────────────────────────────────────────
-// Auditoria
-// ─────────────────────────────────────────────────────────
 
 export interface LogAuditoria {
   id: string
@@ -215,52 +195,17 @@ export interface LogAuditoria {
   registro_id: string | null
   valor_anterior: unknown | null
   valor_novo: unknown | null
-  ip: string | null
-  criado_em: string
-  // join opcional
-  usuario?: Profile
-}
-
-// ─────────────────────────────────────────────────────────
-// Notícias e Banners
-// ─────────────────────────────────────────────────────────
-
-export interface Noticia {
-  id: string
-  titulo: string
-  slug: string
-  conteudo: string
-  categoria: string | null
-  imagem_url: string | null
-  autor_id: string | null
-  publicado: boolean
-  publicado_em: string | null
   criado_em: string
 }
 
-export type PosicaoBanner = 'topo' | 'lateral' | 'rodape'
-
-export interface Banner {
-  id: string
-  posicao: PosicaoBanner
-  imagem_url: string
-  link_url: string | null
-  ativo: boolean
-  ordem: number
-}
-
-// ─────────────────────────────────────────────────────────
-// API — Request/Response Helpers
-// ─────────────────────────────────────────────────────────
-
-export interface ApiError {
-  error: string
-  code?: string
-}
-
-export interface ApiSuccess<T = unknown> {
-  data: T
-  message?: string
+export interface AuditIdentidade {
+  id: number
+  tabela: string
+  operacao: string
+  registro_id: string | null
+  usuario_id: string | null
+  role_usado: string | null
+  acessado_em: string
 }
 
 export interface SubmitDenunciaRequest {
@@ -278,13 +223,7 @@ export interface SubmitDenunciaRequest {
   email?: string
   telefone?: string
   cpf?: string
-  arquivos_ids?: string[]  // IDs dos uploads já realizados
   otpToken?: string
-}
-
-export interface SubmitDenunciaResponse {
-  protocolo: string
-  mensagem: string
 }
 
 export interface ConsultaProtocoloResponse {
@@ -296,31 +235,3 @@ export interface ConsultaProtocoloResponse {
   atualizado_em: string
   historico: { status: StatusDenuncia; alterado_em: string }[]
 }
-
-// ─────────────────────────────────────────────────────────
-// Formulário Público — Steps
-// ─────────────────────────────────────────────────────────
-
-export interface FormStep1Data {
-  categoria_id: string
-  titulo: string
-  local: string
-  data_ocorrido: string
-  anonima: boolean
-  nome: string
-  email: string
-  telefone: string
-  cpf: string
-}
-
-export interface FormStep2Data {
-  descricao_original: string
-  topicos: Record<string, string>  // { "topico_slug": "texto digitado" }
-}
-
-export interface FormStep3Data {
-  arquivos: File[]
-  arquivos_uploaded: { id: string; url: string; tipo: string }[]
-}
-
-export interface FormCompleto extends FormStep1Data, FormStep2Data, FormStep3Data {}
