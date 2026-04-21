@@ -133,14 +133,12 @@ export function construirVariaveis(params: {
  * Busca o template no banco (via caches) e formata com as variáveis
  */
 export async function formatarDocumento(
-  tipo: 'cabecalho' | 'rodape',
+  tipo: 'cabecalho' | 'rodape' | 'email_orgao' | 'email_denunciante',
   variaveis: Partial<VariaveisDocumento>
 ): Promise<string> {
   const { getConfigsByPrefix } = await import('./config')
   const configs = await getConfigsByPrefix('config_templates')
-  
-  const template = configs[`config_templates.${tipo}`] || (tipo === 'cabecalho' ? 'Protocolo: {{protocolo}}' : 'Gerado em: {{data_envio}}')
-  
+  const template = (configs[`config_templates.${tipo}`] as string) || (tipo === 'cabecalho' ? 'Protocolo: {{protocolo}}' : 'Gerado em: {{data_envio}}')
   // Como substituirVariaveis espera VariaveisDocumento completo, fazemos o merge com defaults
   const varsCompletas = construirVariaveis({
     protocolo: variaveis.protocolo || '',

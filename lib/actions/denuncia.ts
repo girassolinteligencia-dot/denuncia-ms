@@ -8,6 +8,8 @@ import { dispatchWebhook } from '@/lib/webhook'
 import { sendEmail } from '@/lib/email'
 import { revalidatePath } from 'next/cache'
 
+import { formatarDocumento } from '@/lib/documento'
+
 import type { SubmitDenunciaRequest } from '@/types'
 
 /**
@@ -17,7 +19,35 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
   const supabase = createAdminClient()
   
   try {
-    // 1. Gera Protocolo Atômico com Token de Segurança e Chave de Acesso
+    // 1. Validar OTP caso não seja anônima
+    if (!formData.anonima && formData.email) {
+      if (!formData.otpToken || formData.otpToken.length !== 6) {
+        throw new Error('Código de segurança inválido ou não fornecido.')
+      }
+      
+      const { data: otpData, error: otpError } = await supabase
+        .from('auth_tokens')
+        .select('*')
+        .eq('email', formData.email)
+        .eq('codigo', formData.otpToken)
+        .eq('is_used', false)
+        .gte('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+        
+      if (otpError || !otpData) {
+        throw new Error('Código de segurança incorreto ou expirado. Solicite um novo!')
+      }
+
+      // Marcar OTP como usado
+      await supabase
+        .from('auth_tokens')
+        .update({ is_used: true })
+        .eq('id', otpData.id)
+    }
+
+    // 2. Gera Protocolo Atômico com Token de Segurança e Chave de Acesso
     const { protocolo, chaveAcesso } = await gerarProtocolo()
     const sessaoId = crypto.randomUUID()
 
@@ -103,6 +133,31 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
     // 7. Dispara Integrações (Async)
     const integracoes = categoria.integracoes_destino || []
     
+    // Preparar variáveis para os templates de e-mail
+    const emailOrgaoText = await formatarDocumento('email_orgao', {
+      protocolo,
+      categoria: categoria.label,
+      categoria_slug: categoria.slug,
+      local: formData.local,
+      anonima: formData.anonima,
+      nome: formData.anonima ? undefined : formData.nome,
+      email: formData.anonima ? undefined : formData.email,
+      telefone: formData.anonima ? undefined : formData.telefone,
+      orgao_nome: 'Ouvidoria Geral MS',
+    })
+
+    const emailDenuncianteText = await formatarDocumento('email_denunciante', {
+      protocolo,
+      categoria: categoria.label,
+      categoria_slug: categoria.slug,
+      local: formData.local,
+      anonima: formData.anonima,
+      nome: formData.anonima ? undefined : formData.nome,
+      email: formData.anonima ? undefined : formData.email,
+      telefone: formData.anonima ? undefined : formData.telefone,
+      orgao_nome: 'Ouvidoria Geral MS',
+    })
+
     // Se não houver integração específica, envia para o e-mail padrão do sistema
     if (integracoes.length === 0) {
       const defaultEmail = process.env.DEFAULT_DESTINY_EMAIL
@@ -110,7 +165,7 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
         sendEmail({
           to: defaultEmail,
           subject: `[LOG CONTINGÊNCIA] NOVA DENÚNCIA: ${protocolo} - ${categoria.label}`,
-          text: `Uma nova denúncia foi registrada sob o protocolo ${protocolo}. Esta categoria não possui integração configurada.`,
+          text: emailOrgaoText,
           attachments: [{ filename: `denuncia-${protocolo}.pdf`, content: pdfBuffer }]
         }).catch(err => console.error('Falha no e-mail de contingência:', err))
       }
@@ -136,7 +191,7 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
             sendEmail({
               to: destinatarios,
               subject: `NOVA DENÚNCIA: ${protocolo} - ${categoria.label}`,
-              text: `Uma nova denúncia foi registrada sob o protocolo ${protocolo}. Segue documento em anexo.`,
+              text: emailOrgaoText,
               attachments: [
                 { filename: `denuncia-${protocolo}.pdf`, content: pdfBuffer }
               ]
@@ -146,11 +201,20 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
       }
     }
 
+    // 8. Envia e-mail de confirmação para o cidadão
+    if (!formData.anonima && formData.email) {
+      sendEmail({
+        to: formData.email,
+        subject: `Denúncia Recebida: ${protocolo} - ${categoria.label}`,
+        text: emailDenuncianteText,
+      }).catch(err => console.error('Falha no e-mail de confirmação do cidadão:', err))
+    }
+
     revalidatePath('/admin/denuncias')
     return { success: true, protocolo, chaveAcesso }
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Erro ao processar denúncia:', err)
-    return { success: false, error: err.message }
+    return { success: false, error: err instanceof Error ? err.message : 'Erro desconhecido' }
   }
 }

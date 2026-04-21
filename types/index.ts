@@ -279,6 +279,7 @@ export interface SubmitDenunciaRequest {
   telefone?: string
   cpf?: string
   arquivos_ids?: string[]  // IDs dos uploads já realizados
+  otpToken?: string
 }
 
 export interface SubmitDenunciaResponse {
