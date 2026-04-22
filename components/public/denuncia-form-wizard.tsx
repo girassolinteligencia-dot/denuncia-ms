@@ -2,19 +2,11 @@
 
 import React, { useState, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { 
-  ShieldCheck, 
-  FileText, 
-  Paperclip, 
-  CheckCircle2, 
-  ArrowRight, 
-  ArrowLeft,
-  Loader2,
-  Send,
-  Lock,
-  Camera,
-  Shield,
-  AlertTriangle
+import {
+  ShieldCheck, FileText, Paperclip, CheckCircle2,
+  ArrowRight, ArrowLeft, Loader2, Send, Lock,
+  Camera, Shield, AlertTriangle, Info, MapPin,
+  Check, UploadCloud
 } from 'lucide-react'
 import type { Categoria, ConfigCampoFormulario, ConfigTipoArquivo } from '@/types'
 import { registrarDenuncia } from '@/lib/actions/denuncia'
@@ -22,7 +14,12 @@ import { solicitarCodigoOTP } from '@/lib/actions/auth'
 import { buscarCEP } from '@/lib/actions/cep'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { createClient } from '@/utils/supabase/client'
+import dynamic from 'next/dynamic'
+
+const EmailPreview = dynamic(
+  () => import('./email-preview').then(m => m.EmailPreview),
+  { ssr: false }
+)
 
 interface DenunciaFormData {
   categoria_id: string
@@ -50,145 +47,49 @@ interface Props {
   politicasArquivo: ConfigTipoArquivo[]
 }
 
+interface NominatimResult {
+  display_name: string
+  address?: {
+    road?: string
+    house_number?: string
+    suburb?: string
+    neighbourhood?: string
+    city?: string
+    town?: string
+    village?: string
+    state?: string
+    postcode?: string
+  }
+}
+
 export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politicasArquivo }) => {
   const searchParams = useSearchParams()
   const initialCat = searchParams.get('categoria')
 
-  const allowAnonymous = process.env.NEXT_PUBLIC_ALLOW_ANONYMOUS !== 'false';
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [protocoloGerado, setProtocoloGerado] = useState<string | null>(null)
   const [chaveGerada, setChaveGerada] = useState<string | null>(null)
   const [otpEnviado, setOtpEnviado] = useState(false)
   const [loadingOtp, setLoadingOtp] = useState(false)
-  const [uploadingArquivos, setUploadingArquivos] = useState(false)
-  const [arquivosUrls, setArquivosUrls] = useState<string[]>([])
+  const [previewAberto, setPreviewAberto] = useState(false)
   const [cooldown, setCooldown] = useState(0)
+  const [sugestoesEndereco, setSugestoesEndereco] = useState<NominatimResult[]>([])
+  const [loadingEnderecos, setLoadingEnderecos] = useState(false)
+
   const otpInputRef = useRef<HTMLInputElement>(null)
   const topRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const [formData, setFormData] = useState<DenunciaFormData>({
     categoria_id: categorias.find(c => c.slug === initialCat)?.id || '',
-    titulo: '',
-    local: '',
-    cep: '',
-    numero: '',
-    bairro: '',
-    cidade: '',
-    data_ocorrido: '',
-    descricao_original: '',
-    anonima: true,
-    nome: '',
-    email: '',
-    telefone: '',
-    cpf: '',
-    arquivos: [] as File[],
-    consentimento: false,
-    otpToken: ''
+    titulo: '', local: '', cep: '', numero: '', bairro: '', cidade: '',
+    data_ocorrido: '', descricao_original: '', anonima: false,
+    nome: '', email: '', telefone: '', cpf: '',
+    arquivos: [] as File[], consentimento: false, otpToken: ''
   })
 
-  // Filtra campos visíveis
   const camposVisiveis = campos.filter(c => c.visivel).sort((a, b) => a.ordem - b.ordem)
-  
-  // Agrupa as categorias por bloco para exibição organizada
-  interface NominatimResult {
-    display_name: string
-    address?: {
-      road?: string
-      house_number?: string
-      suburb?: string
-      neighbourhood?: string
-      city?: string
-      town?: string
-      village?: string
-      state?: string
-      postcode?: string
-    }
-  }
-
-  const [sugestoesEndereco, setSugestoesEndereco] = useState<NominatimResult[]>([])
-  const [loadingEnderecos, setLoadingEnderecos] = useState(false)
-
-  const handleSearchEndereco = async (query: string) => {
-    handleInputChange('local', query)
-    
-    if (query.length < 4) {
-      setSugestoesEndereco([])
-      return
-    }
-
-    setLoadingEnderecos(true)
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=br&viewbox=-58.16,-24.04,-50.92,-17.15&bounded=1`
-      )
-      const data = await response.json()
-      // Filtro extra opcional para garantir MS caso a viewbox falhe em ser estrita
-      const filtered = data.filter((item: NominatimResult) => 
-        item.address?.state === 'Mato Grosso do Sul' || 
-        item.display_name.includes('Mato Grosso do Sul')
-      )
-      setSugestoesEndereco(filtered)
-    } catch (error) {
-      console.error('Erro ao buscar endereços:', error)
-    } finally {
-      setLoadingEnderecos(false)
-    }
-  }
-
-  const handleSelectEndereco = (suggestion: NominatimResult) => {
-    const addr = suggestion.address
-    const road = addr?.road || suggestion.display_name.split(',')[0]
-    const cidade = addr?.city || addr?.town || addr?.village || ''
-    const bairro = addr?.suburb || addr?.neighbourhood || ''
-    const cep = addr?.postcode || ''
-    const numero = addr?.house_number || ''
-
-    setFormData(prev => ({
-      ...prev,
-      local: road,
-      cidade: cidade || prev.cidade,
-      bairro: bairro || prev.bairro,
-      cep: cep || prev.cep,
-      numero: numero || prev.numero
-    }))
-    
-    setSugestoesEndereco([])
-  }
-
-  const handleCepChange = async (cep: string) => {
-    // Máscara simples
-    const raw = cep.replace(/\D/g, '')
-    let formatted = raw
-    if (raw.length > 5) {
-      formatted = `${raw.slice(0, 5)}-${raw.slice(5, 8)}`
-    }
-    
-    handleInputChange('cep', formatted)
-
-    if (raw.length === 8) {
-      setLoadingEnderecos(true)
-      try {
-        const result = await buscarCEP(raw)
-        if (result.success && result.data) {
-          const { data } = result
-          setFormData(prev => ({
-            ...prev,
-            local: data.logradouro || prev.local,
-            bairro: data.bairro || prev.bairro,
-            cidade: data.cidade || prev.cidade,
-            cep: formatted
-          }))
-          toast.success('Endereço preenchido via CEP!')
-        }
-      } catch (err) {
-        console.error('Erro ao buscar CEP:', err)
-      } finally {
-        setLoadingEnderecos(false)
-      }
-    }
-  }
 
   const categoriasPorBloco = React.useMemo(() => {
     return categorias.reduce((acc, cat) => {
@@ -199,33 +100,6 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
     }, {} as Record<string, Categoria[]>)
   }, [categorias])
 
-  const handleInputChange = (field: keyof DenunciaFormData, value: string | boolean | File[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-    
-    // Autoscroll para o botão se for categoria
-    if (field === 'categoria_id') {
-      setTimeout(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-      }, 100)
-    }
-  }
-
-  const scrollToTop = () => {
-    setTimeout(() => {
-      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 100)
-  }
-
-  const handleNext = () => {
-    setStep(s => s + 1)
-    scrollToTop()
-  }
-  const handleBack = () => {
-    setStep(s => s - 1)
-    scrollToTop()
-  }
-
-  // Cooldown effect para o OTP
   React.useEffect(() => {
     if (cooldown > 0) {
       const timer = setTimeout(() => setCooldown(cooldown - 1), 1000)
@@ -233,786 +107,776 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
     }
   }, [cooldown])
 
-  const handleSolicitarOTP = async () => {
-    if (!formData.email || !formData.email.includes('@')) {
-      toast.error('Informe um e-mail válido para a Equipe da plataforma DenunciaMS.')
-      return
+  const handleInputChange = (field: keyof DenunciaFormData, value: string | boolean | File[]) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+    if (field === 'categoria_id') {
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100)
     }
-    if (!formData.nome || formData.nome.length < 3) {
-      toast.error('Informe seu nome completo para identificação.')
-      return
-    }
+  }
 
+  const scrollToTop = () => {
+    setTimeout(() => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+  }
+
+  const handleNext = () => { setStep(s => s + 1); scrollToTop() }
+  const handleBack = () => { setStep(s => s - 1); scrollToTop() }
+
+  const handleTelefoneChange = (val: string) => {
+    const raw = val.replace(/\D/g, '')
+    let f = raw
+    if (raw.length > 0) {
+      f = `(${raw.slice(0, 2)}`
+      if (raw.length > 2) { f += `) ${raw.slice(2, 7)}`; if (raw.length > 7) f += `-${raw.slice(7, 11)}` }
+    }
+    handleInputChange('telefone', f)
+  }
+
+  const handleCpfChange = (val: string) => {
+    const raw = val.replace(/\D/g, '')
+    let f = raw
+    if (raw.length > 3) {
+      f = `${raw.slice(0, 3)}.${raw.slice(3, 6)}`
+      if (raw.length > 6) { f += `.${raw.slice(6, 9)}`; if (raw.length > 9) f += `-${raw.slice(9, 11)}` }
+    }
+    handleInputChange('cpf', f)
+  }
+
+  const handleSearchEndereco = async (query: string) => {
+    handleInputChange('local', query)
+    if (query.length < 4) { setSugestoesEndereco([]); return }
+    setLoadingEnderecos(true)
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=br&viewbox=-58.16,-24.04,-50.92,-17.15&bounded=1`)
+      const data = await res.json()
+      setSugestoesEndereco(data.filter((i: NominatimResult) =>
+        i.address?.state === 'Mato Grosso do Sul' || i.display_name.includes('Mato Grosso do Sul')
+      ))
+    } catch (e) { console.error(e) } finally { setLoadingEnderecos(false) }
+  }
+
+  const handleSelectEndereco = (s: NominatimResult) => {
+    const a = s.address
+    setFormData(prev => ({
+      ...prev,
+      local: a?.road || s.display_name.split(',')[0],
+      cidade: a?.city || a?.town || a?.village || prev.cidade,
+      bairro: a?.suburb || a?.neighbourhood || prev.bairro,
+      cep: a?.postcode || prev.cep,
+      numero: a?.house_number || prev.numero,
+    }))
+    setSugestoesEndereco([])
+  }
+
+  const handleCepChange = async (cep: string) => {
+    const raw = cep.replace(/\D/g, '')
+    const formatted = raw.length > 5 ? `${raw.slice(0, 5)}-${raw.slice(5, 8)}` : raw
+    handleInputChange('cep', formatted)
+    if (raw.length === 8) {
+      setLoadingEnderecos(true)
+      try {
+        const result = await buscarCEP(raw)
+        if (result.success && result.data) {
+          const { data } = result
+          setFormData(prev => ({ ...prev, local: data.logradouro || prev.local, bairro: data.bairro || prev.bairro, cidade: data.cidade || prev.cidade, cep: formatted }))
+          toast.success('Endereço preenchido via CEP!')
+        }
+      } catch (e) { console.error(e) } finally { setLoadingEnderecos(false) }
+    }
+  }
+
+  const handleSolicitarOTP = async () => {
+    if (!formData.email?.includes('@')) { toast.error('Informe um e-mail válido.'); return }
+    if (!formData.nome || formData.nome.length < 3) { toast.error('Informe seu nome completo.'); return }
     setLoadingOtp(true)
     try {
       const res = await solicitarCodigoOTP(formData.email, formData.nome)
       if (res.success) {
-        setOtpEnviado(true)
-        setCooldown(60) // 60 segundos de cooldown
-        toast.success('Código de segurança enviado! Verifique sua caixa de entrada.')
-        // Focar no input de OTP após um pequeno delay para a animação
+        setOtpEnviado(true); setCooldown(60)
+        toast.success('Código enviado! Verifique sua caixa de entrada.')
         setTimeout(() => otpInputRef.current?.focus(), 500)
       } else {
-        toast.error(res.error || 'Erro ao enviar código pela Equipe da plataforma DenunciaMS.')
+        toast.error(res.error || 'Erro ao enviar código.')
       }
-    } catch (err) {
-      console.error('[OTP] erro:', err)
-      toast.error('Ocorreu uma falha na comunicação. Tente novamente em instantes.')
-    } finally {
-      setLoadingOtp(false)
-    }
+    } catch (e) {
+      console.error('[OTP]', e)
+      toast.error('Falha na comunicação. Tente novamente.')
+    } finally { setLoadingOtp(false) }
+  }
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => {
+        const base64String = (reader.result as string).split(',')[1]
+        resolve(base64String)
+      }
+      reader.onerror = error => reject(error)
+    })
   }
 
   const handleSubmit = async () => {
     setLoading(true)
-    
     try {
-      // Validação básica
       if (!formData.titulo || !formData.descricao_original) {
-        toast.error("Por favor, preencha o título e a descrição.")
-        setLoading(false)
-        return
+        toast.error('Preencha o título e a descrição.'); setLoading(false); return
       }
 
-      // Prepara os arquivos para a Action
-      const arquivosFiles = formData.arquivos as File[]
-      const bufferData = await Promise.all(arquivosFiles.map(async (file) => {
-        const arrayBuffer = await file.arrayBuffer()
-        return {
+      // Prepara arquivos para o servidor (Base64)
+      const arquivosBase64 = await Promise.all(
+        formData.arquivos.map(async (file) => ({
           name: file.name,
           type: file.type,
-          buffer: Array.from(new Uint8Array(arrayBuffer))
-        }
-      }))
+          content: await fileToBase64(file)
+        }))
+      )
 
-      const { arquivos, ...formDataSemArquivos } = formData
-      void arquivos // Explicitly mark as ignored for lint
-      const result = await registrarDenuncia(formDataSemArquivos, arquivosUrls)
-
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { arquivos: _, ...formDataSemArquivos } = formData
+      const result = await registrarDenuncia(formDataSemArquivos, arquivosBase64)
+      
       if (result.success) {
         setProtocoloGerado(result.protocolo!)
         setChaveGerada(result.chaveAcesso!)
-        toast.success("Denúncia registrada com sucesso!")
+        toast.success('Denúncia registrada com sucesso!')
       } else {
-        toast.error((result as any).error || "Erro ao registrar denúncia")
+        toast.error((result as { error?: string }).error || 'Erro ao registrar denúncia.')
       }
-    } catch (err) {
-      console.error(err)
-      toast.error("Erro inesperado no envio")
-    } finally {
-      setLoading(false)
-    }
+    } catch (e) {
+      console.error(e); toast.error('Erro inesperado no envio.')
+    } finally { setLoading(false) }
   }
 
-  const TIPOS_PERMITIDOS = [
-    'image/jpeg', 'image/png', 'image/webp', 'image/gif',
-    'application/pdf',
-    'audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg'
-  ]
-  const MAX_TAMANHO_MB = 5
-  const MAX_ARQUIVOS = 3
+  const TIPOS_PERMITIDOS = ['image/jpeg','image/png','image/webp','image/gif','application/pdf','audio/mpeg','audio/mp4','audio/wav','audio/ogg']
+  const MAX_MB = politicasArquivo?.[0]?.tamanho_max_mb || 5
+  const MAX_ARQUIVOS = politicasArquivo?.[0]?.qtd_maxima || 3
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return
     const novos = Array.from(e.target.files)
-
-    // Validação de quantidade
-    const totalAtual = formData.arquivos.length
-    if (totalAtual + novos.length > MAX_ARQUIVOS) {
-      toast.error(`Máximo de ${MAX_ARQUIVOS} arquivos por denúncia.`)
-      return
+    if (formData.arquivos.length + novos.length > MAX_ARQUIVOS) { toast.error(`Máximo de ${MAX_ARQUIVOS} arquivos.`); return }
+    
+    for (const f of novos) {
+      if (!TIPOS_PERMITIDOS.includes(f.type)) { toast.error(`Tipo não permitido: ${f.name}`); return }
+      if (f.size > MAX_MB * 1024 * 1024) { toast.error(`${f.name} excede ${MAX_MB}MB.`); return }
     }
 
-    // Validação de tipo e tamanho
-    for (const file of novos) {
-      if (!TIPOS_PERMITIDOS.includes(file.type)) {
-        toast.error(`Tipo não permitido: ${file.name}. Use imagens, PDF ou áudio.`)
-        return
-      }
-      if (file.size > MAX_TAMANHO_MB * 1024 * 1024) {
-        toast.error(`${file.name} excede ${MAX_TAMANHO_MB}MB.`)
-        return
-      }
-    }
-
-    // Upload para Supabase Storage
-    setUploadingArquivos(true)
-    const supabase = createClient()
-    const novasUrls: string[] = []
-
-    try {
-      for (const file of novos) {
-        const ext = file.name.split('.').pop()
-        const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
-        const { error } = await supabase.storage
-          .from('denuncias')
-          .upload(path, file, { contentType: file.type, upsert: false })
-        if (error) throw new Error(error.message)
-        const { data } = supabase.storage.from('denuncias').getPublicUrl(path)
-        novasUrls.push(data.publicUrl)
-      }
-      setFormData(prev => ({ ...prev, arquivos: [...prev.arquivos, ...novos] }))
-      setArquivosUrls(prev => [...prev, ...novasUrls])
-      toast.success(`${novos.length} arquivo(s) enviado(s) com sucesso!`)
-    } catch (err) {
-      toast.error('Erro ao enviar arquivo. Tente novamente.')
-      console.error('[upload]', err)
-    } finally {
-      setUploadingArquivos(false)
-    }
+    setFormData(prev => ({ ...prev, arquivos: [...prev.arquivos, ...novos] }))
+    toast.success(`${novos.length} arquivo(s) adicionado(s) para envio.`)
   }
 
-  // --- TELA DE SUCESSO ---
+  const removeFile = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      arquivos: prev.arquivos.filter((_, i) => i !== index)
+    }))
+  }
+
+  // Tela de sucesso
   if (protocoloGerado) {
     return (
       <div className="max-w-2xl mx-auto py-12 text-center space-y-8 animate-fade-in px-4">
-         <div className="w-24 h-24 bg-secondary text-white rounded-full flex items-center justify-center mx-auto shadow-glow-green transform scale-110">
-            <CheckCircle2 size={48} />
-         </div>
-         <div className="space-y-2">
-            <h2 className="text-3xl font-black text-dark tracking-tighter uppercase italic">Protocolo Realizado!</h2>
-            <p className="text-muted text-sm font-medium">Sua denúncia foi enviada com sucesso para a Ouvidoria MS.</p>
-         </div>
-
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white p-6 rounded-3xl border border-border shadow-card-sm space-y-4">
-               <p className="text-[10px] text-muted font-black uppercase tracking-widest">Número do Protocolo</p>
-               <div className="text-xl font-black text-dark tracking-wider select-all bg-surface p-3 rounded-xl border border-border/50">
-                  {protocoloGerado}
-               </div>
-            </div>
-            <div className="bg-primary p-6 rounded-3xl shadow-glow-cyan space-y-4">
-               <p className="text-[10px] text-white/70 font-black uppercase tracking-widest">Chave de Acesso</p>
-               <div className="text-xl font-black text-white tracking-widest select-all bg-white/10 p-3 rounded-xl border border-white/20">
-                  {chaveGerada}
-               </div>
-            </div>
-         </div>
-
-         <div className="bg-amber-50 border border-amber-100 p-6 rounded-3xl flex gap-4 text-left">
-            <Lock size={24} className="text-amber-600 shrink-0" />
-            <p className="text-[11px] text-amber-900 font-bold leading-relaxed">
-               <span className="block text-amber-950 mb-1">ATENÇÃO: ANOTE ESTES DADOS!</span>
-               Por motivos de segurança e para garantir seu total anonimato, estas credenciais são geradas apenas uma vez e são a única forma de consultar o andamento da sua denúncia.
-            </p>
-         </div>
-
-         <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <Link href="/" className="btn-outline flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px]">
-               Voltar ao Início
-            </Link>
-            <Link href="/acompanhar" className="btn-primary flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] bg-dark border-none hover:bg-black">
-               Consultar Status
-            </Link>
-         </div>
+        <div className="w-24 h-24 bg-secondary text-white rounded-full flex items-center justify-center mx-auto shadow-glow-green transform scale-110">
+          <CheckCircle2 size={48} />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-3xl font-black text-dark tracking-tighter uppercase italic">Protocolo Realizado!</h2>
+          <p className="text-muted text-sm font-medium">Sua denúncia foi enviada com sucesso para a Ouvidoria MS.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white/70 backdrop-blur-md p-6 rounded-3xl border border-border/50 shadow-card-sm space-y-4">
+            <p className="text-[10px] text-muted font-black uppercase tracking-widest">Número do Protocolo</p>
+            <div className="text-xl font-black text-dark tracking-wider select-all bg-white p-3 rounded-xl border border-border/50">{protocoloGerado}</div>
+          </div>
+          <div className="bg-primary p-6 rounded-3xl shadow-glow-cyan space-y-4 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <p className="text-[10px] text-white/70 font-black uppercase tracking-widest relative z-10">Chave de Acesso</p>
+            <div className="text-xl font-black text-white tracking-widest select-all bg-white/10 p-3 rounded-xl border border-white/20 relative z-10">{chaveGerada}</div>
+          </div>
+        </div>
+        <div className="bg-amber-50/80 backdrop-blur-sm border border-amber-100 p-6 rounded-3xl flex gap-4 text-left">
+          <Lock size={24} className="text-amber-600 shrink-0" />
+          <p className="text-[11px] text-amber-900 font-bold leading-relaxed">
+            <span className="block text-amber-950 mb-1">ATENÇÃO: ANOTE ESTES DADOS!</span>
+            Estas credenciais são geradas apenas uma vez e são a única forma de consultar o andamento da sua denúncia.
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-4 pt-4">
+          <Link href="/" className="btn-outline flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] border-2">Voltar ao Início</Link>
+          <Link href="/acompanhar" className="btn-primary flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] bg-dark border-none hover:bg-black hover:scale-[1.02] transition-transform">Consultar Status</Link>
+        </div>
       </div>
     )
   }
 
-  // Helper para renderizar o resumo da revisão
   const currentCategory = categorias.find(c => c.id === formData.categoria_id)
 
   return (
-    <div className="max-w-3xl mx-auto animate-fade-in">
-      
-      {/* Progress Stepper */}
-      <div className="flex items-center justify-between mb-12 relative px-4">
-         <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -z-10 -translate-y-1/2"></div>
-         {[1, 2, 3, 4, 5].map(s => (
-           <div key={s} className="flex flex-col items-center gap-2 text-center w-12 sm:w-16">
-              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex mx-auto items-center justify-center font-bold text-sm transition-all border-2 ${step >= s ? 'bg-primary border-primary text-white shadow-glow-cyan' : 'bg-white border-border text-muted'}`}>
-                 {step > s ? <CheckCircle2 size={16} /> : s}
+    <div className="max-w-4xl mx-auto animate-fade-in pb-20">
+      {/* Progress Stepper - Premium Design */}
+      <div className="mb-12 px-4">
+        <div className="relative flex items-center justify-between">
+          <div className="absolute top-5 left-0 w-full h-[2px] bg-border/40 -z-10">
+            <div 
+              className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-500 ease-out" 
+              style={{ width: `${((step - 1) / 4) * 100}%` }}
+            ></div>
+          </div>
+          {[1, 2, 3, 4, 5].map(s => (
+            <div key={s} className="flex flex-col items-center gap-3">
+              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm transition-all duration-300 border-2 transform ${
+                step === s ? 'bg-primary border-primary text-white shadow-glow-cyan scale-110 -translate-y-1' : 
+                step > s ? 'bg-secondary border-secondary text-white' : 
+                'bg-white border-border/60 text-muted/60'
+              }`}>
+                {step > s ? <Check size={20} strokeWidth={3} /> : s}
               </div>
-              <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${step >= s ? 'text-primary' : 'text-muted/50'}`}>
-                 {s === 1 ? 'Tipo' : s === 2 ? 'O Que' : s === 3 ? 'Onde' : s === 4 ? 'Provas' : 'Revisão'}
+              <span className={`text-[9px] font-black uppercase tracking-widest transition-colors duration-300 ${step >= s ? 'text-dark' : 'text-muted/40'}`}>
+                {s === 1 ? 'Tipo' : s === 2 ? 'O Que' : s === 3 ? 'Onde' : s === 4 ? 'Evidências' : 'Finalizar'}
               </span>
-           </div>
-         ))}
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div ref={topRef} className="card shadow-card-lg border-t-4 border-primary">
+      <div ref={topRef} className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white/40 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] overflow-hidden">
+        <div className="h-2 bg-gradient-to-r from-primary via-electric to-secondary"></div>
         
-        {step === 1 && (
-          <div className="space-y-8 animate-slide-up">
-            <div>
-               <h2 className="text-xl font-black text-dark tracking-tight">O que você deseja reportar?</h2>
-               <p className="text-muted text-sm">Selecione a categoria que melhor descreve o ocorrido.</p>
-            </div>
-
-            <div className="space-y-12">
-               {Object.entries(categoriasPorBloco).map(([bloco, cats]) => (
-                 <div key={bloco} className="space-y-4">
-                   <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-primary/70 border-l-4 border-secondary pl-3">
-                      Bloco: {bloco}
-                   </h3>
-                   <div className="grid grid-cols-3 sm:grid-cols-2 gap-2 sm:gap-3">
+        <div className="p-8 sm:p-12">
+          {/* STEP 1 — Categoria */}
+          {step === 1 && (
+            <div className="space-y-10 animate-slide-up">
+              <div className="space-y-2">
+                <h2 className="text-3xl font-black text-dark tracking-tighter italic uppercase">Qual o motivo do seu contato?</h2>
+                <p className="text-muted text-sm font-medium">Selecione uma categoria para que possamos direcionar ao órgão correto.</p>
+              </div>
+              <div className="space-y-12">
+                {Object.entries(categoriasPorBloco).map(([bloco, cats]) => (
+                  <div key={bloco} className="space-y-6">
+                    <div className="flex items-center gap-3">
+                      <div className="h-6 w-1 bg-secondary rounded-full"></div>
+                      <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted">Setor: {bloco}</h3>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {cats.map(cat => (
                         <button 
-                         key={cat.slug} 
-                         onClick={() => handleInputChange('categoria_id', cat.id)}
-                         className={`p-2 sm:p-4 rounded-xl border-2 text-center sm:text-left transition-all flex flex-col sm:flex-row items-center gap-2 sm:gap-4 group ${formData.categoria_id === cat.id ? 'border-primary bg-primary-50 ring-2 ring-primary/10' : 'border-border hover:border-primary/30 hover:bg-surface'}`}
+                          key={cat.slug} 
+                          onClick={() => handleInputChange('categoria_id', cat.id)}
+                          className={`group p-5 rounded-3xl border-2 text-left transition-all duration-300 flex items-center gap-5 relative overflow-hidden ${
+                            formData.categoria_id === cat.id 
+                            ? 'border-primary bg-primary/5 ring-4 ring-primary/5' 
+                            : 'border-border/50 hover:border-primary/30 hover:bg-white hover:shadow-xl'
+                          }`}
                         >
-                           <div className="text-2xl sm:text-3xl group-hover:scale-110 transition-transform flex-shrink-0">
-                              {cat.emoji}
-                           </div>
-                           <div className="flex-grow min-w-0">
-                              <h4 className="font-extrabold text-[9px] sm:text-xs text-dark uppercase tracking-tight leading-tight sm:truncate">{cat.label}</h4>
-                              <p className="hidden sm:block text-[9px] text-muted font-bold truncate mt-1">
-                                 {cat.instrucao_publica}
-                              </p>
-                           </div>
-                           {formData.categoria_id === cat.id && (
-                              <div className="hidden sm:block flex-shrink-0 text-primary">
-                                 <CheckCircle2 size={16} />
-                              </div>
-                           )}
+                          {formData.categoria_id === cat.id && (
+                            <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-8 -mt-8 animate-pulse"></div>
+                          )}
+                          <div className={`text-4xl transition-transform duration-500 ${formData.categoria_id === cat.id ? 'scale-110' : 'group-hover:scale-110'}`}>
+                            {cat.emoji}
+                          </div>
+                          <div className="flex-grow min-w-0">
+                            <h4 className="font-black text-sm text-dark uppercase tracking-tight leading-tight">{cat.label}</h4>
+                            <p className="text-[10px] text-muted font-bold truncate mt-1 group-hover:text-primary transition-colors italic">
+                              {cat.instrucao_publica || 'Toque para selecionar esta categoria'}
+                            </p>
+                          </div>
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                            formData.categoria_id === cat.id ? 'bg-primary border-primary text-white' : 'border-border'
+                          }`}>
+                            {formData.categoria_id === cat.id && <Check size={14} strokeWidth={4} />}
+                          </div>
                         </button>
                       ))}
-                   </div>
-                 </div>
-               ))}
-            </div>
-
-            {formData.categoria_id && currentCategory?.aviso_legal && (
-               <div className="p-6 bg-amber-50 border border-amber-200 rounded-3xl flex gap-4 animate-fade-in shadow-sm">
-                  <div className="p-3 bg-amber-100 text-amber-700 rounded-2xl h-fit">
-                     <AlertTriangle size={24} className="fill-amber-700/10" />
+                    </div>
                   </div>
+                ))}
+              </div>
+              
+              {formData.categoria_id && currentCategory?.aviso_legal && (
+                <div className="p-6 bg-amber-50/50 backdrop-blur-sm border-l-4 border-amber-400 rounded-2xl flex gap-4 animate-fade-in shadow-inner">
+                  <div className="p-2 bg-amber-100 text-amber-700 rounded-xl h-fit"><AlertTriangle size={20} /></div>
                   <div className="space-y-1">
-                     <p className="text-[10px] font-black text-amber-900 uppercase tracking-widest flex items-center gap-2">
-                        Atendimento de Emergência & Urgência
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
-                     </p>
-                     <p className="text-sm font-black text-amber-800 leading-tight">
-                        {currentCategory?.aviso_legal}
-                     </p>
-                     <p className="text-[9px] text-amber-700/60 font-bold uppercase mt-1">Se houver risco imediato à vida, acione os órgãos acima antes de prosseguir com o relato digital.</p>
+                    <p className="text-[10px] font-black text-amber-900 uppercase tracking-widest">Informação Importante</p>
+                    <p className="text-sm font-bold text-amber-800 leading-snug italic">{currentCategory?.aviso_legal}</p>
                   </div>
-               </div>
-            )}
+                </div>
+              )}
 
-            <div ref={bottomRef} className="flex justify-end pt-4">
-               <button 
-                onClick={handleNext}
-                disabled={!formData.categoria_id}
-                className="btn-primary btn-md sm:btn-lg gap-2 w-full sm:w-auto sm:min-w-[200px]"
-               >
-                  Próximo Passo
-                  <ArrowRight size={18} />
-               </button>
+              <div ref={bottomRef} className="flex justify-end pt-6">
+                <button 
+                  onClick={handleNext} 
+                  disabled={!formData.categoria_id} 
+                  className="btn-primary h-16 px-10 rounded-2xl gap-3 shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-30 disabled:grayscale"
+                >
+                  <span className="font-black uppercase tracking-widest text-xs">Avançar para o Relato</span>
+                  <ArrowRight size={20} />
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {step === 2 && (
-          <div className="space-y-8 animate-slide-up">
-            <div className="flex items-center justify-between">
-               <div>
-                  <h2 className="text-2xl font-black text-dark tracking-tighter italic uppercase">Relato do Ocorrido</h2>
-                  <p className="text-muted text-sm font-medium">Conte-nos os detalhes fundamentais para a apuração.</p>
-               </div>
-               <div className="p-4 bg-primary/10 text-primary rounded-2xl border border-primary/20 shadow-glow-cyan">
-                  <FileText size={28} />
-               </div>
-            </div>
+          {/* STEP 2 — Descrição */}
+          {step === 2 && (
+            <div className="space-y-10 animate-slide-up">
+              <div className="flex items-center justify-between border-b border-border/40 pb-6">
+                <div className="space-y-1">
+                  <h2 className="text-3xl font-black text-dark tracking-tighter italic uppercase">Relato do Ocorrido</h2>
+                  <p className="text-muted text-sm font-medium">Seja o mais específico possível nos detalhes.</p>
+                </div>
+                <div className="hidden sm:flex p-5 bg-primary/5 text-primary rounded-[2rem] border border-primary/10"><FileText size={32} /></div>
+              </div>
 
-            {/* Categoria Selecionada */}
-            {currentCategory && (
-               <div className="flex items-center gap-3 p-4 bg-surface border border-border rounded-2xl animate-fade-in shadow-sm">
-                  <div className="text-3xl">{currentCategory.emoji}</div>
-                  <div>
-                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 mb-0.5">Categoria Selecionada</p>
-                     <h4 className="font-extrabold text-sm text-dark uppercase tracking-tight">{currentCategory.label}</h4>
-                  </div>
-                  <button 
-                    onClick={handleBack}
-                    className="ml-auto text-[9px] font-black uppercase text-muted hover:text-primary transition-colors border border-border px-3 py-1.5 rounded-lg"
-                  >
-                    Alterar
-                  </button>
-               </div>
-            )}
-
-            <div className="space-y-8">
-               <div className="space-y-6">
-                  {/* Campos dinâmicos (não-endereço, não-identificação) */}
-                  {camposVisiveis.map(campo => {
-                     const isEndereco = ['local', 'numero', 'bairro', 'cidade', 'cep'].includes(campo.campo);
-                     const isIdentificacao = ['nome', 'email', 'telefone', 'cpf'].includes(campo.campo);
-                     
-                     if (isEndereco || isIdentificacao || campo.campo === 'data_ocorrido') return null;
-
-                     return (
-                        <div key={campo.id} className="space-y-2">
-                           <label className={`label text-[10px] font-black uppercase tracking-widest ${campo.obrigatorio ? 'label-required' : ''}`}>
-                              {campo.label}
-                           </label>
-                           <input 
-                             className="input h-12" 
-                             placeholder={campo.placeholder || undefined} 
-                             value={(formData as unknown as Record<string, string>)[campo.campo] || ''}
-                             onChange={(e) => handleInputChange(campo.campo as keyof DenunciaFormData, e.target.value)}
-                           />
-                        </div>
-                     )
-                  })}
-
-                  {/* Data do Ocorrido */}
-                  {camposVisiveis.find(c => c.campo === 'data_ocorrido') && (
-                     <div className="space-y-2">
-                        <label className="label text-[10px] font-black uppercase tracking-widest label-required">Data do Ocorrido</label>
-                        <input 
-                          type="date" 
-                          className="input h-12" 
-                          value={formData.data_ocorrido}
-                          onChange={(e) => handleInputChange('data_ocorrido', e.target.value)}
-                        />
-                     </div>
-                  )}
-
-                  <div className="space-y-2">
-                     <label className="label label-required text-[10px] font-black uppercase tracking-widest">Descrição Detalhada</label>
-                     <textarea 
-                       className="input min-h-[180px] py-4 leading-relaxed text-sm" 
-                       placeholder="Descreva aqui os fatos, pessoas envolvidas e qualquer detalhe que ajude na investigação."
-                       value={formData.descricao_original}
-                       onChange={(e) => handleInputChange('descricao_original', e.target.value)}
-                     />
-                  </div>
-               </div>
-            </div>
-
-            <div className="flex justify-between pt-6">
-               <button onClick={handleBack} className="flex items-center gap-2 text-[10px] uppercase font-black text-muted hover:text-dark transition-colors">
-                  <ArrowLeft size={16} /> Voltar
-               </button>
-               <button 
-                onClick={() => {
-                   if (!formData.titulo || !formData.descricao_original) {
-                      toast.error("Preencha o título e a descrição principal")
-                      return
-                   }
-                   handleNext()
-                }}
-                className="btn-primary btn-md sm:btn-lg gap-2 min-w-[200px]"
-               >
-                  Localização da Ocorrência
-                  <ArrowRight size={18} />
-               </button>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-8 animate-slide-up">
-            <div className="flex items-center justify-between">
-               <div>
-                  <h2 className="text-2xl font-black text-dark tracking-tighter italic uppercase">Localização</h2>
-                  <p className="text-muted text-sm font-medium">Onde o fato aconteceu? Comece pelo CEP.</p>
-               </div>
-               <div className="p-4 bg-primary/10 text-primary rounded-2xl border border-primary/20 shadow-glow-cyan">
-                  <FileText size={28} />
-               </div>
-            </div>
-
-            <div className="space-y-6">
-               <div className="space-y-2">
-                  <label className="label text-[10px] font-black uppercase tracking-widest label-required">CEP (Preenchimento Automático)</label>
+              <div className="grid grid-cols-1 gap-8">
+                <div className="space-y-3">
+                  <label className="label text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
+                    <Info size={14} /> Título da Ocorrência *
+                  </label>
                   <input 
-                    className="input h-14 text-lg font-bold tracking-widest placeholder:font-normal placeholder:tracking-normal" 
-                    placeholder="00000-000" 
-                    value={formData.cep}
-                    onChange={(e) => handleCepChange(e.target.value)}
-                    maxLength={9}
+                    className="input h-16 rounded-2xl text-lg font-bold border-2 focus:ring-4 focus:ring-primary/5 transition-all" 
+                    placeholder="Ex: Obra abandonada no centro"
+                    value={formData.titulo}
+                    onChange={(e) => handleInputChange('titulo', e.target.value)}
                   />
-                  {loadingEnderecos && <p className="text-[10px] font-bold text-primary animate-pulse">Buscando endereço localmente...</p>}
-               </div>
-            
-               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                  <div className="sm:col-span-3 relative">
-                     <label className="label text-[10px] font-black uppercase tracking-widest label-required">Local / Rua / Logradouro</label>
-                     <input 
-                       className="input h-12 pr-10" 
-                       placeholder="Ex: Av. Afonso Pena" 
-                       value={formData.local}
-                       onChange={(e) => handleSearchEndereco(e.target.value)}
-                       autoComplete="off"
-                     />
-                     {sugestoesEndereco.length > 0 && (
-                       <div className="absolute z-50 w-full mt-2 bg-white border-2 border-primary shadow-2xl rounded-2xl overflow-hidden animate-slide-up">
-                          {sugestoesEndereco.map((s, idx) => (
-                             <button
-                               key={idx}
-                               type="button"
-                               onClick={() => handleSelectEndereco(s)}
-                               className="w-full p-4 text-left hover:bg-surface border-b border-border last:border-none flex items-start gap-3 transition-colors group"
-                             >
-                                <div className="mt-1 p-1.5 bg-primary/5 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
-                                   <Camera size={14} />
-                                </div>
-                                <div className="flex-grow min-w-0">
-                                   <p className="text-[11px] font-black text-dark uppercase tracking-tighter leading-none mb-1">
-                                      {s.display_name.split(',')[0]}
-                                   </p>
-                                   <p className="text-[10px] text-muted font-bold truncate">
-                                      {s.display_name}
-                                   </p>
-                                </div>
-                             </button>
-                          ))}
-                       </div>
-                     )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {camposVisiveis.map(campo => {
+                    if (['local','numero','bairro','cidade','cep','nome','email','telefone','cpf','data_ocorrido','titulo'].includes(campo.campo)) return null
+                    return (
+                      <div key={campo.id} className="space-y-2">
+                        <label className="label text-[10px] font-black uppercase tracking-widest text-muted">{campo.label} {campo.obrigatorio ? '*' : ''}</label>
+                        <input className="input h-14 rounded-xl border-2" placeholder={campo.placeholder || ''}
+                          value={(formData as unknown as Record<string, string>)[campo.campo] || ''}
+                          onChange={(e) => handleInputChange(campo.campo as keyof DenunciaFormData, e.target.value)} />
+                      </div>
+                    )
+                  })}
+                  {camposVisiveis.find(c => c.campo === 'data_ocorrido') && (
+                    <div className="space-y-2">
+                      <label className="label text-[10px] font-black uppercase tracking-widest text-primary label-required">Data do Ocorrido</label>
+                      <div className="relative">
+                        <input type="date" className="input h-14 rounded-xl border-2 font-bold uppercase text-xs" value={formData.data_ocorrido} onChange={(e) => handleInputChange('data_ocorrido', e.target.value)} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <label className="label text-[10px] font-black uppercase tracking-[0.2em] text-primary label-required">Descrição Detalhada</label>
+                  <div className="relative group">
+                    <textarea 
+                      className="input min-h-[220px] rounded-[2rem] p-6 leading-relaxed text-base border-2 group-focus-within:ring-4 group-focus-within:ring-primary/5 transition-all"
+                      placeholder="Descreva aqui os fatos, pessoas envolvidas e qualquer detalhe que ajude na investigação..."
+                      value={formData.descricao_original} 
+                      onChange={(e) => handleInputChange('descricao_original', e.target.value)} 
+                    />
+                    <div className="absolute bottom-6 right-6 text-[10px] font-black text-muted/30 uppercase tracking-widest pointer-events-none">Canal Seguro 256-bit</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-8 border-t border-border/40">
+                <button onClick={handleBack} className="group flex items-center gap-3 text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
+                  <div className="p-2 rounded-lg group-hover:bg-surface transition-colors"><ArrowLeft size={18} /></div>
+                  Voltar
+                </button>
+                <button 
+                  onClick={() => { if (!formData.titulo || !formData.descricao_original) { toast.error('Preencha o título e a descrição'); return }; handleNext() }} 
+                  className="btn-primary h-16 px-10 rounded-2xl gap-3 shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                  <span className="font-black uppercase tracking-widest text-xs">Confirmar Localização</span>
+                  <ArrowRight size={20} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3 — Localização */}
+          {step === 3 && (
+            <div className="space-y-10 animate-slide-up">
+              <div className="flex items-center justify-between border-b border-border/40 pb-6">
+                <div className="space-y-1">
+                  <h2 className="text-3xl font-black text-dark tracking-tighter italic uppercase">Onde aconteceu?</h2>
+                  <p className="text-muted text-sm font-medium">A localização exata agiliza a resposta das autoridades.</p>
+                </div>
+                <div className="hidden sm:flex p-5 bg-electric/10 text-primary rounded-[2rem] border border-electric/20"><MapPin size={32} /></div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-8">
+                <div className="max-w-xs space-y-2">
+                  <label className="label text-[10px] font-black uppercase tracking-widest text-primary">CEP do Mato Grosso do Sul</label>
+                  <div className="relative group">
+                    <input 
+                      className="input h-16 rounded-2xl text-2xl font-black tracking-[0.2em] border-2 focus:ring-4 focus:ring-primary/5 transition-all text-center" 
+                      placeholder="00000-000" 
+                      value={formData.cep} 
+                      onChange={(e) => handleCepChange(e.target.value)} 
+                      maxLength={9} 
+                    />
+                    {loadingEnderecos && <div className="absolute right-4 top-1/2 -translate-y-1/2"><Loader2 size={20} className="animate-spin text-primary" /></div>}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
+                  <div className="sm:col-span-3 relative group">
+                    <label className="label text-[10px] font-black uppercase tracking-widest text-muted">Logradouro / Rua</label>
+                    <input className="input h-14 rounded-xl border-2 font-bold" placeholder="Digite o nome da rua..." value={formData.local} onChange={(e) => handleSearchEndereco(e.target.value)} autoComplete="off" />
+                    {sugestoesEndereco.length > 0 && (
+                      <div className="absolute z-50 w-full mt-2 bg-white/90 backdrop-blur-xl border-2 border-primary/20 shadow-2xl rounded-[2rem] overflow-hidden animate-slide-up">
+                        {sugestoesEndereco.map((s, idx) => (
+                          <button key={idx} type="button" onClick={() => handleSelectEndereco(s)} className="w-full p-5 text-left hover:bg-primary/5 border-b border-border/40 last:border-none flex items-start gap-4 group/item transition-colors">
+                            <div className="mt-1 p-2 bg-primary/5 text-primary rounded-xl group-hover/item:bg-primary group-hover/item:text-white transition-colors"><MapPin size={16} /></div>
+                            <div className="flex-grow min-w-0">
+                              <p className="text-xs font-black text-dark uppercase">{s.display_name.split(',')[0]}</p>
+                              <p className="text-[10px] text-muted font-bold truncate">{s.display_name}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="sm:col-span-1">
-                     <label className="label text-[10px] font-black uppercase tracking-widest label-required">Número</label>
-                     <input 
-                       className="input h-12" 
-                       placeholder="Ex: 123" 
-                       value={formData.numero}
-                       onChange={(e) => handleInputChange('numero', e.target.value)}
-                     />
+                    <label className="label text-[10px] font-black uppercase tracking-widest text-muted">Nº</label>
+                    <input className="input h-14 rounded-xl border-2 font-black text-center" placeholder="S/N" value={formData.numero} onChange={(e) => handleInputChange('numero', e.target.value)} />
                   </div>
-               </div>
+                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                  <div>
-                     <label className="label text-[10px] font-black uppercase tracking-widest label-required">Bairro</label>
-                     <input 
-                       className="input h-12" 
-                       placeholder="Ex: Centro" 
-                       value={formData.bairro}
-                       onChange={(e) => handleInputChange('bairro', e.target.value)}
-                     />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="label text-[10px] font-black uppercase tracking-widest text-muted">Bairro</label>
+                    <input className="input h-14 rounded-xl border-2 font-bold" placeholder="Ex: Centro" value={formData.bairro} onChange={(e) => handleInputChange('bairro', e.target.value)} />
                   </div>
-                  <div>
-                     <label className="label text-[10px] font-black uppercase tracking-widest label-required">Cidade / Município</label>
-                     <input 
-                       className="input h-12" 
-                       placeholder="Ex: Campo Grande" 
-                       value={formData.cidade}
-                       onChange={(e) => handleInputChange('cidade', e.target.value)}
-                     />
+                  <div className="space-y-2">
+                    <label className="label text-[10px] font-black uppercase tracking-widest text-muted">Cidade / Município</label>
+                    <input className="input h-14 rounded-xl border-2 font-bold" placeholder="Ex: Campo Grande" value={formData.cidade} onChange={(e) => handleInputChange('cidade', e.target.value)} />
                   </div>
-               </div>
-            </div>
+                </div>
+              </div>
 
-            <div className="flex justify-between pt-6">
-               <button onClick={handleBack} className="flex items-center gap-2 text-[10px] uppercase font-black text-muted hover:text-dark transition-colors">
-                  <ArrowLeft size={16} /> Voltar
-               </button>
-               <button 
-                onClick={handleNext}
-                className="btn-primary btn-md sm:btn-lg gap-2 min-w-[200px]"
-               >
-                  Enviar Evidências
-                  <ArrowRight size={18} />
-               </button>
-            </div>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="space-y-8 animate-slide-up">
-             <div className="flex items-center justify-between">
-               <div>
-                  <h2 className="text-2xl font-black text-dark tracking-tighter italic uppercase">Provas & Evidências</h2>
-                  <p className="text-muted text-sm font-medium">Anexe fotos, vídeos ou documentos que ajudem no caso.</p>
-               </div>
-               <div className="text-primary">
-                  <Camera size={28} />
-               </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-               {politicasArquivo.filter(t => t.ativo).map(tipo => (
-                 <label 
-                  key={tipo.tipo} 
-                  className="border-2 border-dashed border-border rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3 hover:bg-surface hover:border-primary/50 transition-all cursor-pointer group"
-                 >
-                    <input type="file" multiple className="hidden" onChange={handleFileChange} />
-                    <div className="text-muted group-hover:text-primary transition-colors">
-                       <Paperclip size={28} />
-                    </div>
-                    <div>
-                       <p className="font-extrabold text-dark uppercase text-xs tracking-tight">Anexar {tipo.tipo}</p>
-                       <p className="text-[10px] text-muted font-bold mt-1">Até {tipo.qtd_maxima} arquivos de {tipo.tamanho_max_mb}MB</p>
-                    </div>
-                 </label>
-               ))}
-            </div>
-
-            {formData.arquivos.length > 0 && (
-               <div className="bg-surface rounded-2xl p-4 space-y-2 border border-border">
-                  <p className="text-[10px] font-black uppercase text-secondary">Arquivos Selecionados ({formData.arquivos.length})</p>
-                  <div className="flex flex-wrap gap-2">
-                     {formData.arquivos.map((f, i) => (
-                        <div key={i} className="px-3 py-1.5 bg-white border border-border rounded-lg text-[10px] font-bold flex items-center gap-2">
-                           <FileText size={12} className="text-primary" />
-                           <span className="truncate max-w-[100px]">{f.name}</span>
-                        </div>
-                     ))}
-                  </div>
-               </div>
-            )}
-
-            <div className="p-6 bg-surface border border-border rounded-2xl flex gap-4 text-muted text-xs leading-relaxed">
-               <ShieldCheck size={24} className="shrink-0 text-primary" />
-               <p className="font-medium">Seus arquivos serão criptografados e armazenados em servidores seguros de alta disponibilidade em Mato Grosso do Sul. Anonimato técnico garantido.</p>
-            </div>
-
-            <div className="flex items-center justify-between pt-6 gap-4">
-               <button onClick={handleBack} className="flex items-center gap-2 text-[10px] uppercase font-black text-muted hover:text-dark transition-colors">
-                  <ArrowLeft size={16} /> Voltar
-               </button>
-               <button 
-                onClick={handleNext}
-                className="btn-primary btn-md sm:btn-lg gap-3 flex-1 sm:flex-none sm:min-w-[280px] bg-dark hover:bg-black border-none"
-               >
-                  Ir Para Identificação & Revisão
+              <div className="flex items-center justify-between pt-8 border-t border-border/40">
+                <button onClick={handleBack} className="group flex items-center gap-3 text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
+                  <div className="p-2 rounded-lg group-hover:bg-surface transition-colors"><ArrowLeft size={18} /></div>
+                  Voltar
+                </button>
+                <button onClick={handleNext} className="btn-primary h-16 px-10 rounded-2xl gap-3 shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all">
+                  <span className="font-black uppercase tracking-widest text-xs">Anexar Evidências</span>
                   <ArrowRight size={20} />
-               </button>
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {step === 5 && (
-          <div className="space-y-8 animate-slide-up">
-             <div className="flex items-center justify-between">
-               <div>
-                  <h2 className="text-2xl font-black text-dark tracking-tighter italic uppercase text-primary">Privacidade e Revisão Final</h2>
-                  <p className="text-muted text-sm font-medium">Configure seu anonimato e confira os dados antes de gerar o protocolo.</p>
-               </div>
-               <div className="p-4 bg-secondary/10 text-secondary rounded-2xl">
-                  <ShieldCheck size={32} />
-               </div>
-            </div>
+          {/* STEP 4 — Arquivos */}
+          {step === 4 && (
+            <div className="space-y-10 animate-slide-up">
+              <div className="flex items-center justify-between border-b border-border/40 pb-6">
+                <div className="space-y-1">
+                  <h2 className="text-3xl font-black text-dark tracking-tighter italic uppercase">Provas & Evidências</h2>
+                  <p className="text-muted text-sm font-medium">Anexe fotos, PDFs ou áudios que comprovem o ocorrido.</p>
+                </div>
+                <div className="hidden sm:flex p-5 bg-secondary/10 text-secondary rounded-[2rem] border border-secondary/20"><Camera size={32} /></div>
+              </div>
 
-            {/* Configuração de Privacidade */}
-            <div className="p-8 bg-dark text-white rounded-3xl space-y-6 shadow-2xl relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full blur-3xl"></div>
-               
-               <div className="flex items-center gap-3">
-                  <div className="p-2 bg-secondary/20 rounded-lg">
-                     <Lock size={20} className="text-secondary" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <label className="relative border-4 border-dashed border-border/40 rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center gap-4 hover:bg-primary/5 hover:border-primary/40 transition-all cursor-pointer group overflow-hidden">
+                  <input type="file" multiple className="hidden" onChange={handleFileChange} />
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors"></div>
+                  
+                  <div className="w-16 h-16 rounded-3xl bg-white shadow-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500 border border-border/20">
+                    <UploadCloud size={32} strokeWidth={2.5} />
                   </div>
-                  <h3 className="font-extrabold text-sm uppercase tracking-tighter">Nível de Sigilo Desejado</h3>
-               </div>
+                  
+                  <div className="space-y-1">
+                    <p className="font-black text-dark uppercase text-sm tracking-tight">Clique ou Arraste Arquivos</p>
+                    <p className="text-[10px] text-muted font-bold">Máximo de {MAX_ARQUIVOS} arquivos (até {MAX_MB}MB cada)</p>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    {['JPG','PNG','PDF','MP3'].map(ext => (
+                      <span key={ext} className="px-2 py-1 bg-surface text-[8px] font-black rounded-lg border border-border/50 text-muted/60">{ext}</span>
+                    ))}
+                  </div>
+                </label>
 
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {allowAnonymous && (
-                    <button 
-                     onClick={() => { handleInputChange('anonima', true); setOtpEnviado(false); }}
-                     className={`p-4 rounded-xl border-2 flex flex-col items-start gap-1 transition-all ${formData.anonima ? 'border-secondary bg-secondary/10 text-white shadow-glow-green' : 'border-white/10 text-white/40 hover:border-white/20'}`}
-                    >
-                       <div className="flex items-center gap-3 w-full">
-                         <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${formData.anonima ? 'border-secondary bg-secondary' : 'border-white/20'}`}>
-                            {formData.anonima && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
-                         </div>
-                         <span className="text-[11px] font-black uppercase tracking-widest leading-tight text-left">Manter Anônimo</span>
-                       </div>
-                    </button>
-                  )}
+                <div className="bg-surface/50 rounded-[2.5rem] p-8 border border-border/30 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] font-black uppercase text-secondary tracking-widest flex items-center gap-2">
+                        <Check size={16} /> Lista de Arquivos
+                      </p>
+                      <span className="text-[10px] font-black bg-white px-2 py-1 rounded-lg border border-border/50">
+                        {formData.arquivos.length}/{MAX_ARQUIVOS}
+                      </span>
+                    </div>
+                    
+                    {formData.arquivos.length === 0 ? (
+                      <div className="h-32 flex flex-col items-center justify-center text-muted/30 gap-2 italic">
+                        <Paperclip size={24} className="opacity-20" />
+                        <p className="text-[10px] font-bold">Nenhum arquivo selecionado</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
+                        {formData.arquivos.map((f, i) => (
+                          <div key={i} className="group/file p-3 bg-white border border-border/50 rounded-2xl flex items-center justify-between animate-fade-in shadow-sm hover:shadow-md transition-all">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <div className="p-2 bg-primary/5 text-primary rounded-xl"><FileText size={14} /></div>
+                              <div className="truncate min-w-0">
+                                <p className="text-[10px] font-black text-dark truncate">{f.name}</p>
+                                <p className="text-[8px] text-muted font-bold">{(f.size / 1024 / 1024).toFixed(2)} MB</p>
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => removeFile(i)}
+                              className="p-2 text-muted hover:text-error hover:bg-error/5 rounded-xl transition-colors"
+                            >
+                              <Check size={14} className="rotate-45" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-                  <button 
-                   onClick={() => handleInputChange('anonima', false)}
-                   className={`p-4 rounded-xl border-2 flex flex-col gap-1 transition-all ${!formData.anonima ? 'border-secondary bg-secondary/10 text-white shadow-glow-green' : 'border-white/10 text-white/40 hover:border-white/20'} ${!allowAnonymous ? 'col-span-2' : ''}`}
-                  >
-                     <div className="flex items-center gap-3 w-full">
-                       <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${!formData.anonima ? 'border-secondary bg-secondary' : 'border-white/20'}`}>
-                          {!formData.anonima && <div className="w-2 h-2 rounded-full bg-white"></div>}
-                       </div>
-                       <span className="text-[11px] font-black uppercase tracking-widest leading-tight text-left">Identificar-me</span>
-                     </div>
-                  </button>
-               </div>
-
-               {/* Nudges Psicológicos */}
-               {formData.anonima && allowAnonymous && (
-                 <div className="bg-amber-950/40 border border-amber-500/30 p-4 rounded-2xl animate-fade-in flex gap-3">
-                   <AlertTriangle className="text-amber-500 flex-shrink-0 mt-0.5" size={18} />
-                   <p className="text-[11px] text-amber-200/90 leading-tight">
-                     <strong>Atenção:</strong> Ao optar pelo anonimato, você não receberá e-mails automáticos com as resoluções do caso, e a Equipe da plataforma DenunciaMS não terá como solicitar mais provas ou detalhes. Isso pode causar o arquivamento da investigação por falta de dados básicos.
-                   </p>
-                 </div>
-               )}
-
-               {!allowAnonymous && formData.anonima === false && (
-                 <div className="bg-blue-950/40 border border-blue-500/30 p-4 rounded-2xl animate-fade-in flex gap-3">
-                   <ShieldCheck className="text-blue-500 flex-shrink-0 mt-0.5" size={18} />
-                   <p className="text-[11px] text-blue-200/90 leading-tight">
-                     Por exigência das diretrizes de responsabilização vigentes para este canal, a identificação mínima autenticada foi tornada obrigatória, garantindo-se o total sigilo da sua identidade (LAI).
-                   </p>
-                 </div>
-               )}
-
-               {!formData.anonima && (
-                 <div className="space-y-4 pt-2 animate-slide-up">
-                    <p className="text-[10px] text-white/60 leading-tight border-l-2 border-secondary/50 pl-3">
-                      A Equipe da plataforma DenunciaMS aplica técnicas de pseudonimização. Seus dados são legalmente protegidos (Art. 31, §1º, I da LAI) e ocultados no relato principal. A identificação mínima blinda o canal contra fraudes e acelera o tratamento sério da sua denúncia.
+                  <div className="mt-4 p-4 bg-white/40 rounded-2xl flex gap-3 border border-white/60 shadow-inner">
+                    <ShieldCheck size={18} className="shrink-0 text-secondary" />
+                    <p className="text-[9px] font-bold text-muted-foreground leading-tight italic">
+                      Seus arquivos são criptografados e armazenados em infraestrutura segura do Estado.
                     </p>
+                  </div>
+                </div>
+              </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                       <div className="space-y-1">
-                          <p className="text-[9px] font-bold text-white/40 uppercase pl-1">Nome Completo</p>
-                          <input 
-                            className="bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary w-full transition-all" 
-                            placeholder="Seu nome completo" 
-                            disabled={otpEnviado}
-                            value={formData.nome || ''}
-                            onChange={(e) => handleInputChange('nome', e.target.value)}
-                          />
-                       </div>
-                       <div className="space-y-1">
-                          <p className="text-[9px] font-bold text-white/40 uppercase pl-1">E-mail (Para Receber o Código)</p>
-                          <input 
-                            className="bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary w-full transition-all" 
-                            placeholder="seu@email.com" 
-                            disabled={otpEnviado}
-                            type="email"
-                            value={formData.email || ''}
-                            onChange={(e) => handleInputChange('email', e.target.value)}
-                          />
-                       </div>
+              <div className="flex items-center justify-between pt-8 border-t border-border/40">
+                <button onClick={handleBack} className="group flex items-center gap-3 text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
+                  <div className="p-2 rounded-lg group-hover:bg-surface transition-colors"><ArrowLeft size={18} /></div>
+                  Voltar
+                </button>
+                <button onClick={handleNext} className="btn-primary h-16 px-10 rounded-2xl gap-3 shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all bg-dark hover:bg-black">
+                  <span className="font-black uppercase tracking-widest text-xs">Revisão & Identificação</span>
+                  <ArrowRight size={20} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5 — Identificação e Revisão */}
+          {step === 5 && (
+            <div className="space-y-10 animate-slide-up">
+              <div className="flex items-center justify-between border-b border-border/40 pb-6">
+                <div className="space-y-1">
+                  <h2 className="text-3xl font-black text-dark tracking-tighter italic uppercase text-primary">Segurança & Finalização</h2>
+                  <p className="text-muted text-sm font-medium">Valide sua identidade para garantir a legitimidade da denúncia.</p>
+                </div>
+                <div className="hidden sm:flex p-5 bg-secondary/10 text-secondary rounded-[2rem] border border-secondary/20"><ShieldCheck size={32} /></div>
+              </div>
+
+              {/* Bloco de Identificação Premium */}
+              <div className="p-8 sm:p-10 bg-dark text-white rounded-[3rem] space-y-8 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/10 rounded-full blur-[100px] -mr-20 -mt-20 group-hover:bg-secondary/20 transition-colors duration-700"></div>
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-[100px] -ml-20 -mb-20"></div>
+                
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className="p-3 bg-secondary/20 rounded-2xl border border-secondary/30 backdrop-blur-md"><Lock size={24} className="text-secondary" /></div>
+                  <div>
+                    <h3 className="font-black text-lg uppercase tracking-tighter">Protocolo de Identidade</h3>
+                    <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Proteção Nível Governamental (LGPD)</p>
+                  </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 p-5 rounded-3xl flex gap-4 relative z-10 backdrop-blur-md">
+                  <Info className="text-electric flex-shrink-0 mt-0.5" size={20} />
+                  <p className="text-[11px] text-white/70 leading-relaxed font-medium italic">
+                    Utilizamos pseudonimização. Seus dados pessoais são criptografados antes de chegarem ao banco de dados, sendo visíveis apenas para a autoridade responsável pela investigação.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">Nome Completo *</p>
+                    <input className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm focus:outline-none focus:ring-4 focus:ring-secondary/20 focus:border-secondary w-full transition-all"
+                      placeholder="Seu nome completo" disabled={otpEnviado} value={formData.nome} onChange={(e) => handleInputChange('nome', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">E-mail Corporativo/Pessoal *</p>
+                    <input type="email" className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm focus:outline-none focus:ring-4 focus:ring-secondary/20 focus:border-secondary w-full transition-all"
+                      placeholder="seu@email.com" disabled={otpEnviado} value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">Celular / WhatsApp *</p>
+                    <input className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm focus:outline-none focus:ring-4 focus:ring-secondary/20 focus:border-secondary w-full transition-all"
+                      placeholder="(67) 99999-9999" disabled={otpEnviado} value={formData.telefone} onChange={(e) => handleTelefoneChange(e.target.value)} maxLength={15} />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">CPF *</p>
+                    <input className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm focus:outline-none focus:ring-4 focus:ring-secondary/20 focus:border-secondary w-full transition-all"
+                      placeholder="000.000.000-00" disabled={otpEnviado} value={formData.cpf} onChange={(e) => handleCpfChange(e.target.value)} maxLength={14} />
+                  </div>
+                </div>
+
+                {/* OTP Section Premium */}
+                <div className="pt-4 relative z-10">
+                  {!otpEnviado ? (
+                    <button onClick={handleSolicitarOTP} disabled={loadingOtp || !formData.email || !formData.nome || cooldown > 0}
+                      className="w-full h-16 bg-secondary text-white font-black uppercase text-xs tracking-[0.2em] rounded-2xl disabled:opacity-30 flex justify-center items-center gap-3 shadow-glow-green hover:scale-[1.01] active:scale-[0.99] transition-all">
+                      {loadingOtp ? <Loader2 size={20} className="animate-spin" /> : <Lock size={20} />}
+                      {cooldown > 0 ? `Tentar novamente em ${cooldown}s` : 'Gerar Token de Autenticação'}
+                    </button>
+                  ) : (
+                    <div className="bg-white/5 border border-secondary/30 p-8 rounded-[2rem] space-y-6 animate-slide-up backdrop-blur-xl">
+                      <div className="text-center space-y-1">
+                        <p className="text-xs font-black uppercase tracking-[0.3em] text-secondary">Token Enviado</p>
+                        <p className="text-[10px] text-white/50 font-medium">Insira o código de 6 dígitos enviado para seu e-mail</p>
+                      </div>
+                      <input ref={otpInputRef}
+                        className="bg-black/40 border-2 border-secondary/40 rounded-2xl h-20 text-center text-4xl font-black tracking-[0.6em] text-white focus:outline-none focus:ring-8 focus:ring-secondary/10 focus:border-secondary w-full max-w-[320px] mx-auto block shadow-2xl"
+                        placeholder="000000" maxLength={6} value={formData.otpToken}
+                        onChange={(e) => handleInputChange('otpToken', e.target.value.replace(/\D/g, ''))} />
+                      <button onClick={() => { setOtpEnviado(false); handleInputChange('otpToken', '') }}
+                        className="text-[9px] text-white/30 uppercase font-black hover:text-white mx-auto block pt-2 underline underline-offset-4 tracking-widest transition-colors">
+                        Corrigir e-mail ou reenviar código
+                      </button>
                     </div>
+                  )}
+                </div>
+              </div>
 
-                    {/* Bloco de OTP */}
-                    <div className="pt-2">
-                      {!otpEnviado ? (
-                        <button 
-                          onClick={handleSolicitarOTP}
-                          disabled={loadingOtp || !formData.email || !formData.nome || cooldown > 0}
-                          className="w-full bg-secondary text-white font-black uppercase text-[11px] tracking-widest p-4 rounded-xl transition-all disabled:opacity-50 disabled:bg-secondary/20 disabled:text-secondary flex justify-center items-center gap-2 shadow-glow-green hover:scale-[1.02] active:scale-[0.98]"
-                        >
-                           {loadingOtp ? <Loader2 size={16} className="animate-spin" /> : <Lock size={16} />}
-                           {cooldown > 0 ? `Aguarde ${cooldown}s` : 'Solicitar Código de Segurança'}
-                        </button>
-                      ) : (
-                        <div className="bg-white/10 border border-secondary/30 p-4 rounded-xl space-y-3 animate-fade-in">
-                           <p className="text-[11px] font-black uppercase tracking-widest text-secondary text-center">Código Enviado</p>
-                           <p className="text-[10px] text-white/70 text-center leading-tight">A Equipe da plataforma DenunciaMS enviou um PIN de 6 dígitos para {formData.email}.</p>
-                           <input 
-                               ref={otpInputRef}
-                               className="bg-black/20 border border-white/20 rounded-xl p-4 text-center text-2xl font-black tracking-[0.5em] text-white focus:outline-none focus:ring-2 focus:ring-secondary w-full max-w-[200px] mx-auto block uppercase placeholder:text-white/10" 
-                               placeholder="000000" 
-                               maxLength={6}
-                               value={formData.otpToken || ''}
-                               onChange={(e) => handleInputChange('otpToken', e.target.value.replace(/\D/g, ''))}
-                           />
-                           <button onClick={() => setOtpEnviado(false)} className="text-[9px] text-white/40 uppercase hover:text-white mx-auto block pt-2 underline">Mudar E-mail / Reenviar</button>
-                        </div>
-                      )}
+              {/* Resumo & Consentimento */}
+              <div className="grid grid-cols-1 gap-6">
+                <div className="bg-surface/50 rounded-[3rem] p-8 border border-border/40 space-y-8">
+                  <div className="flex items-center gap-6 border-b border-border/40 pb-6">
+                    <span className="text-6xl filter drop-shadow-xl">{currentCategory?.emoji}</span>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black uppercase text-muted tracking-widest">Protocolo Destinado a</p>
+                      <h4 className="text-2xl font-black text-dark tracking-tighter italic uppercase">{currentCategory?.label}</h4>
                     </div>
                   </div>
-                )}
-             </div>
-
-            <div className="space-y-4">
-               {/* Resumo Card */}
-               <div className="bg-surface rounded-3xl p-6 border border-border space-y-6">
-                  <div className="flex items-center gap-4 border-b border-border pb-4">
-                     <span className="text-4xl">{currentCategory?.emoji}</span>
-                     <div>
-                        <p className="text-[10px] font-black uppercase text-muted tracking-widest">Categoria Selecionada</p>
-                        <h4 className="text-lg font-black text-dark leading-tight">{currentCategory?.label}</h4>
-                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                     <div className="space-y-1">
-                        <p className="text-[10px] font-black uppercase text-muted tracking-widest">Localização</p>
-                        <p className="font-bold text-dark">{formData.local}, {formData.numero}</p>
-                        <p className="text-xs text-muted font-medium">{formData.bairro} — {formData.cidade} / MS (CEP {formData.cep})</p>
-                     </div>
-                     <div className="space-y-1">
-                        <p className="text-[10px] font-black uppercase text-muted tracking-widest">Fato</p>
-                        <h5 className="font-black text-dark text-base">{formData.titulo}</h5>
-                     </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div className="space-y-3">
+                      <p className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-2"><MapPin size={14} /> Local do Fato</p>
+                      <p className="text-sm font-black text-dark uppercase">{formData.local}{formData.numero ? `, ${formData.numero}` : ''}</p>
+                      <p className="text-xs text-muted font-bold italic">{formData.bairro} — {formData.cidade}</p>
+                    </div>
+                    <div className="space-y-3">
+                      <p className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-2"><FileText size={14} /> Título do Relato</p>
+                      <h5 className="font-black text-dark text-lg uppercase tracking-tight italic leading-tight">{formData.titulo}</h5>
+                    </div>
                   </div>
 
                   {formData.arquivos.length > 0 && (
-                     <div className="pt-4 border-t border-border flex items-center justify-between">
-                         <p className="text-[10px] font-black uppercase text-muted tracking-widest">Evidências Anexadas</p>
-                         <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black">{formData.arquivos.length} ARQUIVO(S)</span>
-                     </div>
+                    <div className="pt-6 border-t border-border/40 flex items-center justify-between">
+                      <p className="text-[10px] font-black uppercase text-muted tracking-widest flex items-center gap-2"><Paperclip size={14} /> Evidências anexadas</p>
+                      <span className="px-4 py-2 bg-primary text-white rounded-xl text-[10px] font-black tracking-widest shadow-glow-cyan">{formData.arquivos.length} ARQUIVO(S)</span>
+                    </div>
                   )}
-               </div>
+                </div>
 
-               {/* Seção de Consentimento Jurídico */}
-               <div className={`p-6 rounded-2xl border transition-all ${formData.consentimento ? 'bg-white border-primary shadow-glow-cyan' : 'bg-surface border-border'}`}>
-                  <label className="flex items-start gap-4 cursor-pointer group">
-                     <div className="pt-1">
-                        <input 
-                          type="checkbox" 
-                          className="w-5 h-5 rounded border-2 border-border text-primary focus:ring-primary transition-all cursor-pointer"
-                          checked={formData.consentimento}
-                          onChange={(e) => handleInputChange('consentimento', e.target.checked)}
-                        />
-                     </div>
-                     <div className="space-y-2">
-                        <p className="text-[11px] font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                           Termo de Responsabilidade e Ciência
-                           <Shield size={14} className="text-primary" />
-                        </p>
-                        <ul className="text-[10px] text-muted leading-relaxed font-bold space-y-1">
-                           <li>• Declaro estar ciente de que sou o único responsável pela veracidade dos fatos narrados.</li>
-                           <li>• O uso de má-fé neste canal ou denúncia falsa são crimes (Arts. 339 e 340 do Código Penal).</li>
-                           <li>• Compreendo que a Equipe da plataforma DenunciaMS atua como facilitador e encaminha dados aos órgãos competentes.</li>
-                        </ul>
-                     </div>
+                {/* Email Preview Accordion */}
+                <div className="rounded-[2rem] border-2 border-border/40 overflow-hidden group">
+                  <button onClick={() => setPreviewAberto(p => !p)}
+                    className="w-full flex items-center justify-between p-6 bg-white hover:bg-surface transition-all">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-primary/5 text-primary rounded-2xl group-hover:scale-110 transition-transform"><FileText size={20} /></div>
+                      <div className="text-left">
+                        <p className="text-[11px] font-black text-dark uppercase tracking-[0.2em]">Visualizar Cópia Digital</p>
+                        <p className="text-[10px] text-muted font-bold italic">Confira o documento que será encaminhado</p>
+                      </div>
+                    </div>
+                    <div className={`p-2 rounded-full transition-transform duration-300 ${previewAberto ? 'rotate-180 bg-primary text-white' : 'bg-surface text-muted'}`}>
+                      <ArrowRight size={16} className="rotate-90" />
+                    </div>
+                  </button>
+                  {previewAberto && (
+                    <div className="border-t-2 border-border/20 p-6 bg-surface/30 animate-slide-up">
+                      <EmailPreview
+                        protocolo="PREVIEW"
+                        categoria={currentCategory?.label || formData.categoria_id}
+                        titulo={formData.titulo}
+                        descricao={formData.descricao_original}
+                        local={[formData.local, formData.numero, formData.bairro, formData.cidade].filter(Boolean).join(', ')}
+                        data_ocorrido={formData.data_ocorrido || ''}
+                        nome={formData.nome}
+                        email={formData.email}
+                        telefone={formData.telefone}
+                        cpf={formData.cpf}
+                        totalArquivos={formData.arquivos.length}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Consentimento Premium */}
+                <div className={`p-8 rounded-[3rem] border-2 transition-all duration-500 ${formData.consentimento ? 'bg-primary/5 border-primary shadow-xl' : 'bg-surface/50 border-border/50'}`}>
+                  <label className="flex items-start gap-6 cursor-pointer group">
+                    <div className="pt-1 relative">
+                      <input type="checkbox" className="peer hidden"
+                        checked={formData.consentimento} onChange={(e) => handleInputChange('consentimento', e.target.checked)} />
+                      <div className="w-8 h-8 rounded-xl border-2 border-border/60 bg-white flex items-center justify-center transition-all peer-checked:bg-primary peer-checked:border-primary peer-checked:shadow-glow-cyan">
+                        <Check size={20} className={`text-white transition-opacity ${formData.consentimento ? 'opacity-100' : 'opacity-0'}`} strokeWidth={4} />
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <p className="text-[11px] font-black text-dark uppercase tracking-[0.2em] flex items-center gap-2">
+                        Declaração de Veracidade e Ciência <Shield size={16} className="text-secondary" />
+                      </p>
+                      <ul className="text-[11px] text-muted-foreground leading-relaxed font-bold space-y-2 italic">
+                        <li className="flex gap-2"><span className="text-primary">•</span> Declaro que os fatos aqui narrados são verdadeiros e de minha inteira responsabilidade.</li>
+                        <li className="flex gap-2"><span className="text-primary">•</span> Estou ciente das penalidades legais em caso de denúncia falsa ou má-fé (Art. 339 CP).</li>
+                        <li className="flex gap-2"><span className="text-primary">•</span> Autorizo o encaminhamento destes dados aos órgãos competentes para fins de apuração.</li>
+                      </ul>
+                    </div>
                   </label>
-               </div>
-            </div>
+                </div>
+              </div>
 
-            <div className="flex items-center justify-between pt-6 gap-4">
-               <button onClick={handleBack} disabled={loading} className="flex items-center gap-2 text-[10px] uppercase font-black text-muted hover:text-dark transition-colors">
-                  <ArrowLeft size={16} /> Voltar para Alterar
-               </button>
-               <button 
-                onClick={() => {
-                   if (!formData.consentimento) {
-                      toast.error("Você precisa concordar com os termos de responsabilidade para protocolar.")
-                      return
-                   }
-                   if (!allowAnonymous) formData.anonima = false;
-                   if (!formData.anonima && (!formData.otpToken || formData.otpToken.length !== 6)) {
-                      toast.error("Efetue a validação do código de segurança recebido no e-mail.")
-                      return
-                   }
-                   handleSubmit()
-                }}
-                disabled={loading || !formData.consentimento || (!formData.anonima && (!formData.otpToken || formData.otpToken.length !== 6))}
-                className={`btn-primary btn-md sm:btn-lg gap-3 flex-1 sm:flex-none sm:min-w-[300px] bg-secondary hover:bg-secondary-600 border-none shadow-glow-green transition-all ${!formData.consentimento || (!formData.anonima && (!formData.otpToken || formData.otpToken.length !== 6)) ? 'opacity-50 grayscale' : ''}`}
-               >
+              <div className="flex flex-col sm:flex-row items-center justify-between pt-10 gap-6 border-t border-border/40">
+                <button onClick={handleBack} disabled={loading} className="group flex items-center gap-3 text-[11px] uppercase font-black text-muted hover:text-dark transition-all order-2 sm:order-1">
+                  <div className="p-3 rounded-xl group-hover:bg-surface transition-colors"><ArrowLeft size={20} /></div>
+                  Revisar Dados
+                </button>
+                <button
+                  onClick={() => {
+                    if (!formData.consentimento) {
+                      toast.error('Você precisa concordar com os termos para protocolar.'); return
+                    }
+                    if (!formData.otpToken || formData.otpToken.length !== 6) {
+                      toast.error('Efetue a validação do código de segurança recebido no e-mail.'); return
+                    }
+                    handleSubmit()
+                  }}
+                  disabled={loading || !formData.consentimento || !formData.otpToken || formData.otpToken.length !== 6}
+                  className={`btn-primary h-20 px-12 rounded-[2rem] gap-4 w-full sm:w-auto shadow-[0_20px_50px_rgba(0,132,62,0.3)] bg-secondary hover:bg-secondary-600 border-none transition-all duration-500 order-1 sm:order-2 ${
+                    !formData.consentimento || !formData.otpToken || formData.otpToken.length !== 6 ? 'opacity-30 grayscale cursor-not-allowed' : 'hover:scale-[1.02] active:scale-[0.98]'
+                  }`}
+                >
                   {loading ? (
-                    <Loader2 size={24} className="animate-spin" />
+                    <div className="flex items-center gap-3">
+                      <Loader2 size={28} className="animate-spin" />
+                      <span className="font-black uppercase tracking-widest">Protocolando...</span>
+                    </div>
                   ) : (
                     <>
-                      CONFIRMAR E PROTOCOLAR
-                      <Send size={20} />
+                      <span className="font-black uppercase tracking-[0.2em] text-sm">Finalizar e Gerar Protocolo</span>
+                      <Send size={24} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                     </>
                   )}
-               </button>
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-      <div className="mt-8 flex items-center justify-center gap-4 text-[10px] text-muted font-black uppercase tracking-[0.2em]">
-         <Lock size={14} className="text-secondary" />
-         Conexão Criptografada SSL/TLS
+
+      <div className="mt-10 flex items-center justify-center gap-6 text-[10px] text-muted/40 font-black uppercase tracking-[0.4em]">
+        <div className="flex items-center gap-2"><Lock size={12} /> Conexão Segura</div>
+        <div className="h-1 w-1 bg-border rounded-full"></div>
+        <div className="flex items-center gap-2"><Shield size={12} /> Proteção LGPD</div>
+        <div className="h-1 w-1 bg-border rounded-full"></div>
+        <div className="flex items-center gap-2"><CheckCircle2 size={12} /> Canal Oficial</div>
       </div>
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -23,6 +23,13 @@ export async function solicitarCodigoOTP(emailRaw: string, nome: string) {
     return { success: false, error: 'Muitas tentativas. Aguarde 10 minutos.' }
   }
 
+  // Invalidate any previous unused tokens for this email before issuing a new one
+  await supabase
+    .from('auth_tokens')
+    .update({ is_used: true })
+    .eq('email_hash', emailHash)
+    .eq('is_used', false)
+
   const codigo     = String(randomInt(100000, 999999))
   const codigoHash = sha256(codigo)
   const expiresAt  = new Date(Date.now() + 15 * 60 * 1000).toISOString()
@@ -65,9 +72,11 @@ export async function solicitarCodigoOTP(emailRaw: string, nome: string) {
 
 export async function validarOTP(emailRaw: string, codigoDigitado: string): Promise<boolean> {
   const supabase   = createAdminClient()
-  const emailHash  = sha256(emailRaw)
+  const emailNorm  = emailRaw.toLowerCase().trim()
+  const emailHash  = sha256(emailNorm)
   const codigoHash = sha256(codigoDigitado.trim())
 
+  // maybeSingle + order avoids PGRST116 error when multiple tokens exist for same email
   const { data } = await supabase
     .from('auth_tokens')
     .select('id, expires_at, is_used')
@@ -75,7 +84,9 @@ export async function validarOTP(emailRaw: string, codigoDigitado: string): Prom
     .eq('codigo', codigoHash)
     .eq('is_used', false)
     .gte('expires_at', new Date().toISOString())
-    .single()
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
 
   if (!data) return false
 

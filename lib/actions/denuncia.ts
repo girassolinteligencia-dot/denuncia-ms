@@ -11,7 +11,7 @@ function sha256Buffer(buf: Buffer): string {
   return createHash('sha256').update(buf).digest('hex')
 }
 
-export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivosUrls: string[]) {
+export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivos: { name: string, type: string, content: string }[]) {
   const supabase = createAdminClient()
 
   try {
@@ -22,6 +22,60 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
 
     const { protocolo, chaveAcesso } = await gerarProtocolo()
 
+    // Upload de arquivos para o Storage (Server-side)
+    const arquivosUrls: string[] = []
+    if (arquivos && arquivos.length > 0) {
+      for (const file of arquivos) {
+        const buffer = Buffer.from(file.content, 'base64')
+        const ext = file.name.split('.').pop()
+        const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+        
+        const { error: uploadError } = await supabase.storage
+          .from('denuncias')
+          .upload(path, buffer, {
+            contentType: file.type,
+            upsert: false
+          })
+
+        if (uploadError) {
+          console.error('[upload] Erro no servidor:', uploadError)
+          throw new Error(`Erro ao salvar arquivo ${file.name}`)
+        }
+
+        const { data: urlData } = supabase.storage.from('denuncias').getPublicUrl(path)
+        arquivosUrls.push(urlData.publicUrl)
+      }
+    }
+
+    // Busca dados da categoria para o documento final
+    const { data: catData } = await supabase
+      .from('categorias')
+      .select('label, slug')
+      .eq('id', formData.categoria_id)
+      .single()
+
+    // Monta o documento final com template real
+    const { montarDocumentoFinal, construirVariaveis } = await import('@/lib/documento')
+    const localCompleto = [formData.local, formData.numero, formData.bairro, formData.cidade]
+      .filter(Boolean).join(', ')
+    const variaveis = construirVariaveis({
+      protocolo,
+      categoriaNome: catData?.label || formData.categoria_id,
+      categoriaSlug: catData?.slug || '',
+      orgaoNome:     'DenunciaMS',
+      local:         localCompleto,
+      anonima:       formData.anonima ?? false,
+      nome:          formData.nome,
+      email:         formData.email,
+      telefone:      formData.telefone,
+    })
+    const documentoFinal = montarDocumentoFinal({
+      cabecalho: `DENUNCIA MS — Protocolo: ${protocolo}\nCategoria: ${catData?.label || formData.categoria_id}\nData: ${variaveis.data_envio} às ${variaveis.hora_envio}\nLocal: ${localCompleto || 'Não informado'}\nIdentificação: ${formData.anonima ? 'Anônima' : formData.nome || '-'}`,
+      corpo:     formData.descricao_original,
+      rodape:    `Denúncia registrada oficialmente pela plataforma DenunciaMS.\nHash de integridade disponível no painel administrativo.\nMato Grosso do Sul — ${variaveis.data_envio}`,
+      variaveis,
+    })
+
     const { data: denuncia, error: denErr } = await supabase
       .from('denuncias')
       .insert({
@@ -30,14 +84,10 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
         categoria_id:       formData.categoria_id,
         titulo:             formData.titulo,
         descricao_original: formData.descricao_original,
-        local:              formData.local,
-        cep:                formData.cep,
-        numero:             formData.numero,
-        bairro:             formData.bairro,
-        cidade:             formData.cidade,
+        local:              localCompleto || null,
         data_ocorrido:      formData.data_ocorrido || null,
-        anonima:            formData.anonima ?? true,
-        documento_final:    formData.descricao_original,
+        anonima:            formData.anonima ?? false,
+        documento_final:    documentoFinal,
         status:             'recebida',
       })
       .select('id, protocolo, criado_em')
@@ -112,21 +162,15 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
       })
     }
 
-    if (!formData.anonima && formData.email) {
+    // E-mail profissional para o denunciante
+    if (formData.email) {
+      const { gerarEmailDenunciante } = await import('@/lib/email-template')
       sendEmail({
         to:      formData.email,
-        subject: `Sua denúncia foi registrada — Protocolo ${protocolo}`,
-        html: `
-          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
-            <h2 style="color:#021691">Denúncia registrada com sucesso</h2>
-            <div style="background:#f0f4ff;border-radius:12px;padding:20px;text-align:center;margin:20px 0">
-              <span style="font-size:28px;font-weight:700;letter-spacing:4px;color:#021691">${protocolo}</span>
-            </div>
-            <p style="color:#888;font-size:13px">Guarde este número para acompanhar o andamento da sua denúncia.</p>
-          </div>
-        `,
-        text: `Protocolo da sua denúncia: ${protocolo}`,
-      }).catch(e => console.error('[denuncia] Erro ao enviar e-mail:', e))
+        subject: `[DenunciaMS] Protocolo ${protocolo} — Denúncia registrada com sucesso`,
+        html:    gerarEmailDenunciante(protocolo, chaveAcesso, formData.nome || 'Cidadão'),
+        text:    `Protocolo: ${protocolo} | Chave: ${chaveAcesso}`,
+      }).catch(e => console.error('[denuncia] Erro ao enviar e-mail denunciante:', e))
     }
 
     return { success: true, protocolo, chaveAcesso }
@@ -135,3 +179,5 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
     return { success: false, error: (err as Error).message }
   }
 }
+
+
