@@ -7,8 +7,12 @@ export function MascoteParallax() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Cálculo sutil de deslocamento (10% da velocidade do scroll)
-      // Limitamos para evitar que a imagem 'descole' da base
+      // Somente aplica o efeito parallax em telas grandes (Desktop)
+      if (window.innerWidth < 1024) {
+        if (offsetY !== 0) setOffsetY(0)
+        return
+      }
+
       const scrollPos = window.scrollY
       if (scrollPos < 1000) {
         setOffsetY(scrollPos * 0.1)
@@ -17,13 +21,13 @@ export function MascoteParallax() {
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [offsetY])
 
   return (
     <div 
-      className="absolute right-[-20%] sm:right-[-10%] lg:right-0 bottom-0 top-0 w-[100%] sm:w-[80%] lg:w-1/2 flex items-end justify-end pointer-events-none z-10 overflow-visible opacity-40 lg:opacity-100 transition-opacity duration-1000"
+      className="absolute right-[-20%] sm:right-[-10%] lg:right-0 bottom-0 top-0 w-[100%] sm:w-[80%] lg:w-1/2 flex items-end justify-end pointer-events-none z-0 overflow-visible opacity-30 lg:opacity-100 transition-opacity duration-1000"
       style={{
-        transform: `translateY(${offsetY}px)`,
+        transform: offsetY !== 0 ? `translateY(${offsetY}px)` : 'none',
         transition: 'transform 0.1s ease-out'
       }}
     >
