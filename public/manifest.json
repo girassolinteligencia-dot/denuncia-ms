@@ -1,0 +1,21 @@
+{
+  "name": "Denúncia MS",
+  "short_name": "DenúnciaMS",
+  "description": "Plataforma Cívica Independente de Mato Grosso do Sul",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#021691",
+  "theme_color": "#021691",
+  "icons": [
+    {
+      "src": "/assets/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

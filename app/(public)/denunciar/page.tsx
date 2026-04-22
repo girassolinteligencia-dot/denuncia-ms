@@ -10,18 +10,47 @@ export const metadata = {
 }
 
 export default async function DenunciarPage() {
-  const supabase = createAdminClient()
-  
-  // Busca todos os parâmetros necessários do Módulo 0
-  const [
-    { data: categorias },
-    { data: campos },
-    { data: politicasArquivo }
-  ] = await Promise.all([
-    supabase.from('categorias').select('*').eq('ativo', true).order('ordem'),
-    supabase.from('config_campos_formulario').select('*').order('ordem'),
-    supabase.from('config_tipos_arquivo').select('*')
-  ])
+  let categorias: any[] = []
+  let campos: any[] = []
+  let politicasArquivo: any[] = []
+  let errorMsg = ''
+
+  try {
+    const supabase = createAdminClient()
+    
+    // Busca todos os parâmetros necessários do Módulo 0
+    const [catRes, camposRes, politicasRes] = await Promise.all([
+      supabase.from('categorias').select('*').eq('ativo', true).order('ordem'),
+      supabase.from('config_campos_formulario').select('*').order('ordem'),
+      supabase.from('config_tipos_arquivo').select('*')
+    ])
+
+    if (catRes.error) console.error('Erro categorias:', catRes.error)
+    if (camposRes.error) console.error('Erro campos:', camposRes.error)
+    if (politicasRes.error) console.error('Erro politicas:', politicasRes.error)
+
+    categorias = catRes.data || []
+    campos = camposRes.data || []
+    politicasArquivo = politicasRes.data || []
+
+    if (categorias.length === 0 && !catRes.error) {
+      console.warn('Nenhuma categoria ativa encontrada.')
+    }
+  } catch (e) {
+    console.error('Erro crítico no render da página:', e)
+    errorMsg = 'Erro ao carregar configurações do sistema. Verifique as variáveis de ambiente.'
+  }
+
+  if (errorMsg) {
+    return (
+      <div className="bg-surface min-h-screen py-20">
+        <div className="container-page text-center space-y-4">
+          <h1 className="text-2xl font-black text-dark">Serviço Temporariamente Indisponível</h1>
+          <p className="text-muted">{errorMsg}</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-surface min-h-screen py-12 sm:py-20">
@@ -45,9 +74,9 @@ export default async function DenunciarPage() {
           </div>
         }>
           <DenunciaFormWizard 
-            categorias={categorias || []} 
-            campos={campos || []} 
-            politicasArquivo={politicasArquivo || []} 
+            categorias={categorias} 
+            campos={campos} 
+            politicasArquivo={politicasArquivo} 
           />
         </Suspense>
       </div>
