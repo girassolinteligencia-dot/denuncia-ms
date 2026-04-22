@@ -126,6 +126,10 @@ export interface Denuncia {
   criado_em: string
   atualizado_em: string
   arquivos?: ArquivoDenuncia[]
+  // Virtual fields — populated server-side by getDenunciaDetalhes (decrypted PII)
+  denunciante_nome?: string | null
+  denunciante_email?: string | null
+  denunciante_telefone?: string | null
 }
 
 export interface ArquivoDenuncia {
@@ -141,9 +145,11 @@ export interface ArquivoDenuncia {
 export interface IdentidadeDenuncia {
   id: string
   denuncia_id: string
-  nome_enc: string
-  email_enc: string
-  email_hash: string
+  nome_enc: string | null
+  email_enc: string | null
+  email_hash: string | null
+  telefone_enc: string | null
+  cpf_enc: string | null
   criado_em: string
 }
 

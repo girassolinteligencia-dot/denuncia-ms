@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase-admin'
 import { revalidatePath } from 'next/cache'
 import type { StatusDenuncia } from '@/types'
+import { decryptData } from '@/lib/encrypt'
 
 /**
  * Atualiza o status de uma denúncia e registra no log de auditoria
@@ -25,7 +26,7 @@ export async function updateDenunciaStatus(id: string, novoStatus: StatusDenunci
       .from('denuncias')
       .update({
         status: novoStatus,
-        atualizado_at: new Date().toISOString()
+        atualizado_em: new Date().toISOString()
       })
       .eq('id', id)
 
@@ -55,7 +56,7 @@ export async function updateDenunciaStatus(id: string, novoStatus: StatusDenunci
 }
 
 /**
- * Busca detalhes completos da denúncia incluindo arquivos e categoria
+ * Busca detalhes completos da denúncia incluindo arquivos, categoria e identidade descriptografada.
  */
 export async function getDenunciaDetalhes(id: string) {
   const supabase = createAdminClient()
@@ -68,7 +69,39 @@ export async function getDenunciaDetalhes(id: string) {
       .single()
 
     if (error) throw error
-    return { success: true, data }
+    if (!data) return { success: false, error: 'Denúncia não encontrada.' }
+
+    // Busca dados de identidade criptografados (tabela separada por LGPD)
+    const { data: identidade } = await supabase
+      .from('identidades')
+      .select('nome_enc, email_enc, telefone_enc')
+      .eq('denuncia_id', id)
+      .maybeSingle()
+
+    // Descriptografa server-side antes de entregar ao painel
+    let denunciante_nome: string | null = null
+    let denunciante_email: string | null = null
+    let denunciante_telefone: string | null = null
+
+    if (identidade) {
+      try {
+        if (identidade.nome_enc)     denunciante_nome     = await decryptData(identidade.nome_enc)
+        if (identidade.email_enc)    denunciante_email    = await decryptData(identidade.email_enc)
+        if (identidade.telefone_enc) denunciante_telefone = await decryptData(identidade.telefone_enc)
+      } catch (decryptErr) {
+        console.error('[admin] Erro ao descriptografar identidade:', decryptErr)
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        ...data,
+        denunciante_nome,
+        denunciante_email,
+        denunciante_telefone,
+      }
+    }
   } catch (err: any) {
     return { success: false, error: err.message }
   }

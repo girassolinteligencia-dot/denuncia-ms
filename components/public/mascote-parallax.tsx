@@ -21,7 +21,7 @@ export function MascoteParallax() {
 
   return (
     <div 
-      className="absolute right-0 bottom-0 top-0 w-1/2 hidden lg:flex items-end justify-end pointer-events-none z-10 overflow-visible"
+      className="absolute right-[-20%] sm:right-[-10%] lg:right-0 bottom-0 top-0 w-[100%] sm:w-[80%] lg:w-1/2 flex items-end justify-end pointer-events-none z-10 overflow-visible opacity-40 lg:opacity-100 transition-opacity duration-1000"
       style={{
         transform: `translateY(${offsetY}px)`,
         transition: 'transform 0.1s ease-out'

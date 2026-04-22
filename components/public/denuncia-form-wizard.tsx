@@ -22,6 +22,7 @@ import { solicitarCodigoOTP } from '@/lib/actions/auth'
 import { buscarCEP } from '@/lib/actions/cep'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { createClient } from '@/utils/supabase/client'
 
 interface DenunciaFormData {
   categoria_id: string
@@ -60,6 +61,10 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
   const [chaveGerada, setChaveGerada] = useState<string | null>(null)
   const [otpEnviado, setOtpEnviado] = useState(false)
   const [loadingOtp, setLoadingOtp] = useState(false)
+  const [uploadingArquivos, setUploadingArquivos] = useState(false)
+  const [arquivosUrls, setArquivosUrls] = useState<string[]>([])
+  const [cooldown, setCooldown] = useState(0)
+  const otpInputRef = useRef<HTMLInputElement>(null)
   const topRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -220,6 +225,44 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
     scrollToTop()
   }
 
+  // Cooldown effect para o OTP
+  React.useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [cooldown])
+
+  const handleSolicitarOTP = async () => {
+    if (!formData.email || !formData.email.includes('@')) {
+      toast.error('Informe um e-mail válido para a Equipe da plataforma DenunciaMS.')
+      return
+    }
+    if (!formData.nome || formData.nome.length < 3) {
+      toast.error('Informe seu nome completo para identificação.')
+      return
+    }
+
+    setLoadingOtp(true)
+    try {
+      const res = await solicitarCodigoOTP(formData.email, formData.nome)
+      if (res.success) {
+        setOtpEnviado(true)
+        setCooldown(60) // 60 segundos de cooldown
+        toast.success('Código de segurança enviado! Verifique sua caixa de entrada.')
+        // Focar no input de OTP após um pequeno delay para a animação
+        setTimeout(() => otpInputRef.current?.focus(), 500)
+      } else {
+        toast.error(res.error || 'Erro ao enviar código pela Equipe da plataforma DenunciaMS.')
+      }
+    } catch (err) {
+      console.error('[OTP] erro:', err)
+      toast.error('Ocorreu uma falha na comunicação. Tente novamente em instantes.')
+    } finally {
+      setLoadingOtp(false)
+    }
+  }
+
   const handleSubmit = async () => {
     setLoading(true)
     
@@ -238,18 +281,20 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
         return {
           name: file.name,
           type: file.type,
-          buffer: Buffer.from(arrayBuffer)
+          buffer: Array.from(new Uint8Array(arrayBuffer))
         }
       }))
 
-      const result = await registrarDenuncia(formData, bufferData)
+      const { arquivos, ...formDataSemArquivos } = formData
+      void arquivos // Explicitly mark as ignored for lint
+      const result = await registrarDenuncia(formDataSemArquivos, arquivosUrls)
 
-      if (result.success && result.protocolo) {
-        setProtocoloGerado(result.protocolo)
-        setChaveGerada(result.chaveAcesso)
+      if (result.success) {
+        setProtocoloGerado(result.protocolo!)
+        setChaveGerada(result.chaveAcesso!)
         toast.success("Denúncia registrada com sucesso!")
       } else {
-        toast.error(result.error || "Erro ao registrar denúncia")
+        toast.error((result as any).error || "Erro ao registrar denúncia")
       }
     } catch (err) {
       console.error(err)
@@ -259,11 +304,61 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files)
-      setFormData(prev => ({ ...prev, arquivos: [...prev.arquivos, ...newFiles] }))
-      toast.success(`${newFiles.length} arquivo(s) adicionado(s)`)
+  const TIPOS_PERMITIDOS = [
+    'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+    'application/pdf',
+    'audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg'
+  ]
+  const MAX_TAMANHO_MB = 5
+  const MAX_ARQUIVOS = 3
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return
+    const novos = Array.from(e.target.files)
+
+    // Validação de quantidade
+    const totalAtual = formData.arquivos.length
+    if (totalAtual + novos.length > MAX_ARQUIVOS) {
+      toast.error(`Máximo de ${MAX_ARQUIVOS} arquivos por denúncia.`)
+      return
+    }
+
+    // Validação de tipo e tamanho
+    for (const file of novos) {
+      if (!TIPOS_PERMITIDOS.includes(file.type)) {
+        toast.error(`Tipo não permitido: ${file.name}. Use imagens, PDF ou áudio.`)
+        return
+      }
+      if (file.size > MAX_TAMANHO_MB * 1024 * 1024) {
+        toast.error(`${file.name} excede ${MAX_TAMANHO_MB}MB.`)
+        return
+      }
+    }
+
+    // Upload para Supabase Storage
+    setUploadingArquivos(true)
+    const supabase = createClient()
+    const novasUrls: string[] = []
+
+    try {
+      for (const file of novos) {
+        const ext = file.name.split('.').pop()
+        const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+        const { error } = await supabase.storage
+          .from('denuncias')
+          .upload(path, file, { contentType: file.type, upsert: false })
+        if (error) throw new Error(error.message)
+        const { data } = supabase.storage.from('denuncias').getPublicUrl(path)
+        novasUrls.push(data.publicUrl)
+      }
+      setFormData(prev => ({ ...prev, arquivos: [...prev.arquivos, ...novos] }))
+      setArquivosUrls(prev => [...prev, ...novasUrls])
+      toast.success(`${novos.length} arquivo(s) enviado(s) com sucesso!`)
+    } catch (err) {
+      toast.error('Erro ao enviar arquivo. Tente novamente.')
+      console.error('[upload]', err)
+    } finally {
+      setUploadingArquivos(false)
     }
   }
 
@@ -420,6 +515,23 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                   <FileText size={28} />
                </div>
             </div>
+
+            {/* Categoria Selecionada */}
+            {currentCategory && (
+               <div className="flex items-center gap-3 p-4 bg-surface border border-border rounded-2xl animate-fade-in shadow-sm">
+                  <div className="text-3xl">{currentCategory.emoji}</div>
+                  <div>
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 mb-0.5">Categoria Selecionada</p>
+                     <h4 className="font-extrabold text-sm text-dark uppercase tracking-tight">{currentCategory.label}</h4>
+                  </div>
+                  <button 
+                    onClick={handleBack}
+                    className="ml-auto text-[9px] font-black uppercase text-muted hover:text-primary transition-colors border border-border px-3 py-1.5 rounded-lg"
+                  >
+                    Alterar
+                  </button>
+               </div>
+            )}
 
             <div className="space-y-8">
                <div className="space-y-6">
@@ -767,47 +879,32 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
                     <div className="pt-2">
                       {!otpEnviado ? (
                         <button 
-                          onClick={async () => {
-                            if (!formData.email || !formData.email.includes('@')) {
-                               toast.error('Informe um e-mail válido.'); return;
-                            }
-                            if (!formData.nome || formData.nome.length < 3) {
-                               toast.error('Informe seu nome.'); return;
-                            }
-                            setLoadingOtp(true);
-                            const res = await solicitarCodigoOTP(formData.email, formData.nome);
-                            setLoadingOtp(false);
-                            if (res.success) {
-                               setOtpEnviado(true);
-                               toast.success('Código enviado! Verifique sua caixa de entrada.');
-                            } else {
-                               toast.error(res.error || 'Erro ao enviar código.');
-                            }
-                          }}
-                          disabled={loadingOtp || !formData.email || !formData.nome}
-                          className="w-full bg-secondary/20 hover:bg-secondary/30 text-secondary font-black uppercase text-[11px] tracking-widest p-4 rounded-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+                          onClick={handleSolicitarOTP}
+                          disabled={loadingOtp || !formData.email || !formData.nome || cooldown > 0}
+                          className="w-full bg-secondary text-white font-black uppercase text-[11px] tracking-widest p-4 rounded-xl transition-all disabled:opacity-50 disabled:bg-secondary/20 disabled:text-secondary flex justify-center items-center gap-2 shadow-glow-green hover:scale-[1.02] active:scale-[0.98]"
                         >
                            {loadingOtp ? <Loader2 size={16} className="animate-spin" /> : <Lock size={16} />}
-                           Solicitar Código de Segurança
+                           {cooldown > 0 ? `Aguarde ${cooldown}s` : 'Solicitar Código de Segurança'}
                         </button>
                       ) : (
                         <div className="bg-white/10 border border-secondary/30 p-4 rounded-xl space-y-3 animate-fade-in">
                            <p className="text-[11px] font-black uppercase tracking-widest text-secondary text-center">Código Enviado</p>
-                           <p className="text-[10px] text-white/70 text-center leading-tight">Enviamos um PIN de 6 dígitos para {formData.email}. Insira-o abaixo para validar sua identidade.</p>
+                           <p className="text-[10px] text-white/70 text-center leading-tight">A Equipe da plataforma DenunciaMS enviou um PIN de 6 dígitos para {formData.email}.</p>
                            <input 
-                              className="bg-black/20 border border-white/20 rounded-xl p-4 text-center text-2xl font-black tracking-[0.5em] text-white focus:outline-none focus:ring-2 focus:ring-secondary w-full max-w-[200px] mx-auto block uppercase" 
-                              placeholder="000000" 
-                              maxLength={6}
-                              value={formData.otpToken || ''}
-                              onChange={(e) => handleInputChange('otpToken', e.target.value.replace(/\D/g, ''))}
+                               ref={otpInputRef}
+                               className="bg-black/20 border border-white/20 rounded-xl p-4 text-center text-2xl font-black tracking-[0.5em] text-white focus:outline-none focus:ring-2 focus:ring-secondary w-full max-w-[200px] mx-auto block uppercase placeholder:text-white/10" 
+                               placeholder="000000" 
+                               maxLength={6}
+                               value={formData.otpToken || ''}
+                               onChange={(e) => handleInputChange('otpToken', e.target.value.replace(/\D/g, ''))}
                            />
                            <button onClick={() => setOtpEnviado(false)} className="text-[9px] text-white/40 uppercase hover:text-white mx-auto block pt-2 underline">Mudar E-mail / Reenviar</button>
                         </div>
                       )}
                     </div>
-                 </div>
-               )}
-            </div>
+                  </div>
+                )}
+             </div>
 
             <div className="space-y-4">
                {/* Resumo Card */}
@@ -906,3 +1003,16 @@ export const DenunciaFormWizard: React.FC<Props> = ({ categorias, campos, politi
     </div>
   )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

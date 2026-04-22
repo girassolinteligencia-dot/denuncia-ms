@@ -9,10 +9,10 @@ export default function PublicLayout({
 }) {
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="h-16 sm:h-20 bg-white border-b border-border sticky top-0 z-50 shadow-sm">
+      <header className="h-24 sm:h-32 bg-white border-b border-border sticky top-0 z-50 shadow-sm">
         <div className="container-page flex items-center justify-between h-full gap-2">
           <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <img src="/assets/logo.png" alt="Denúncia MS" className="h-8 sm:h-12 w-auto transition-transform group-hover:scale-105" />
+            <img src="/assets/logo.png" alt="Denúncia MS" className="h-16 sm:h-24 w-auto transition-transform group-hover:scale-105" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -43,7 +43,9 @@ export default function PublicLayout({
             <div className="grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-white/5 pb-12">
                <div className="md:col-span-2 space-y-6">
                   <div className="flex items-center gap-3">
-                    <img src="/assets/logo.png" alt="Denúncia MS" className="h-10 w-auto brightness-0 invert opacity-80" />
+                    <div className="bg-white p-3 rounded-2xl">
+                      <img src="/assets/logo.png" alt="Denúncia MS" className="h-20 w-auto" />
+                    </div>
                   </div>
                   <p className="text-sm text-white/60 max-w-md leading-relaxed text-justify">
                      O <strong>DENUNCIA MS</strong> opera como uma plataforma cívica estritamente independente, sem vínculo com entes públicos ou políticos. Atuamos como um elo tecnológico que conecta o cidadão de MS diretamente aos órgãos competentes, facilitando a fiscalização e a transparência em todo o Estado.

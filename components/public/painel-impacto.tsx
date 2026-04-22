@@ -42,6 +42,33 @@ const NOTICIAS_IMPACTO = [
 ]
 
 export function PainelImpacto() {
+  const [email, setEmail] = React.useState('')
+  const [loading, setLoading] = React.useState(false)
+  const [status, setStatus] = React.useState<{ type: 'success' | 'error', message: string } | null>(null)
+
+  const handleSubscribe = async () => {
+    if (!email) return
+    
+    setLoading(true)
+    setStatus(null)
+
+    try {
+      const { assinarNewsletter } = await import('@/lib/actions/newsletter')
+      const result = await assinarNewsletter(email)
+      
+      if (result.success) {
+        setStatus({ type: 'success', message: result.message })
+        setEmail('')
+      } else {
+        setStatus({ type: 'error', message: result.message })
+      }
+    } catch {
+      setStatus({ type: 'error', message: 'Erro ao tentar se conectar.' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <section className="section bg-surface border-t border-border">
       <div className="container-page space-y-12">
@@ -184,11 +211,30 @@ export function PainelImpacto() {
                    <h4 className="font-extrabold text-dark uppercase text-xs">Receba no E-mail</h4>
                    <p className="text-[10px] text-muted font-bold mt-1 leading-relaxed">Assine o Boletim Diário de Impacto.</p>
                 </div>
-                <div className="flex gap-2">
-                   <input className="input h-10 text-xs px-4" placeholder="seu@email.com" />
-                   <button className="btn-primary w-12 h-10 p-0 shrink-0">
-                      <ArrowRight size={18} />
-                   </button>
+                <div className="space-y-2">
+                   <div className="flex gap-2">
+                      <input 
+                        className="input h-10 text-xs px-4" 
+                        placeholder="seu@email.com" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={loading}
+                      />
+                      <button 
+                        className={`btn-primary w-12 h-10 p-0 shrink-0 ${loading ? 'opacity-50' : ''}`}
+                        onClick={handleSubscribe}
+                        disabled={loading || !email}
+                        title="Assinar Newsletter"
+                        aria-label="Assinar Newsletter"
+                      >
+                         <ArrowRight size={18} />
+                      </button>
+                   </div>
+                   {status && (
+                     <p className={`text-[9px] font-black uppercase tracking-tighter ${status.type === 'success' ? 'text-secondary' : 'text-primary'}`}>
+                       {status.message}
+                     </p>
+                   )}
                 </div>
              </div>
           </aside>

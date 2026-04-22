@@ -19,7 +19,7 @@ export async function gerarProtocolo(): Promise<{ protocolo: string, chaveAcesso
     throw new Error(`Erro ao gerar protocolo: ${error?.message ?? 'resposta vazia'}`)
   }
 
-  const config = data as ConfigProtocolo
+  const config = (Array.isArray(data) ? data[0] : data) as ConfigProtocolo
   const ano = config.formato_ano === 'YYYY'
     ? new Date().getFullYear().toString()
     : new Date().getFullYear().toString().slice(-2)
@@ -54,3 +54,5 @@ export function formatarPreviewProtocolo(config: ConfigProtocolo): string {
   const seq = '1'.padStart(config.digitos_seq, '0')
   return [config.prefixo, ano, seq].join(config.separador)
 }
+
+
