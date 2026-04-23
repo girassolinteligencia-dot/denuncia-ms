@@ -236,10 +236,28 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
                       <input 
                         className="input h-11" 
                         value={editingCat.label} 
-                        onChange={e => setEditingCat({...editingCat, label: e.target.value})}
+                        onChange={e => {
+                          const newLabel = e.target.value
+                          const newSlug = !editingCat.id ? newLabel.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : editingCat.slug
+                          setEditingCat({...editingCat, label: newLabel, slug: newSlug})
+                        }}
                         required
                       />
                    </div>
+                </div>
+
+                <div>
+                   <label className="label label-required">Identificador Único (Slug)</label>
+                   <input 
+                     className="input h-11 bg-surface font-mono text-[10px]" 
+                     value={editingCat.slug} 
+                     onChange={e => setEditingCat({...editingCat, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')})}
+                     placeholder="ex: denuncia-ambiental"
+                     required
+                   />
+                   <p className="text-[9px] text-muted mt-2 font-medium italic">
+                      Este campo é usado na URL e no banco de dados. Não deve conter espaços ou acentos.
+                   </p>
                 </div>
 
                 <div>

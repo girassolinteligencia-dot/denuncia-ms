@@ -20,6 +20,7 @@ export async function updateCategoria(id: string, updates: Partial<Categoria>) {
         email_destino: updates.email_destino,
         instrucao_publica: updates.instrucao_publica,
         aviso_legal: updates.aviso_legal,
+        template_descricao: updates.template_descricao,
         ativo: updates.ativo,
         ordem: updates.ordem,
         bloco: updates.bloco,
@@ -35,8 +36,8 @@ export async function updateCategoria(id: string, updates: Partial<Categoria>) {
     revalidatePath('/denunciar')
     return { success: true, data }
   } catch (err) {
-    const error = err as Error
-    console.error('Erro ao atualizar template:', error)
+    const error = err as any
+    console.error('Erro ao atualizar categoria:', error)
     return { success: false, error: error.message }
   }
 }
@@ -51,24 +52,34 @@ export async function createCategoria(categoria: Partial<Categoria>) {
     // Remove o ID se for uma string vazia para o Supabase gerar um novo UUID
     const { id, ...saveData } = categoria
     
+    // Fallback de slug se ainda estiver vazio
+    const finalSlug = saveData.slug || saveData.label?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || `cat-${Date.now()}`
+
     const { data, error } = await supabase
       .from('categorias')
       .insert({
         ...saveData,
-        slug: saveData.slug || saveData.label?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-'),
+        slug: finalSlug,
         ativo: true,
-        ordem: saveData.ordem || 0
+        ordem: saveData.ordem || 0,
+        criado_em: new Date().toISOString(),
+        atualizado_em: new Date().toISOString()
       })
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      if (error.code === '23505') { // Unique constraint violation
+        return { success: false, error: 'Já existe uma categoria com este Identificador Único (Slug). Escolha outro.' }
+      }
+      throw error
+    }
 
     revalidatePath('/admin/categorias')
     revalidatePath('/denunciar')
     return { success: true, data }
   } catch (err) {
-    const error = err as Error
+    const error = err as any
     console.error('Erro ao criar categoria:', error)
     return { success: false, error: error.message }
   }
