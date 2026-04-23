@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 -- 2. Função Auxiliar para RLS (tem_role)
 -- Permite checar o cargo do usuário autenticado de forma performática
+DROP FUNCTION IF EXISTS public.tem_role(text);
 CREATE OR REPLACE FUNCTION public.tem_role(required_role text)
 RETURNS boolean AS $$
 BEGIN
