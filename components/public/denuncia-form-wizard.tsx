@@ -155,10 +155,19 @@ export function DenunciaFormWizard({
 
   const handleInputChange = (field: keyof DenunciaFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    
+    // Rolagem inteligente: Se selecionou categoria ou bloco, rola para baixo para ver o botão Próximo
+    if (field === 'categoria_id' || field === 'titulo') {
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 300)
+    }
   }
 
   const handleNext = () => {
     setStep(s => Math.min(s + 1, 5))
+    // Em vez de sempre ir para o topo absoluto, vamos para o topo do container do wizard
+    // para não perder o contexto visual se o header for muito grande
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -220,7 +229,7 @@ export function DenunciaFormWizard({
           type: file.type,
           content
         })
-      } catch (err) {
+      } catch {
         toast.error(`Erro ao processar ${file.name}`)
       }
     }
