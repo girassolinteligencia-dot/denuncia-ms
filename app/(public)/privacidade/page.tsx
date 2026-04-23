@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export const metadata = {
   title: 'Política de Privacidade | DENUNCIA MS',
-  description: 'Saiba como tratamos seus dados em conformidade com a LGPD (Lei 13.709/2018).',
+  description: 'Saiba como registrar sua denúncia de forma segura e eficaz no Mato Grosso do Sul.',
 }
 
 export default function PrivacidadePage() {
@@ -18,11 +18,11 @@ export default function PrivacidadePage() {
               <ShieldCheck size={12} />
               Proteção de Dados
            </div>
-           <h1 className="text-3xl sm:text-5xl font-black text-dark tracking-tighter italic uppercase">
-              Política de <span className="text-secondary">Privacidade</span>
-           </h1>
+           <h2 className="text-2xl sm:text-5xl font-black tracking-tighter leading-tight italic uppercase">
+              Como garantimos seu <span className="text-secondary underline decoration-2 sm:decoration-4 underline-offset-4 sm:underline-offset-8">Sigilo?</span>
+           </h2>
            <p className="text-xs sm:text-md text-muted font-medium max-w-2xl mx-auto">
-              Sua segurança e anonimato são as bases da nossa plataforma.
+              Sua segurança e a integridade da sua denúncia são as bases da nossa plataforma.
            </p>
         </div>
 
@@ -32,10 +32,10 @@ export default function PrivacidadePage() {
            <section className="space-y-4">
               <h2 className="text-xl font-black text-dark tracking-tight uppercase flex items-center gap-2">
                  <EyeOff size={20} className="text-secondary" />
-                 1. Compromisso com o Anonimato
+                 1. Compromisso com o Sigilo
               </h2>
               <p className="text-muted text-xs sm:text-sm text-justify font-medium">
-                O <strong>DENUNCIA MS</strong> permite o envio de denúncias sem a necessidade de identificação. Quando você escolhe a opção &quot;Anônimo&quot;, nosso sistema remove metadados dos arquivos e não armazena vínculos diretos entre sua identidade e o protocolo gerado, garantindo o sigilo técnico absoluto.
+                O <strong>DENUNCIA MS</strong> exige identificação para garantir a seriedade do processo, mas garante o sigilo absoluto dos seus dados. Nossa tecnologia criptografa suas informações pessoais imediatamente, e elas só são acessíveis por autoridades competentes sob estrita necessidade legal e técnica.
               </p>
            </section>
 
@@ -47,7 +47,7 @@ export default function PrivacidadePage() {
                  2. Coleta de Dados Sob a LGPD
               </h2>
               <p className="text-muted text-sm text-justify font-medium">
-                Para usuários que optam por se identificar, coletamos: nome, e-mail e telefone. Esses dados são tratados conforme a <strong>Lei nº 13.709/2018 (LGPD)</strong>, com as seguintes finalidades:
+                Para validar a denúncia, coletamos: nome, e-mail, telefone e CPF. Esses dados são tratados conforme a <strong>Lei nº 13.709/2018 (LGPD)</strong>, com as seguintes finalidades:
               </p>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <li className="p-4 bg-surface rounded-xl flex items-center gap-3 text-xs font-bold text-muted">
@@ -59,6 +59,18 @@ export default function PrivacidadePage() {
                     Validação de autenticidade da denúncia
                  </li>
               </ul>
+              
+              <div className="p-6 bg-dark/5 rounded-2xl border border-dark/10">
+                 <div className="flex items-start gap-4">
+                    <div className="p-3 bg-dark text-white rounded-xl shadow-lg">
+                       <Lock size={20} />
+                    </div>
+                    <div>
+                       <h3 className="text-sm font-black text-dark uppercase">Identificação Segura</h3>
+                       <p className="text-xs text-muted mt-1">A validação por e-mail (OTP) garante que sua denúncia seja legítima e oficial, protegendo o sistema contra falsos relatos.</p>
+                    </div>
+                 </div>
+              </div>
            </section>
 
            <div className="h-px bg-border/50"></div>

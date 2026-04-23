@@ -10,7 +10,6 @@ interface PDFData {
   local: string
   data_ocorrido: string
   criado_em: string
-  anonima: boolean
   nome?: string
   email?: string
   telefone?: string
@@ -36,7 +35,6 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
     hora_envio: new Date(data.criado_em).toLocaleTimeString('pt-BR'),
     orgao_nome: data.orgao_nome,
     local: data.local,
-    anonima: !!data.anonima,
   })
 
   const rodape = await formatarDocumento('rodape', {
@@ -47,7 +45,6 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
     hora_envio: new Date(data.criado_em).toLocaleTimeString('pt-BR'),
     nome: data.nome,
     email: data.email,
-    anonima: data.anonima
   })
 
   // 2. Desenha o PDF

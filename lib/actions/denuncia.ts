@@ -15,10 +15,10 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
   const supabase = createAdminClient()
 
   try {
-    if (!formData.anonima && formData.email) {
+    // Validação obrigatória de OTP para todos os usuários
+    if (formData.email) {
       const emailHash = createHash('sha256').update(formData.email.toLowerCase().trim()).digest('hex')
       
-      // Verificar se o usuário está na blacklist
       const { data: banido } = await supabase
         .from('blacklist_usuarios')
         .select('id, motivo')
@@ -26,11 +26,13 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
         .maybeSingle()
 
       if (banido) {
-        return { success: false, error: 'Este e-mail está temporariamente suspenso para envio de denúncias por violação dos termos de uso (Suspeita de denúncia falsa).' }
+        return { success: false, error: 'Este e-mail está temporariamente suspenso para envio de denúncias por violação dos termos de uso.' }
       }
 
       const otpValido = await validarOTP(formData.email, formData.otpToken || '')
       if (!otpValido) return { success: false, error: 'Código de verificação inválido ou expirado.' }
+    } else {
+      return { success: false, error: 'O e-mail de identificação é obrigatório.' }
     }
 
     const { protocolo, chaveAcesso } = await gerarProtocolo()
@@ -77,13 +79,12 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
       categoriaSlug: catData?.slug || '',
       orgaoNome:     'DenunciaMS',
       local:         localCompleto,
-      anonima:       formData.anonima ?? false,
       nome:          formData.nome,
       email:         formData.email,
       telefone:      formData.telefone,
     })
     const documentoFinal = montarDocumentoFinal({
-      cabecalho: `DENUNCIA MS — Protocolo: ${protocolo}\nCategoria: ${catData?.label || formData.categoria_id}\nData: ${variaveis.data_envio} às ${variaveis.hora_envio}\nLocal: ${localCompleto || 'Não informado'}\nIdentificação: ${formData.anonima ? 'Anônima' : formData.nome || '-'}`,
+      cabecalho: `DENUNCIA MS — Protocolo: ${protocolo}\nCategoria: ${catData?.label || formData.categoria_id}\nData: ${variaveis.data_envio} às ${variaveis.hora_envio}\nLocal: ${localCompleto || 'Não informado'}\nIdentificação: ${formData.nome || '-'}`,
       corpo:     formData.descricao_original,
       rodape:    `Denúncia registrada oficialmente pela plataforma DenunciaMS.\nHash de integridade disponível no painel administrativo.\nMato Grosso do Sul — ${variaveis.data_envio}`,
       variaveis,
@@ -99,7 +100,6 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
         descricao_original: formData.descricao_original,
         local:              localCompleto || null,
         data_ocorrido:      formData.data_ocorrido || null,
-        anonima:            formData.anonima ?? false,
         documento_final:    documentoFinal,
         status:             'recebida',
       })
@@ -123,7 +123,7 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
       )
     }
 
-    if (!formData.anonima && formData.nome && formData.email) {
+    if (formData.nome && formData.email) {
       const { encryptData } = await import('@/lib/encrypt')
       await supabase.from('identidades').insert({
         denuncia_id:  denuncia.id,
@@ -143,7 +143,6 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
         descricao:     formData.descricao_original,
         local:         [formData.local, formData.numero, formData.bairro, formData.cidade].filter(Boolean).join(', '),
         data_ocorrido: formData.data_ocorrido || '',
-        anonima:       formData.anonima,
         criado_em:     denuncia.criado_em,
         orgao_nome:    'Denúncia MS'
       })

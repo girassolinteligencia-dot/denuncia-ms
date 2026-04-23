@@ -12,12 +12,12 @@ const FAQ_ITEMS = [
     category: 'Segurança & Identidade',
     items: [
       {
-        q: 'A denúncia é realmente anônima?',
-        a: 'Sim. Ao escolher a opção "Manter Anônimo", nenhum dado pessoal (nome, e-mail ou IP) é vinculado ao seu registro ou armazenado em nossa base de dados identificável.'
+        q: 'A identificação é obrigatória?',
+        a: 'Sim. Para garantir a legitimidade das informações e evitar denúncias falsas, o DENUNCIA MS exige a validação de identidade via código de segurança (OTP) enviado ao seu e-mail.'
       },
       {
-        q: 'O que acontece se eu me identificar?',
-        a: 'Seus dados serão protegidos conforme a LGPD e usados exclusivamente para que os órgãos competentes possam entrar em contato para mais detalhes ou dar retornos sobre o caso.'
+        q: 'Meus dados estão protegidos?',
+        a: 'Sim. Seus dados são criptografados e protegidos conforme a LGPD. Eles são usados exclusivamente para validar a denúncia e permitir que os órgãos competentes deem retornos sobre o caso.'
       },
       {
         q: 'A plataforma é segura?',
@@ -38,8 +38,8 @@ const FAQ_ITEMS = [
       },
       {
         q: 'Perdi meu número de protocolo, e agora?',
-        a: 'Por segurança e para garantir o anonimato, protocolos perdidos não podem ser recuperados. É fundamental anotar sua chave de acesso ao final do registro.'
-      }
+        a: 'Por segurança, protocolos perdidos não podem ser recuperados manualmente. Você deve guardar sua chave de acesso gerada ao final do registro para consultar o andamento.'
+      },
     ]
   },
   {

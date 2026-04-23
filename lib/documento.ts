@@ -15,7 +15,6 @@ export interface VariaveisDocumento {
   hora_envio: string     // HH:mm
   local: string
   orgao_nome: string
-  anonima: boolean
   nome?: string
   email?: string
   telefone?: string
@@ -46,21 +45,13 @@ export function substituirVariaveis(
     '{{telefone}}': variaveis.telefone || '',
     '{{app_nome}}': variaveis.app_nome,
     '{{app_url}}': variaveis.app_url,
-    '{{anonima}}': variaveis.anonima ? 'Anônimo' : (variaveis.nome || ''),
   }
 
   for (const [chave, valor] of Object.entries(substituicoes)) {
     resultado = resultado.replaceAll(chave, valor)
   }
 
-  // Bloco condicional {{#unless anonima}} ... {{/unless}}
-  if (variaveis.anonima) {
-    resultado = resultado.replace(/\{\{#unless anonima\}\}[\s\S]*?\{\{\/unless\}\}/g, '')
-  } else {
-    resultado = resultado
-      .replace(/\{\{#unless anonima\}\}/g, '')
-      .replace(/\{\{\/unless\}\}/g, '')
-  }
+  // Anonimato removido da plataforma - Identificação obrigatória
 
   return resultado.trim()
 }
@@ -100,7 +91,6 @@ export function construirVariaveis(params: {
   categoriaSlug: string
   orgaoNome: string
   local: string
-  anonima: boolean
   nome?: string
   email?: string
   telefone?: string
@@ -120,7 +110,6 @@ export function construirVariaveis(params: {
     hora_envio,
     local: params.local,
     orgao_nome: params.orgaoNome,
-    anonima: params.anonima,
     nome: params.nome,
     email: params.email,
     telefone: params.telefone,
@@ -146,7 +135,6 @@ export async function formatarDocumento(
     categoriaSlug: variaveis.categoria_slug || '',
     orgaoNome: variaveis.orgao_nome || '',
     local: variaveis.local || '',
-    anonima: !!variaveis.anonima,
     nome: variaveis.nome,
     email: variaveis.email,
     telefone: variaveis.telefone

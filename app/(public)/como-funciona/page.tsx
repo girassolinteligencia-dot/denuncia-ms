@@ -15,7 +15,7 @@ import Link from 'next/link'
 
 export const metadata = {
   title: 'Como Funciona | DENUNCIA MS',
-  description: 'Saiba como registrar sua denúncia de forma segura, anônima e eficaz no Mato Grosso do Sul.',
+  description: 'Saiba como registrar sua denúncia de forma segura e eficaz no Mato Grosso do Sul.',
 }
 
 export default function ComoFuncionaPage() {
@@ -37,7 +37,7 @@ export default function ComoFuncionaPage() {
                Sua denúncia num <span className="text-secondary">caminho seguro.</span>
             </h1>
             <p className="text-sm sm:text-lg text-white/70 max-w-xl font-medium leading-relaxed mx-auto lg:mx-0">
-              Entenda como a <span className="text-white font-black">DENUNCIA MS</span> usa tecnologia para garantir seu anonimato e a entrega rápida aos órgãos.
+              Entenda como a <span className="text-white font-black">DENUNCIA MS</span> usa tecnologia para garantir sua segurança e a entrega rápida aos órgãos.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                <Link href="/denunciar" className="btn-primary gap-3 px-8 bg-secondary hover:bg-secondary-600 text-dark border-none shadow-glow-green h-12 sm:h-14 text-xs font-black uppercase tracking-widest">
@@ -83,8 +83,8 @@ export default function ComoFuncionaPage() {
                />
                <ProcessStep 
                  num="03"
-                 title="Chave de Acesso"
-                 desc="O sistema gera um protocolo único e uma chave de consulta. É sua única forma de acompanhar o caso sem se identificar."
+                 title="Identificação Segura"
+                 desc="A validação por e-mail (OTP) garante que sua denúncia seja legítima e oficial, protegendo o sistema contra falsos relatos."
                  icon={Lock}
                  color="bg-dark text-white shadow-lg"
                />
@@ -112,30 +112,30 @@ export default function ComoFuncionaPage() {
                         Blindagem Digital
                      </div>
                      <h2 className="text-2xl sm:text-5xl font-black tracking-tighter leading-tight italic uppercase">
-                        Como garantimos seu <span className="text-secondary underline decoration-2 sm:decoration-4 underline-offset-4 sm:underline-offset-8">Anonimato?</span>
+                        Como garantimos seu <span className="text-secondary underline decoration-2 sm:decoration-4 underline-offset-4 sm:underline-offset-8">Sigilo?</span>
                      </h2>
                      <div className="space-y-6">
                         <FeatureItem 
                           title="Criptografia de Ponta-a-Ponta" 
-                          desc="Os dados são embaralhados antes de serem salvos no banco de dados, tornando-os ilegíveis para acessos não autorizados."
+                          desc="Os dados são embaralhados antes de serem salvos no banco de dados, tornando sua identidade ilegível para acessos não autorizados."
                         />
                         <FeatureItem 
-                          title="Sem Rastreamento de Identidade" 
-                          desc="Não armazenamos cookies persistentes ou dados de perfil que possam vincular sua denúncia ao seu navegador pessoal."
+                          title="Validação por Código Único" 
+                          desc="O sistema OTP garante que o e-mail informado pertence ao autor, elevando a confiança jurídica da denúncia."
                         />
                         <FeatureItem 
                           title="Protocolo Independente" 
-                          desc="O número gerado não contém nenhuma informação sobre quem o gerou, apenas sobre o conteúdo da ocorrência."
+                          desc="O número gerado permite o acompanhamento do status sem que seus dados pessoais fiquem expostos no painel público."
                         />
                         
                         {/* Alerta MPMS */}
                         <div className="p-6 bg-white/5 border border-white/10 rounded-3xl mt-4 space-y-3">
                            <p className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] flex items-center gap-2">
                               <ShieldCheck size={16} />
-                              Nota sobre Manifestação Anônima
+                              Nota sobre Identificação Obrigatória
                            </p>
                            <p className="text-xs text-white/70 leading-relaxed font-medium italic">
-                              Conforme orientação do Ministério Público (MPMS), ao optar por não se identificar, saiba que &quot;o manifestante não será identificado, porém a manifestação poderá não ser atendida. O manifestante poderá optar por não fornecer dados sobre sua identificação. Atenção! Isso prejudica a investigação dos fatos&quot;.
+                              Conforme orientação dos órgãos de fiscalização, a identificação via OTP é necessária para garantir a segurança jurídica e a efetividade das investigações, prevenindo o uso indevido da plataforma.
                            </p>
                         </div>
                      </div>
@@ -185,8 +185,8 @@ export default function ComoFuncionaPage() {
 
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
                <FaqItem 
-                 q="A denúncia é realmente anônima?" 
-                 a="Sim. Ao escolher a opção 'Manter Anônimo', nenhum dado pessoal seu será coletado ou armazenado no envio da denúncia." 
+                 q="A identificação é obrigatória?" 
+                 a="Sim. Para elevar a qualidade das denúncias e garantir a segurança jurídica, exigimos a validação por e-mail e CPF em todos os registros." 
                />
                <FaqItem 
                  q="Perdi meu protocolo, e agora?" 

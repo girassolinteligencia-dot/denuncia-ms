@@ -19,7 +19,8 @@ import {
 import type { Noticia } from '@/types'
 import { toast } from 'sonner'
 import { upsertNoticia, deleteNoticia } from '@/lib/actions/admin-conteudo'
-import { X, Save, Upload } from 'lucide-react'
+import { gerarSugestoesDeNoticias, aprovarNoticia } from '@/lib/actions/intelligence'
+import { X, Save, Upload, CheckCircle2 as CheckCircle } from 'lucide-react'
 
 export const NewsManager: React.FC<{ initialNoticias: Noticia[] }> = ({ initialNoticias }) => {
   const [noticias, setNoticias] = useState<Noticia[]>(initialNoticias)
@@ -100,25 +101,34 @@ export const NewsManager: React.FC<{ initialNoticias: Noticia[] }> = ({ initialN
     toast.info('IA analisando banco de dados de Mato Grosso do Sul...')
     
     try {
-      await new Promise(r => setTimeout(r, 2000))
-      const news1: Noticia = {
-        id: Math.random().toString(),
-        titulo: '[AUTO] Resumo Diário: Saúde Pública é a principal pauta hoje',
-        slug: 'resumo-diario-' + Date.now(),
-        conteudo: 'Conteúdo gerado via IA analisando tendências de Mato Grosso do Sul...',
-        categoria: 'Impacto',
-        imagem_url: null,
-        autor_id: 'robot',
-        publicado: false,
-        publicado_em: null,
-        criado_em: new Date().toISOString()
+      const result = await gerarSugestoesDeNoticias()
+      if (result.success) {
+        toast.success(result.message)
+        window.location.reload()
+      } else {
+        toast.error(result.error || 'Erro ao gerar notícias')
       }
-      setNoticias(prev => [news1, ...prev])
-      toast.success('Novo boletim de impacto gerado com sucesso! (Rascunho)')
-    } catch {
-      toast.error('Erro ao conectar com o motor de IA')
+    } catch (err: any) {
+      toast.error('Erro ao conectar com o motor de IA: ' + err.message)
     } finally {
       setGenerating(false)
+    }
+  }
+
+  const handleApprove = async (id: string) => {
+    setLoading(true)
+    try {
+      const result = await aprovarNoticia(id)
+      if (result.success) {
+        toast.success('Notícia aprovada e publicada!')
+        window.location.reload()
+      } else {
+        toast.error(result.error)
+      }
+    } catch (err: any) {
+      toast.error('Erro ao aprovar: ' + err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -207,21 +217,32 @@ export const NewsManager: React.FC<{ initialNoticias: Noticia[] }> = ({ initialN
               </div>
             </div>
 
-             <div className="p-4 bg-surface/50 border-t border-border flex items-center justify-between">
-                <button 
-                  onClick={() => handleOpenEdit(news)}
-                  className="text-xs font-bold text-primary flex items-center gap-1 hover:underline"
-                >
-                  <Edit2 size={14} className="LucideEdit2" />
-                  Editar
-                </button>
+              <div className="p-4 bg-surface/50 border-t border-border flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => handleOpenEdit(news)}
+                    className="text-xs font-bold text-primary flex items-center gap-1 hover:underline"
+                  >
+                    <Edit2 size={14} />
+                    Editar
+                  </button>
+                  {!news.publicado && (
+                    <button 
+                      onClick={() => handleApprove(news.id)}
+                      className="text-xs font-bold text-secondary flex items-center gap-1 hover:underline"
+                    >
+                      <CheckCircle size={14} />
+                      Aprovar
+                    </button>
+                  )}
+                </div>
                 <button 
                   onClick={() => handleDelete(news.id)}
                   className="p-2 hover:bg-red-50 text-error rounded-lg transition-colors"
                 >
                   <Trash2 size={18} />
                 </button>
-             </div>
+              </div>
           </div>
         ))}
       </div>

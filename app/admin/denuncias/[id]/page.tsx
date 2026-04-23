@@ -10,7 +10,8 @@ import {
   Phone,
   Paperclip,
   Shield,
-  Download
+  Download,
+  Lock
 } from 'lucide-react'
 import Link from 'next/link'
 import { StatusActions } from '@/components/admin/status-actions'
@@ -37,8 +38,8 @@ export default async function DetalheDenunciaPage({ params }: { params: { id: st
         </Link>
         <div className="flex items-center gap-4">
            <ExportButton denuncia={denuncia} />
-           <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border ${denuncia.anonima ? 'bg-surface text-muted border-border' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-              {denuncia.anonima ? 'Denúncia Anônima' : 'Denúncia Identificada'}
+           <span className="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border bg-amber-50 text-amber-700 border-amber-200">
+              Denúncia Identificada
            </span>
         </div>
       </div>
@@ -140,14 +141,13 @@ export default async function DetalheDenunciaPage({ params }: { params: { id: st
                  </h3>
               </div>
               <div className="p-6 space-y-5">
-                 {denuncia.anonima ? (
-                   <div className="flex flex-col items-center justify-center py-6 text-center space-y-3">
-                      <div className="w-12 h-12 bg-surface rounded-full flex items-center justify-center text-muted opacity-50">
-                         <Shield size={24} />
+                 {!denuncia.denunciante_nome ? (
+                    <div className="p-6 bg-surface border-2 border-dashed border-border/50 rounded-3xl space-y-4 text-center">
+                      <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto text-muted/30">
+                        <Lock size={20} />
                       </div>
-                      <p className="text-[10px] font-black text-muted uppercase tracking-widest">Identidade Protegida</p>
-                      <p className="text-xs text-muted/60 font-medium leading-relaxed">O cidadão optou pelo anonimato. Nenhuma informação pessoal foi coletada.</p>
-                   </div>
+                      <p className="text-xs text-muted/60 font-medium leading-relaxed">Informações de identidade protegidas por criptografia. Use as chaves de acesso autorizadas para decriptação.</p>
+                    </div>
                  ) : (
                    <div className="space-y-4">
                       <div className="flex items-start gap-4">

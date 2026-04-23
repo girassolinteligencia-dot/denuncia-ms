@@ -23,7 +23,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { registrarDenuncia } from '@/lib/actions/denuncia'
 import { EmailPreview } from './email-preview'
-import { solicitarCodigoOTP } from '@/lib/actions/auth'
+import { solicitarCodigoOTP, verificarOTP } from '@/lib/actions/auth'
 import { salvarRascunhoOffline, buscarRascunhosPendentes, removerRascunho } from '@/lib/offline-storage'
 
 const STEPS = [
@@ -58,7 +58,6 @@ interface DenunciaFormData {
   bairro: string
   cidade: string
   data_ocorrido: string
-  anonima: boolean
   nome: string
   email: string
   telefone: string
@@ -82,6 +81,7 @@ export function DenunciaFormWizard({
   const [loading, setLoading] = useState(false)
   const [previewAberto, setPreviewAberto] = useState(false)
   const [otpEnviado, setOtpEnviado] = useState(false)
+  const [otpValidado, setOtpValidado] = useState(false)
   const [loadingOtp, setLoadingOtp] = useState(false)
   const [cooldown, setCooldown] = useState(0)
   const [isOnline, setIsOnline] = useState(true)
@@ -98,7 +98,6 @@ export function DenunciaFormWizard({
     bairro: '',
     cidade: '',
     data_ocorrido: new Date().toISOString().split('T')[0],
-    anonima: false,
     nome: '',
     email: '',
     telefone: '',
@@ -222,6 +221,22 @@ export function DenunciaFormWizard({
       setTimeout(() => otpInputRef.current?.focus(), 100)
     } else {
       toast.error(res.error || 'Erro ao enviar código.')
+    }
+  }
+
+  const handleVerificarOTP = async () => {
+    if (formData.otpToken.length !== 6) {
+      toast.error('O código deve ter 6 dígitos.')
+      return
+    }
+    setLoadingOtp(true)
+    const res = await verificarOTP(formData.email, formData.otpToken)
+    setLoadingOtp(false)
+    if (res.success) {
+      setOtpValidado(true)
+      toast.success('Identidade pré-validada com sucesso!')
+    } else {
+      toast.error(res.error || 'Código incorreto ou expirado.')
     }
   }
 
@@ -517,73 +532,122 @@ export function DenunciaFormWizard({
             <div className="space-y-10 animate-slide-up">
               <div className="flex items-center justify-between border-b border-border/40 pb-6">
                 <div className="space-y-1">
-                  <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tighter italic uppercase text-primary">Segurança & Finalização</h2>
-                  <p className="text-muted text-sm font-medium">Valide sua identidade para finalizar.</p>
+                  <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tighter italic uppercase text-primary">
+                    {otpValidado ? 'Finalização Oficial' : 'Segurança & Validação'}
+                  </h2>
+                  <p className="text-muted text-sm font-medium">
+                    {otpValidado ? 'Preencha os dados finais para protocolar.' : 'Valide seu e-mail para prosseguir.'}
+                  </p>
                 </div>
               </div>
 
-              <div className="p-8 sm:p-10 bg-dark text-white rounded-[3rem] space-y-8 relative overflow-hidden">
-                <div className="bg-white/10 border border-white/20 p-6 rounded-3xl flex gap-4 relative z-10 backdrop-blur-md">
-                  <ShieldCheck size={24} className="text-secondary shrink-0" />
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-black text-white uppercase tracking-widest italic">Por que o código no e-mail?</h4>
-                    <p className="text-[11px] text-white/70 leading-relaxed font-medium italic">
-                      É o seu passaporte de confiança. Garante velocidade, segurança e transparência na sua denúncia.
-                    </p>
-                  </div>
-                </div>
-
-                {!isOnline && (
-                  <div className="bg-blue-600/20 border border-blue-400/30 p-5 rounded-2xl flex gap-4 relative z-10 animate-pulse">
-                    <Info size={20} className="text-blue-400 shrink-0" />
-                    <p className="text-[11px] text-blue-100 font-medium italic leading-relaxed">
-                      Sua denúncia está salva no cofre do sistema! Assim que você recuperar o sinal de internet, enviaremos o código para seu e-mail para que você possa gerar seu protocolo oficial.
-                    </p>
+              <div className={`p-8 sm:p-10 rounded-[3rem] space-y-8 relative overflow-hidden transition-all duration-700 ${otpValidado ? 'bg-surface border-2 border-primary/20' : 'bg-dark text-white'}`}>
+                
+                {/* EXPLICAÇÃO INICIAL */}
+                {!otpValidado && (
+                  <div className="bg-white/10 border border-white/20 p-6 rounded-3xl flex gap-4 relative z-10 backdrop-blur-md">
+                    <ShieldCheck size={24} className="text-secondary shrink-0" />
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-black text-white uppercase tracking-widest italic">Por que validar o e-mail?</h4>
+                      <p className="text-[11px] text-white/70 leading-relaxed font-medium italic">
+                        Iniciamos a validação pelo seu e-mail para garantir que você é uma pessoa real. Isso protege a plataforma contra envios automatizados.
+                      </p>
+                    </div>
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-                  <div className="space-y-2">
-                    <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">Nome Completo *</p>
-                    <input className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm w-full text-white"
-                      placeholder="Seu nome" disabled={otpEnviado || !isOnline} value={formData.nome} onChange={(e) => handleInputChange('nome', e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">E-mail *</p>
-                    <input type="email" className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm w-full text-white"
-                      placeholder="seu@email.com" disabled={otpEnviado || !isOnline} value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-                  <div className="space-y-2">
-                    <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">WhatsApp *</p>
-                    <input className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm w-full text-white"
-                      placeholder="(67) 99999-9999" disabled={otpEnviado || !isOnline} value={formData.telefone} onChange={(e) => handleTelefoneChange(e.target.value)} maxLength={15} />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">CPF *</p>
-                    <input className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm w-full text-white"
-                      placeholder="000.000.000-00" disabled={otpEnviado || !isOnline} value={formData.cpf} onChange={(e) => handleCpfChange(e.target.value)} maxLength={14} />
-                  </div>
-                </div>
-
-                <div className="pt-4 relative z-10">
-                  {!otpEnviado ? (
-                    <button onClick={handleSolicitarOTP} disabled={loadingOtp || !formData.email || !formData.nome || cooldown > 0 || !isOnline}
-                      className="w-full h-16 bg-secondary text-white font-black uppercase text-xs tracking-[0.2em] rounded-2xl disabled:opacity-30 flex justify-center items-center gap-3 transition-all">
-                      {loadingOtp ? <Loader2 size={20} className="animate-spin" /> : <Lock size={20} />}
-                      {!isOnline ? 'Aguardando Conexão...' : cooldown > 0 ? `Reenviar em ${cooldown}s` : 'Gerar Código de Segurança'}
-                    </button>
-                  ) : (
-                    <div className="bg-white/5 border border-secondary/30 p-8 rounded-[2rem] space-y-6 text-center animate-slide-up">
-                      <p className="text-xs font-black uppercase tracking-[0.3em] text-secondary">Código Enviado</p>
-                      <input ref={otpInputRef} className="bg-black/40 border-2 border-secondary/40 rounded-2xl h-20 text-center text-4xl font-black text-white w-full max-w-[320px] mx-auto block"
-                        placeholder="000000" maxLength={6} value={formData.otpToken} onChange={(e) => handleInputChange('otpToken', e.target.value.replace(/\D/g, ''))} />
-                      <button onClick={() => { setOtpEnviado(false); handleInputChange('otpToken', '') }} className="text-[9px] text-white/30 uppercase font-black hover:text-white mx-auto block pt-2 underline transition-colors">Reenviar código</button>
+                {/* FASE 1: NOME E EMAIL */}
+                {!otpValidado && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">Nome Completo *</p>
+                      <input className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm w-full text-white"
+                        placeholder="Seu nome" disabled={otpEnviado} value={formData.nome} onChange={(e) => handleInputChange('nome', e.target.value)} />
                     </div>
-                  )}
-                </div>
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">E-mail *</p>
+                      <input type="email" className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm w-full text-white"
+                        placeholder="seu@email.com" disabled={otpEnviado} value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} />
+                    </div>
+                  </div>
+                )}
+
+                {/* FASE 2: CÓDIGO OTP */}
+                {!otpValidado && (
+                  <div className="pt-4 relative z-10">
+                    {!otpEnviado ? (
+                      <button onClick={handleSolicitarOTP} disabled={loadingOtp || !formData.email || !formData.nome || cooldown > 0 || !isOnline}
+                        className="w-full h-16 bg-secondary text-white font-black uppercase text-xs tracking-[0.2em] rounded-2xl disabled:opacity-30 flex justify-center items-center gap-3 transition-all">
+                        {loadingOtp ? <Loader2 size={20} className="animate-spin" /> : <Lock size={20} />}
+                        {cooldown > 0 ? `Reenviar em ${cooldown}s` : 'Gerar Código de Segurança'}
+                      </button>
+                    ) : (
+                      <div className="bg-white/5 border border-secondary/30 p-8 rounded-[2rem] space-y-6 text-center animate-slide-up">
+                        <p className="text-xs font-black uppercase tracking-[0.3em] text-secondary">Código Enviado</p>
+                        <input ref={otpInputRef} className="bg-black/40 border-2 border-secondary/40 rounded-2xl h-20 text-center text-4xl font-black text-white w-full max-w-[320px] mx-auto block"
+                          placeholder="000000" maxLength={6} value={formData.otpToken} onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '')
+                            handleInputChange('otpToken', val)
+                            if (val.length === 6) {
+                              setTimeout(handleVerificarOTP, 100)
+                            }
+                          }} />
+                        <div className="flex flex-col gap-3">
+                          <button onClick={handleVerificarOTP} disabled={loadingOtp || formData.otpToken.length !== 6}
+                            className="btn-primary bg-secondary text-white border-none h-14 w-full max-w-[320px] mx-auto rounded-xl uppercase text-[10px] font-black tracking-widest">
+                            {loadingOtp ? <Loader2 className="animate-spin" /> : 'Verificar Identidade'}
+                          </button>
+                          <button onClick={() => { setOtpEnviado(false); handleInputChange('otpToken', '') }} 
+                            className="text-[9px] text-white/30 uppercase font-black hover:text-white mx-auto block pt-2 underline transition-colors">
+                            Reenviar código
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* FASE 3: CPF E WHATSAPP (APENAS APÓS VALIDAR OTP) */}
+                {otpValidado && (
+                  <div className="space-y-8 animate-slide-up">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                      <div className="space-y-2">
+                        <p className="text-[9px] font-black text-primary/50 uppercase tracking-[0.2em] pl-1">WhatsApp / Telefone *</p>
+                        <input className="bg-white border-2 border-primary/10 rounded-2xl h-16 p-4 text-lg font-bold w-full text-dark shadow-sm focus:border-primary transition-all"
+                          placeholder="(67) 99999-9999" value={formData.telefone} onChange={(e) => handleTelefoneChange(e.target.value)} maxLength={15} />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[9px] font-black text-primary/50 uppercase tracking-[0.2em] pl-1">CPF Oficial *</p>
+                        <input className="bg-white border-2 border-primary/10 rounded-2xl h-16 p-4 text-lg font-bold w-full text-dark shadow-sm focus:border-primary transition-all"
+                          placeholder="000.000.000-00" value={formData.cpf} onChange={(e) => handleCpfChange(e.target.value)} maxLength={14} />
+                      </div>
+                    </div>
+
+                    <div className="bg-primary/5 border border-primary/10 p-6 rounded-[2rem] space-y-4">
+                      <div className="flex items-center gap-2 text-primary">
+                        <Info size={18} />
+                        <h4 className="text-[10px] font-black uppercase tracking-widest">Por que pedimos isso?</h4>
+                      </div>
+                      <p className="text-xs text-dark/70 leading-relaxed font-medium italic">
+                        Para que sua denúncia tenha valor legal e seja aceita pelos órgãos do Estado, precisamos confirmar quem você é. Isso evita denúncias falsas e garante que sua voz seja ouvida com seriedade. Conforme a <strong>LGPD</strong>, seus dados serão guardados sob sete chaves (criptografia) e o sigilo da sua fonte é um direito seu garantido pela nossa Constituição. Ninguém terá acesso a quem você é, exceto os técnicos autorizados para resolver o seu caso.
+                      </p>
+                    </div>
+
+                    {/* TERMO DE RESPONSABILIDADE JURÍDICA */}
+                    <label className={`flex items-start gap-4 p-6 rounded-2xl border-2 cursor-pointer transition-all ${formData.consentimento ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-border/50'}`}>
+                      <input type="checkbox" className="hidden" checked={formData.consentimento} onChange={(e) => handleInputChange('consentimento', e.target.checked)} />
+                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border-2 mt-1 transition-all ${formData.consentimento ? 'bg-primary border-primary text-white' : 'bg-white border-border/60 text-transparent'}`}>
+                        <Check size={16} strokeWidth={4} />
+                      </div>
+                      <div className="space-y-2 text-left">
+                        <p className="text-[10px] font-black text-dark uppercase tracking-widest italic">Termo de Responsabilidade e Fé Pública</p>
+                        <p className="text-[11px] text-muted font-medium leading-relaxed italic">
+                          Declaro, sob as penas da lei e em observância ao <strong>Art. 299 do Código Penal (Falsidade Ideológica)</strong> e ao <strong>Art. 340 (Comunicação Falsa)</strong>, que as informações e evidências anexadas são fidedignas e representam a verdade dos fatos. Estou ciente de que a má-fé sujeitará o declarante às sanções civis e penais cabíveis.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-6">
@@ -613,27 +677,16 @@ export function DenunciaFormWizard({
                   </div>
                 )}
 
-                <label className={`flex items-start gap-6 p-8 rounded-[3rem] border-2 cursor-pointer transition-all ${formData.consentimento ? 'bg-primary/5 border-primary shadow-xl' : 'bg-surface/50 border-border/50'}`}>
-                  <input type="checkbox" className="hidden" checked={formData.consentimento} onChange={(e) => handleInputChange('consentimento', e.target.checked)} />
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border-2 transition-all ${formData.consentimento ? 'bg-primary border-primary text-white shadow-glow-cyan' : 'bg-white border-border/60 text-transparent'}`}>
-                    <Check size={24} strokeWidth={4} />
-                  </div>
-                  <div className="space-y-2 text-left">
-                    <p className="text-sm font-black text-dark uppercase tracking-tight italic">Declaração de Veracidade</p>
-                    <p className="text-xs text-muted font-medium italic">Declaro que as informações são verdadeiras e estou ciente das responsabilidades legais.</p>
-                  </div>
-                </label>
-
                 <div className="flex flex-col sm:flex-row items-center justify-between pt-6 gap-6">
                   <button onClick={handleBack} disabled={loading} className="group flex items-center gap-3 text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
                     <ArrowLeft size={20} /> Voltar
                   </button>
-                  <button onClick={() => {
+                  <button 
+                    onClick={() => {
                       if (!formData.consentimento) { toast.error('Concorde com os termos primeiro.'); return }
-                      if (!formData.otpToken || formData.otpToken.length !== 6) { toast.error('Valide o código de e-mail.'); return }
                       handleSubmit()
                     }}
-                    disabled={loading || !formData.consentimento || !formData.otpToken || !isOnline}
+                    disabled={loading || !formData.consentimento || !otpValidado || !isOnline}
                     className="btn-primary h-20 px-12 rounded-[2rem] gap-4 w-full sm:w-auto bg-secondary hover:bg-secondary-600 disabled:opacity-30"
                   >
                     {loading ? <Loader2 className="animate-spin" /> : <Send size={24} />}

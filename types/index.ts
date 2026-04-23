@@ -121,8 +121,7 @@ export interface Denuncia {
   bairro: string | null
   cidade: string | null
   data_ocorrido: string | null
-  status: StatusDenuncia
-  anonima: boolean
+  status: StatusDenuncia,
   criado_em: string
   atualizado_em: string
   arquivos?: ArquivoDenuncia[]
@@ -223,8 +222,7 @@ export interface SubmitDenunciaRequest {
   numero?: string
   bairro?: string
   cidade?: string
-  data_ocorrido?: string
-  anonima: boolean
+  data_ocorrido?: string,
   nome?: string
   email?: string
   telefone?: string

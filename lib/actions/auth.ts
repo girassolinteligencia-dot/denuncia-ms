@@ -93,3 +93,22 @@ export async function validarOTP(emailRaw: string, codigoDigitado: string): Prom
   await supabase.from('auth_tokens').update({ is_used: true }).eq('id', data.id)
   return true
 }
+
+export async function verificarOTP(emailRaw: string, codigoDigitado: string): Promise<{ success: boolean; error?: string }> {
+  const supabase   = createAdminClient()
+  const emailNorm  = emailRaw.toLowerCase().trim()
+  const emailHash  = sha256(emailNorm)
+  const codigoHash = sha256(codigoDigitado.trim())
+
+  const { data } = await supabase
+    .from('auth_tokens')
+    .select('id, expires_at, is_used')
+    .eq('email_hash', emailHash)
+    .eq('codigo', codigoHash)
+    .eq('is_used', false)
+    .gte('expires_at', new Date().toISOString())
+    .maybeSingle()
+
+  if (!data) return { success: false, error: 'Código inválido ou expirado.' }
+  return { success: true }
+}
