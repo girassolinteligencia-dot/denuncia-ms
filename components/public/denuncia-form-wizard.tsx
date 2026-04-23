@@ -304,15 +304,37 @@ export function DenunciaFormWizard({
       toast.error('Aguarde a conexão voltar para finalizar o protocolo oficial.')
       return
     }
+
+    // Validação de segurança: Vercel Server Actions têm limite de 4.5MB total.
+    // Calculamos o tamanho aproximado do payload (Base64 aumenta ~33% do tamanho original).
+    const totalSize = formData.arquivos.reduce((acc, f) => acc + f.size, 0)
+    const estimatedPayloadSize = totalSize * 1.35 // Margem para Base64 + outros campos
+
+    if (estimatedPayloadSize > 4 * 1024 * 1024) {
+      toast.error('O volume total de anexos é muito grande para uma única denúncia.', {
+        description: 'Tente enviar menos arquivos ou arquivos menores (Máximo total sugerido: 3MB).'
+      })
+      return
+    }
+
     setLoading(true)
-    const res = await registrarDenuncia(formData, formData.arquivos)
-    if (res.success) {
-      await removerRascunho('rascunho_atual')
-      toast.success('Denúncia protocolada com sucesso!')
-      router.push(`/sucesso?protocolo=${res.protocolo}&chave=${res.chaveAcesso}`)
-    } else {
+    try {
+      const res = await registrarDenuncia(formData, formData.arquivos)
+      
+      if (res.success) {
+        await removerRascunho('rascunho_atual')
+        toast.success('Denúncia protocolada com sucesso!')
+        router.push(`/sucesso?protocolo=${res.protocolo}&chave=${res.chaveAcesso}`)
+      } else {
+        setLoading(false)
+        toast.error(res.error || 'Erro ao processar denúncia.')
+      }
+    } catch (err: any) {
       setLoading(false)
-      toast.error(res.error || 'Erro ao processar denúncia.')
+      console.error('Erro crítico no envio:', err)
+      toast.error('Erro de conexão ou volume de dados excedido.', {
+        description: 'Se estiver enviando arquivos grandes, tente reduzi-los ou enviar um por vez.'
+      })
     }
   }
 
