@@ -16,17 +16,16 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 -- 2. Função Auxiliar para RLS (tem_role)
 -- Permite checar o cargo do usuário autenticado de forma performática
-DROP FUNCTION IF EXISTS public.tem_role(text);
-CREATE OR REPLACE FUNCTION public.tem_role(required_role text)
+CREATE OR REPLACE FUNCTION public.tem_role(role_minimo text)
 RETURNS boolean AS $$
 BEGIN
   RETURN EXISTS (
     SELECT 1 FROM public.profiles
     WHERE id = auth.uid()
     AND (
-      role = required_role 
+      role = role_minimo 
       OR role = 'superadmin' -- Superadmin herda tudo
-      OR (required_role = 'moderador' AND role = 'admin') -- Admin herda moderador
+      OR (role_minimo = 'moderador' AND role = 'admin') -- Admin herda moderador
     )
     AND ativo = true
   );
