@@ -25,20 +25,20 @@ export default async function DenunciarPage() {
       supabase.from('config_tipos_arquivo').select('*')
     ])
 
-    if (catRes.error) console.error('Erro categorias:', catRes.error)
-    if (camposRes.error) console.error('Erro campos:', camposRes.error)
-    if (politicasRes.error) console.error('Erro politicas:', politicasRes.error)
+    if (catRes.error) throw new Error(`Erro categorias: ${catRes.error.message}`)
+    if (camposRes.error) throw new Error(`Erro campos: ${camposRes.error.message}`)
+    if (politicasRes.error) throw new Error(`Erro politicas: ${politicasRes.error.message}`)
 
     categorias = catRes.data || []
     campos = camposRes.data || []
     politicasArquivo = politicasRes.data || []
 
-    if (categorias.length === 0 && !catRes.error) {
-      console.warn('Nenhuma categoria ativa encontrada.')
+    if (categorias.length === 0) {
+      errorMsg = 'Nenhuma categoria ativa encontrada no banco de dados.'
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error('Erro crítico no render da página:', e)
-    errorMsg = 'Erro ao carregar configurações do sistema. Verifique as variáveis de ambiente.'
+    errorMsg = e.message || 'Erro ao carregar configurações do sistema. Verifique as variáveis de ambiente.'
   }
 
   if (errorMsg) {
