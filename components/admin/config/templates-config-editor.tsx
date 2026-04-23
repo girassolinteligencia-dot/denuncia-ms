@@ -1,17 +1,31 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Save, RefreshCw, FileText, Code, CheckCircle2, QrCode } from 'lucide-react'
 import { updateTemplate } from '@/lib/actions/admin-config'
 import type { ConfigTemplate, TipoTemplate } from '@/types'
 import { toast } from 'sonner'
+import { SaveActionFooter } from '@/components/admin/save-action-footer'
 
 export const TemplatesConfigEditor: React.FC<{ initialTemplates: ConfigTemplate[] }> = ({ initialTemplates }) => {
   const [templates, setTemplates] = useState<ConfigTemplate[]>(initialTemplates)
   const [activeTab, setActiveTab] = useState<TipoTemplate>('cabecalho')
   const [loading, setLoading] = useState(false)
+  const [isDirty, setIsDirty] = useState(false)
 
   const templateAtivo = templates.find(t => t.tipo === activeTab)!
+
+  useEffect(() => {
+    const hasChanges = JSON.stringify(templates) !== JSON.stringify(initialTemplates)
+    setIsDirty(hasChanges)
+  }, [templates, initialTemplates])
+
+  const handleCancel = () => {
+    if (confirm('Deseja descartar as alterações nos templates?')) {
+      setTemplates(initialTemplates)
+      setIsDirty(false)
+    }
+  }
 
   const handleContentChange = (content: string) => {
     setTemplates(prev => prev.map(t => t.tipo === activeTab ? { ...t, conteudo: content } : t))
@@ -45,6 +59,7 @@ export const TemplatesConfigEditor: React.FC<{ initialTemplates: ConfigTemplate[
       const result = await updateTemplate(templateAtivo.id, templateAtivo)
       if (result.success) {
         toast.success(`Template ${activeTab.replace('_', ' ')} salvo com sucesso!`)
+        setIsDirty(false)
       } else {
         toast.error('Erro ao salvar template')
       }
@@ -157,6 +172,13 @@ export const TemplatesConfigEditor: React.FC<{ initialTemplates: ConfigTemplate[
           </section>
         </div>
       </div>
+
+      <SaveActionFooter 
+        isDirty={isDirty} 
+        loading={loading} 
+        onSave={handleSubmit} 
+        onCancel={handleCancel} 
+      />
     </div>
   )
 }

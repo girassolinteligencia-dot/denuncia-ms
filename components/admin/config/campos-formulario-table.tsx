@@ -1,16 +1,30 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Save, RefreshCw, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { updateConfigCampos } from '@/lib/actions/admin-config'
 import type { ConfigCampoFormulario } from '@/types'
 import { toast } from 'sonner'
+import { SaveActionFooter } from '@/components/admin/save-action-footer'
 
 export const CamposFormularioTable: React.FC<{ initialCampos: ConfigCampoFormulario[] }> = ({ initialCampos }) => {
   const [campos, setCampos] = useState<ConfigCampoFormulario[]>(
     [...initialCampos].sort((a, b) => a.ordem - b.ordem)
   )
   const [loading, setLoading] = useState(false)
+  const [isDirty, setIsDirty] = useState(false)
+
+  useEffect(() => {
+    const hasChanges = JSON.stringify(campos) !== JSON.stringify([...initialCampos].sort((a, b) => a.ordem - b.ordem))
+    setIsDirty(hasChanges)
+  }, [campos, initialCampos])
+
+  const handleCancel = () => {
+    if (confirm('Deseja descartar as alterações nos campos?')) {
+      setCampos([...initialCampos].sort((a, b) => a.ordem - b.ordem))
+      setIsDirty(false)
+    }
+  }
 
   const handleToggle = (id: string, field: 'obrigatorio' | 'visivel') => {
     setCampos(prev => prev.map(c => {
@@ -38,6 +52,7 @@ export const CamposFormularioTable: React.FC<{ initialCampos: ConfigCampoFormula
 
       if (results.every(r => r.success)) {
         toast.success('Configuração de campos salva com sucesso!')
+        setIsDirty(false)
       } else {
         toast.error('Ocorreu um erro ao salvar alguns campos.')
       }
@@ -135,6 +150,13 @@ export const CamposFormularioTable: React.FC<{ initialCampos: ConfigCampoFormula
            Salvar Ordenação e Regras
          </button>
       </div>
+
+      <SaveActionFooter 
+        isDirty={isDirty} 
+        loading={loading} 
+        onSave={handleSubmit} 
+        onCancel={handleCancel} 
+      />
     </div>
   )
 }

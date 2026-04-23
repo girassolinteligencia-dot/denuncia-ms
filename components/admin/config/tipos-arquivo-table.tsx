@@ -1,8 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Save, RefreshCw, FileImage, Headphones, Video, FileText, File as FileIcon } from 'lucide-react'
+import { updateConfigTipoArquivo } from '@/lib/actions/admin-config'
 import type { ConfigTipoArquivo } from '@/types'
+import { toast } from 'sonner'
+import { SaveActionFooter } from '@/components/admin/save-action-footer'
 
 const ICON_MAP: Record<string, any> = {
   foto: FileImage,
@@ -15,6 +18,19 @@ const ICON_MAP: Record<string, any> = {
 export const TiposArquivoTable: React.FC<{ initialTipos: ConfigTipoArquivo[] }> = ({ initialTipos }) => {
   const [tipos, setTipos] = useState<ConfigTipoArquivo[]>(initialTipos)
   const [loading, setLoading] = useState(false)
+  const [isDirty, setIsDirty] = useState(false)
+
+  useEffect(() => {
+    const hasChanges = JSON.stringify(tipos) !== JSON.stringify(initialTipos)
+    setIsDirty(hasChanges)
+  }, [tipos, initialTipos])
+
+  const handleCancel = () => {
+    if (confirm('Deseja descartar as alterações nos tipos de arquivos?')) {
+      setTipos(initialTipos)
+      setIsDirty(false)
+    }
+  }
 
   const handleToggle = (id: string) => {
     setTipos(prev => prev.map(t => t.id === id ? { ...t, ativo: !t.ativo } : t))
@@ -27,8 +43,18 @@ export const TiposArquivoTable: React.FC<{ initialTipos: ConfigTipoArquivo[] }> 
   const handleSubmit = async () => {
     setLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      alert('Controle de anexos atualizado!')
+      const promises = tipos.map(tipo => updateConfigTipoArquivo(tipo.id, tipo))
+      const results = await Promise.all(promises)
+      
+      if (results.every(r => r.success)) {
+        toast.success('Políticas de upload atualizadas com sucesso!')
+        setIsDirty(false)
+      } else {
+        toast.error('Erro ao atualizar algumas políticas.')
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error('Erro de conexão ao salvar')
     } finally {
       setLoading(false)
     }
@@ -123,6 +149,13 @@ export const TiposArquivoTable: React.FC<{ initialTipos: ConfigTipoArquivo[] }> 
            Atualizar Políticas de Upload
          </button>
       </div>
+
+      <SaveActionFooter 
+        isDirty={isDirty} 
+        loading={loading} 
+        onSave={handleSubmit} 
+        onCancel={handleCancel} 
+      />
     </div>
   )
 }

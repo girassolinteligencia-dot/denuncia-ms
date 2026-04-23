@@ -61,3 +61,32 @@ export async function updateConfigCampos(id: string, updates: Partial<ConfigCamp
     return { success: false, error: error.message }
   }
 }
+
+/**
+ * Atualiza as configurações de tipos de arquivos permitidos
+ */
+export async function updateConfigTipoArquivo(id: string, updates: any) {
+  const supabase = createAdminClient()
+
+  try {
+    const { error } = await supabase
+      .from('config_tipos_arquivo')
+      .update({
+        ativo: updates.ativo,
+        qtd_maxima: updates.qtd_maxima,
+        tamanho_max_mb: updates.tamanho_max_mb,
+        atualizado_em: new Date().toISOString()
+      })
+      .eq('id', id)
+
+    if (error) throw error
+
+    revalidatePath('/admin/configuracoes/arquivos')
+    revalidatePath('/denunciar')
+    return { success: true }
+  } catch (err) {
+    const error = err as Error
+    console.error('Erro ao atualizar tipo de arquivo:', error)
+    return { success: false, error: error.message }
+  }
+}

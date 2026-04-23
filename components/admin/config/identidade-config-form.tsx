@@ -6,6 +6,7 @@ import { Save, RefreshCw, Palette, Globe, Mail, Info, Upload } from 'lucide-reac
 import { toast } from 'sonner'
 import { savePlatformConfigs } from '@/lib/actions/config'
 import { uploadArquivo } from '@/lib/storage'
+import { SaveActionFooter } from '@/components/admin/save-action-footer'
 
 interface PlataformaConfigData {
   'identidade.nome': string
@@ -29,6 +30,7 @@ export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialDa
     'cores.primaria': initialData['cores.primaria'] || '#1535C9',
     'cores.secundaria': initialData['cores.secundaria'] || '#F5C800',
   })
+  const [isDirty, setIsDirty] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -59,9 +61,42 @@ export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialDa
     if (type === 'logo') {
       setLogoFile(file)
       setPreviews(prev => ({ ...prev, logo: URL.createObjectURL(file) }))
-    } else {
-      setFaviconFile(file)
-      setPreviews(prev => ({ ...prev, favicon: URL.createObjectURL(file) }))
+    }
+  }
+
+  // Detectar alterações
+  useEffect(() => {
+    const hasChanges = JSON.stringify(formData) !== JSON.stringify({
+       'identidade.nome': initialData['identidade.nome'] || 'DENUNCIA MS',
+       'identidade.slogan': initialData['identidade.slogan'] || '',
+       'identidade.email': initialData['identidade.email'] || '',
+       'identidade.rodape': initialData['identidade.rodape'] || '',
+       'identidade.ticker': initialData['identidade.ticker'] || '',
+       'cores.primaria': initialData['cores.primaria'] || '#1535C9',
+       'cores.secundaria': initialData['cores.secundaria'] || '#F5C800',
+    }) || !!logoFile || !!faviconFile
+
+    setIsDirty(hasChanges)
+  }, [formData, logoFile, faviconFile, initialData])
+
+  const handleCancel = () => {
+    if (confirm('Deseja descartar as alterações não salvas?')) {
+      setFormData({
+        'identidade.nome': initialData['identidade.nome'] || 'DENUNCIA MS',
+        'identidade.slogan': initialData['identidade.slogan'] || '',
+        'identidade.email': initialData['identidade.email'] || '',
+        'identidade.rodape': initialData['identidade.rodape'] || '',
+        'identidade.ticker': initialData['identidade.ticker'] || '',
+        'cores.primaria': initialData['cores.primaria'] || '#1535C9',
+        'cores.secundaria': initialData['cores.secundaria'] || '#F5C800',
+      })
+      setLogoFile(null)
+      setFaviconFile(null)
+      setPreviews({
+        logo: initialData['identidade.logo'] || '',
+        favicon: initialData['identidade.favicon'] || ''
+      })
+      setIsDirty(false)
     }
   }
 
@@ -343,6 +378,13 @@ export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialDa
            Salvar Alterações
          </button>
       </div>
+
+      <SaveActionFooter 
+        isDirty={isDirty} 
+        loading={loading} 
+        onSave={() => handleSubmit({ preventDefault: () => {} } as any)} 
+        onCancel={handleCancel} 
+      />
     </form>
   )
 }
