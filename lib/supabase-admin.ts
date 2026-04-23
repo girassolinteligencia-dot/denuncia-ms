@@ -6,14 +6,19 @@ import { createClient } from '@supabase/supabase-js'
  * Nunca expor ao browser — bypassa RLS completamente.
  */
 export function createAdminClient() {
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !supabaseUrl.startsWith('https')) {
+    throw new Error('URL do Supabase inválida ou não configurada (NEXT_PUBLIC_SUPABASE_URL)')
+  }
 
   if (!supabaseKey) {
-    throw new Error('Chave Supabase não configurada')
+    throw new Error('Service Role Key do Supabase não configurada (SUPABASE_SERVICE_ROLE_KEY)')
   }
 
   return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseUrl,
     supabaseKey,
     {
       auth: {
