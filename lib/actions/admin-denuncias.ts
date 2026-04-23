@@ -130,16 +130,26 @@ export async function getDashboardStats() {
 
     if (error) throw error
 
+    // 2. Busca métricas de engajamento
+    const { count: newsletterCount } = await supabase
+      .from('newsletter_inscricoes')
+      .select('*', { count: 'exact', head: true })
+
+    const { count: votosCount } = await supabase
+      .from('enquete_votos')
+      .select('*', { count: 'exact', head: true })
+
     const stats = {
       total: counts.length,
       recebida: counts.filter(d => d.status === 'recebida').length,
       em_analise: counts.filter(d => d.status === 'em_analise').length,
       resolvida: counts.filter(d => d.status === 'resolvida').length,
       arquivada: counts.filter(d => d.status === 'arquivada').length,
+      newsletter: newsletterCount || 0,
+      engajamento: votosCount || 0
     }
 
     // Gatilho silencioso de limpeza (Lazy Cleanup)
-    // Em produção, isso seria um Cron Job, mas aqui garantimos a execução periódica
     limparArquivosAntigos().catch(console.error)
 
     return { success: true, stats }

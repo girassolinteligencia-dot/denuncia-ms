@@ -154,11 +154,24 @@ export function DenunciaFormWizard({
   const handleInputChange = (field: keyof DenunciaFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     
-    if (field === 'categoria_id' || field === 'titulo') {
+    // Rola para baixo apenas na seleção de categoria (Etapa 1)
+    if (field === 'categoria_id') {
       setTimeout(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       }, 300)
     }
+  }
+
+  // Função para scroll sequencial inteligente
+  const handleFieldScroll = (targetId?: string) => {
+    setTimeout(() => {
+      if (targetId) {
+        const el = document.getElementById(targetId)
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      } else {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }, 100)
   }
 
   const handleNext = () => {
@@ -281,6 +294,11 @@ export function DenunciaFormWizard({
   const handleSubmit = async () => {
     if (!isOnline) {
       toast.error('Aguarde a conexão voltar para finalizar o protocolo oficial.')
+      return
+    }
+
+    if (!formData.telefone || !formData.cpf) {
+      toast.error('Telefone e CPF são obrigatórios para a identificação oficial.')
       return
     }
 
@@ -493,15 +511,27 @@ export function DenunciaFormWizard({
                   <label className="label text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
                     <Info size={14} /> Título da Ocorrência *
                   </label>
-                  <input className="input h-16 rounded-2xl text-lg font-bold border-2 focus:ring-4 focus:ring-primary/5 transition-all" 
-                    placeholder="Ex: Obra abandonada no centro" value={formData.titulo} onChange={(e) => handleInputChange('titulo', e.target.value)} />
+                  <input 
+                    id="field-titulo"
+                    className="input h-16 rounded-2xl text-lg font-bold border-2 focus:ring-4 focus:ring-primary/5 transition-all" 
+                    placeholder="Ex: Obra abandonada no centro" 
+                    value={formData.titulo} 
+                    onChange={(e) => handleInputChange('titulo', e.target.value)}
+                    onBlur={() => { if(formData.titulo) handleFieldScroll('field-descricao') }}
+                  />
                 </div>
 
                 <div className="space-y-3">
                   <label className="label text-[10px] font-black uppercase tracking-[0.2em] text-primary label-required">Descrição Detalhada</label>
                   <div className="relative group">
-                    <textarea className="input min-h-[220px] rounded-[2rem] p-6 leading-relaxed text-base border-2 group-focus-within:ring-4 group-focus-within:ring-primary/5 transition-all"
-                      placeholder="Descreva aqui os fatos, pessoas envolvidas..." value={formData.descricao_original} onChange={(e) => handleInputChange('descricao_original', e.target.value)} />
+                    <textarea 
+                      id="field-descricao"
+                      className="input min-h-[220px] rounded-[2rem] p-6 leading-relaxed text-base border-2 group-focus-within:ring-4 group-focus-within:ring-primary/5 transition-all"
+                      placeholder="Descreva aqui os fatos, pessoas envolvidas..." 
+                      value={formData.descricao_original} 
+                      onChange={(e) => handleInputChange('descricao_original', e.target.value)}
+                      onBlur={() => { if(formData.descricao_original) handleFieldScroll() }}
+                    />
                   </div>
                 </div>
               </div>
@@ -532,22 +562,22 @@ export function DenunciaFormWizard({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">CEP</label>
-                  <input className="input h-14 rounded-xl border-2 font-bold" placeholder="00000-000" value={formData.cep} onChange={(e) => handleCepChange(e.target.value)} />
+                  <input className="input h-14 rounded-xl border-2 font-bold" placeholder="00000-000" value={formData.cep} onChange={(e) => handleCepChange(e.target.value)} onBlur={() => handleFieldScroll('field-cidade')} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">Cidade</label>
-                  <input className="input h-14 rounded-xl border-2 font-bold" placeholder="Ex: Campo Grande" value={formData.cidade} onChange={(e) => handleInputChange('cidade', e.target.value)} />
+                  <input id="field-cidade" className="input h-14 rounded-xl border-2 font-bold" placeholder="Ex: Campo Grande" value={formData.cidade} onChange={(e) => handleInputChange('cidade', e.target.value)} onBlur={() => handleFieldScroll('field-local')} />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2 space-y-2">
                   <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">Logradouro / Rua</label>
-                  <input className="input h-14 rounded-xl border-2 font-bold" placeholder="Rua, Avenida..." value={formData.local} onChange={(e) => handleInputChange('local', e.target.value)} />
+                  <input id="field-local" className="input h-14 rounded-xl border-2 font-bold" placeholder="Rua, Avenida..." value={formData.local} onChange={(e) => handleInputChange('local', e.target.value)} onBlur={() => handleFieldScroll('field-bairro')} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">Bairro</label>
-                  <input className="input h-14 rounded-xl border-2 font-bold" placeholder="Ex: Centro" value={formData.bairro} onChange={(e) => handleInputChange('bairro', e.target.value)} />
+                  <input id="field-bairro" className="input h-14 rounded-xl border-2 font-bold" placeholder="Ex: Centro" value={formData.bairro} onChange={(e) => handleInputChange('bairro', e.target.value)} onBlur={() => handleFieldScroll()} />
                 </div>
               </div>
 
@@ -694,35 +724,52 @@ export function DenunciaFormWizard({
                   </div>
                 )}
 
-                {/* FASE 3: CPF E WHATSAPP (APENAS APÓS VALIDAR OTP) */}
+                {/* FASE 3: IDENTIFICAÇÃO FINAL (CPF E WHATSAPP) */}
                 {otpValidado && (
                   <div className="space-y-8 animate-slide-up">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-                      <div className="space-y-2">
-                        <p className="text-[9px] font-black text-primary/50 uppercase tracking-[0.2em] pl-1">WhatsApp / Telefone *</p>
-                        <input className="bg-white border-2 border-primary/10 rounded-2xl h-16 p-4 text-lg font-bold w-full text-dark shadow-sm focus:border-primary transition-all"
-                          placeholder="(67) 99999-9999" value={formData.telefone} onChange={(e) => handleTelefoneChange(e.target.value)} maxLength={15} />
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-[9px] font-black text-primary/50 uppercase tracking-[0.2em] pl-1">CPF Oficial *</p>
-                        <input className="bg-white border-2 border-primary/10 rounded-2xl h-16 p-4 text-lg font-bold w-full text-dark shadow-sm focus:border-primary transition-all"
-                          placeholder="000.000.000-00" value={formData.cpf} onChange={(e) => handleCpfChange(e.target.value)} maxLength={14} />
-                      </div>
-                    </div>
-
                     <div className="bg-primary/5 border border-primary/10 p-6 rounded-[2rem] space-y-4">
                       <div className="flex items-center gap-2 text-primary">
-                        <Info size={18} />
-                        <h4 className="text-[10px] font-black uppercase tracking-widest">Por que pedimos isso?</h4>
+                        <ShieldCheck size={20} />
+                        <h4 className="text-[10px] font-black uppercase tracking-widest">Segurança Jurídica e Sigilo</h4>
                       </div>
                       <p className="text-xs text-dark/70 leading-relaxed font-medium italic">
-                        Para que sua denúncia tenha valor legal e seja aceita pelos órgãos do Estado, precisamos confirmar quem você é. Isso evita denúncias falsas e garante que sua voz seja ouvida com seriedade. Conforme a <strong>LGPD</strong>, seus dados serão guardados sob sete chaves (criptografia) e o sigilo da sua fonte é um direito seu garantido pela nossa Constituição. Ninguém terá acesso a quem você é, exceto os técnicos autorizados para resolver o seu caso.
+                        A identificação via <strong>Telefone</strong> e <strong>CPF</strong> é uma exigência dos órgãos de controle para garantir a segurança jurídica e a viabilidade das investigações. Ressaltamos que, em conformidade com a <strong>LGPD</strong> e a <strong>LAI</strong>, seus dados são criptografados e anonimizados em nosso banco de dados, sendo acessíveis apenas por técnicos autorizados sob sigilo de fonte. Esta etapa é fundamental para que sua voz tenha o peso necessário perante o Estado.
                       </p>
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                      <div className="space-y-2">
+                        <p className="text-[9px] font-black text-primary/50 uppercase tracking-[0.2em] pl-1">WhatsApp / Telefone *</p>
+                        <input 
+                          id="field-telefone"
+                          className="bg-white border-2 border-primary/10 rounded-2xl h-16 p-4 text-lg font-bold w-full text-dark shadow-sm focus:border-primary transition-all"
+                          placeholder="(67) 99999-9999" 
+                          value={formData.telefone} 
+                          onChange={(e) => handleTelefoneChange(e.target.value)} 
+                          onBlur={() => { if(formData.telefone) handleFieldScroll('field-cpf') }}
+                          maxLength={15} 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[9px] font-black text-primary/50 uppercase tracking-[0.2em] pl-1">CPF Oficial *</p>
+                        <input 
+                          id="field-cpf"
+                          className="bg-white border-2 border-primary/10 rounded-2xl h-16 p-4 text-lg font-bold w-full text-dark shadow-sm focus:border-primary transition-all"
+                          placeholder="000.000.000-00" 
+                          value={formData.cpf} 
+                          onChange={(e) => handleCpfChange(e.target.value)} 
+                          onBlur={() => { if(formData.cpf) handleFieldScroll('field-consentimento') }}
+                          maxLength={14} 
+                        />
+                      </div>
+                    </div>
+
                     {/* TERMO DE RESPONSABILIDADE JURÍDICA */}
-                    <label className={`flex items-start gap-4 p-6 rounded-2xl border-2 cursor-pointer transition-all ${formData.consentimento ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-border/50'}`}>
-                      <input type="checkbox" className="hidden" checked={formData.consentimento} onChange={(e) => handleInputChange('consentimento', e.target.checked)} />
+                    <label id="field-consentimento" className={`flex items-start gap-4 p-6 rounded-2xl border-2 cursor-pointer transition-all ${formData.consentimento ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-border/50'}`}>
+                      <input type="checkbox" className="hidden" checked={formData.consentimento} onChange={(e) => {
+                        handleInputChange('consentimento', e.target.checked)
+                        if(e.target.checked) handleFieldScroll()
+                      }} />
                       <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border-2 mt-1 transition-all ${formData.consentimento ? 'bg-primary border-primary text-white' : 'bg-white border-border/60 text-transparent'}`}>
                         <Check size={16} strokeWidth={4} />
                       </div>

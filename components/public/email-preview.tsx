@@ -35,7 +35,7 @@ export function EmailPreview(props: Props) {
 
   return (
     <div
-      className="rounded-xl overflow-auto max-h-[500px] border border-border"
+      className="rounded-xl overflow-auto max-h-[600px] border border-border bg-[#f0f4f8]"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   )

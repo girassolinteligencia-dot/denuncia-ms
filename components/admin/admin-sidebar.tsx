@@ -24,27 +24,24 @@ import {
 
 const MENU_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
+]
+
+const OPERACAO_ITEMS = [
   { label: 'Denúncias', icon: FileText, href: '/admin/denuncias' },
   { label: 'Categorias', icon: Tags, href: '/admin/categorias' },
-  { label: 'Integrações', icon: Share2, href: '/admin/integracoes' },
-  { label: 'Notícias', icon: Newspaper, href: '/admin/noticias' },
-  { label: 'Banners', icon: ImageIcon, href: '/admin/banners' },
 ]
 
-const CONFIG_ITEMS = [
-  { label: 'Geral', href: '/admin/configuracoes' },
-  { label: 'Campos', href: '/admin/configuracoes/campos' },
-  { label: 'Arquivos', href: '/admin/configuracoes/arquivos' },
-  { label: 'Templates', href: '/admin/configuracoes/templates' },
-  { label: 'Protocolo', href: '/admin/configuracoes/protocolo' },
+const CONTEUDO_ITEMS = [
+  { label: 'Comunicação', icon: Newspaper, href: '/admin/conteudo' }, // Notícias, Banners, Enquetes
 ]
 
-const ADMIN_ITEMS = [
-  { label: 'Saúde do Sistema', icon: Activity, href: '/admin/saude' },
+const SISTEMA_ITEMS = [
+  { label: 'Configurações', icon: Settings, href: '/admin/configuracoes' }, // Geral, Legal, Integrações, Campos
   { label: 'Usuários', icon: Users, href: '/admin/usuarios' },
-  { label: 'Privacidade & LGPD', icon: ShieldCheck, href: '/admin/privacidade' },
-  { label: 'Auditoria de Uso', icon: ShieldAlert, href: '/admin/usuarios/audit' },
-  { label: 'Logs de Auditoria', icon: History, href: '/admin/logs' },
+]
+
+const SEGURANCA_ITEMS = [
+  { label: 'Segurança', icon: ShieldAlert, href: '/admin/seguranca' }, // Logs, Auditoria, Saúde
 ]
 
 import { logout } from '@/lib/actions/auth'
@@ -99,74 +96,116 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
           </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-8 scrollbar-hide">
-          {/* Menu Items logic remains same but cleaner padding */}
-        <div>
-          <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-4">Geral</p>
-          <ul className="space-y-1">
-            {MENU_ITEMS.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
-                    isActive(item.href)
-                      ? 'bg-secondary text-white shadow-glow-green border-r-4 border-accent'
-                      : 'hover:bg-white/5 hover:text-white'
-                  }`}
-                >
-                  <item.icon size={18} className={isActive(item.href) ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <nav className="flex-1 p-4 space-y-6 scrollbar-hide">
+          {/* Dashboard */}
+          <div>
+            <ul className="space-y-1">
+              {MENU_ITEMS.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                      isActive(item.href)
+                        ? 'bg-secondary text-white shadow-glow-green border-r-4 border-accent'
+                        : 'hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <item.icon size={18} className={isActive(item.href) ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        <div>
-           <div className="flex items-center gap-3 px-3 mb-4">
-             <Settings size={18} className="text-white/30" />
-             <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Configuração (M0)</p>
-           </div>
-          <ul className="space-y-1 ml-4 pl-4 border-l border-white/10">
-            {CONFIG_ITEMS.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center justify-between px-3 py-2 rounded-btn text-[11px] font-bold transition-all ${
-                    isActive(item.href)
-                      ? 'text-electric'
-                      : 'text-white/40 hover:text-white'
-                  }`}
-                >
-                  {item.label}
-                  {isActive(item.href) && <div className="w-1.5 h-1.5 rounded-full bg-accent shadow-glow-cyan"></div>}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+          {/* Operação */}
+          <div>
+            <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Operação</p>
+            <ul className="space-y-1">
+              {OPERACAO_ITEMS.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                      isActive(item.href)
+                        ? 'bg-white/10 text-white'
+                        : 'hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <item.icon size={18} className="text-white/40 group-hover:text-electric" />
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        <div>
-          <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-4">Sistema</p>
-          <ul className="space-y-1">
-            {ADMIN_ITEMS.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
-                    isActive(item.href)
-                      ? 'bg-white/10 text-white'
-                      : 'hover:bg-white/5 hover:text-white'
-                  }`}
-                >
-                  <item.icon size={18} className="text-white/40 group-hover:text-electric" />
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </nav>
+          {/* Comunicação */}
+          <div>
+            <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Público</p>
+            <ul className="space-y-1">
+              {CONTEUDO_ITEMS.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                      isActive(item.href)
+                        ? 'bg-white/10 text-white'
+                        : 'hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <item.icon size={18} className="text-white/40 group-hover:text-electric" />
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Sistema */}
+          <div>
+            <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Sistema</p>
+            <ul className="space-y-1">
+              {SISTEMA_ITEMS.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                      isActive(item.href)
+                        ? 'bg-white/10 text-white'
+                        : 'hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <item.icon size={18} className="text-white/40 group-hover:text-electric" />
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Segurança */}
+          <div>
+            <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Governança</p>
+            <ul className="space-y-1">
+              {SEGURANCA_ITEMS.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                      isActive(item.href)
+                        ? 'bg-white/10 text-white'
+                        : 'hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <item.icon size={18} className="text-white/40 group-hover:text-electric" />
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </nav>
 
       <div className="p-4 border-t border-white/5 mt-auto">
         <button 

@@ -16,8 +16,16 @@ export default async function DashboardPage() {
   const statsResult = await getDashboardStats()
   const activityResult = await getRecentActivities()
 
-  const stats = statsResult.success ? statsResult.stats : { total: 0, recebida: 0, em_analise: 0, resolvida: 0, arquivada: 0 }
-  const activities = activityResult.success ? activityResult.data : []
+  const stats = statsResult.success ? statsResult.stats : { 
+    total: 0, 
+    recebida: 0, 
+    em_analise: 0, 
+    resolvida: 0, 
+    arquivada: 0,
+    newsletter: 0,
+    engajamento: 0
+  }
+  const activities = activityResult.success ? (activityResult.data || []) : []
 
   return (
     <div className="space-y-8 animate-fade-in px-4">
@@ -26,9 +34,9 @@ export default async function DashboardPage() {
         <p className="text-muted text-sm font-medium">Estatísticas em tempo real da plataforma Denúncia MS.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         <KPIItem 
-          title="Total de Denúncias" 
+          title="Denúncias" 
           value={stats.total} 
           change="Volume Total" 
           icon={FileText} 
@@ -36,28 +44,44 @@ export default async function DashboardPage() {
           bgColor="bg-primary-50"
         />
         <KPIItem 
-          title="Novas / Pendentes" 
+          title="Novas" 
           value={stats.recebida} 
-          change="Aguardando Triagem" 
+          change="Pendentes" 
           icon={Clock} 
           color="text-warning" 
           bgColor="bg-yellow-50"
         />
         <KPIItem 
-          title="Em Processamento" 
-          value={stats.em_analise} 
-          change="Sendo Auditadas" 
-          icon={AlertTriangle} 
+          title="Resolvidas" 
+          value={stats.resolvida} 
+          change="Taxa: 85%" 
+          icon={CheckCircle2} 
+          color="text-success" 
+          bgColor="bg-green-50"
+        />
+        <KPIItem 
+          title="Inscritos" 
+          value={stats.newsletter} 
+          change="News" 
+          icon={Activity} 
+          color="text-secondary" 
+          bgColor="bg-secondary/10"
+        />
+        <KPIItem 
+          title="Votos" 
+          value={stats.engajamento} 
+          change="Enquetes" 
+          icon={Activity} 
           color="text-info" 
           bgColor="bg-blue-50"
         />
         <KPIItem 
-          title="Casos Resolvidos" 
-          value={stats.resolvida} 
-          change="Encerradas com Sucesso" 
-          icon={CheckCircle2} 
-          color="text-success" 
-          bgColor="bg-green-50"
+          title="Impacto" 
+          value="100%" 
+          change="Score" 
+          icon={Activity} 
+          color="text-dark" 
+          bgColor="bg-surface"
         />
       </div>
 
@@ -83,8 +107,8 @@ export default async function DashboardPage() {
                  Atividades Recentes
               </h2>
            </div>
-           <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {activities?.length > 0 ? activities.map((act: any) => (
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {activities.length > 0 ? activities.map((act: any) => (
                 <div key={act.id} className="relative pl-6 before:absolute before:left-0 before:top-1.5 before:w-1.5 before:h-1.5 before:rounded-full before:bg-primary border-l border-border ml-1">
                    <p className="text-[11px] font-bold text-dark leading-tight uppercase">
                       {act.acao.replace('_', ' ')}

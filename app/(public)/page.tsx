@@ -13,20 +13,21 @@ import {
   Radio
 } from 'lucide-react'
 import { MascoteParallax } from '@/components/public/mascote-parallax'
+import { FeedbackNewsletter } from '@/components/public/feedback-newsletter'
+import { EnqueteDinamica } from '@/components/public/enquete-dinamica'
+import { getEnqueteAtiva } from '@/lib/actions/enquetes'
 
 export default async function PublicHomePage() {
   const supabase = createAdminClient()
   
   // Busca configurações do Módulo 0
   const { data: configs } = await supabase.from('plataforma_config').select('chave, valor')
-  const configMap = (configs || []).reduce((acc: any, cur) => {
+  const configMap = (configs || []).reduce((acc: Record<string, string>, cur) => {
     acc[cur.chave] = cur.valor
     return acc
   }, {})
 
   const appName = configMap['identidade.nome'] || 'DENUNCIA MS'
-  const appSlogan = configMap['identidade.slogan'] || 'Sua voz, nossa missão'
-  const appLogo = configMap['identidade.logo'] || '/assets/logo.png'
   const tickerText = configMap['identidade.ticker'] || ''
 
   const { data: categorias } = await supabase
@@ -34,6 +35,8 @@ export default async function PublicHomePage() {
     .select('*')
     .eq('ativo', true)
     .order('ordem', { ascending: true })
+
+  const enqueteLanding = await getEnqueteAtiva('landing')
 
   return (
     <div className="flex flex-col">
@@ -54,7 +57,7 @@ export default async function PublicHomePage() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 z-0 animate-pulse"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/5 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 z-0"></div>
 
-        <MascoteParallax imageUrl={configMap['identidade.mascote'] || '/assets/mascote.png'} />
+        <MascoteParallax imageUrl={(configMap['identidade.mascote'] || '/assets/mascote_sem_fundo.png') + '?v=2'} />
 
         <div className="container-page relative z-20 py-20 sm:py-20 lg:py-32">
           <div className="max-w-2xl text-center lg:text-left space-y-6 sm:space-y-8">
@@ -64,20 +67,26 @@ export default async function PublicHomePage() {
             </div>
 
             <div className="space-y-2 sm:space-y-4">
+              <div className="flex items-center gap-4 animate-slide-up">
+                <span className="h-0.5 w-12 bg-secondary shadow-glow-green"></span>
+                <span className="text-white font-black text-lg sm:text-3xl tracking-widest uppercase italic">
+                  Oi, aqui é o Bruno Ortiz. E aqui, sua voz tem peso.
+                </span>
+              </div>
               <span className="text-[#FFD700] font-black text-lg sm:text-4xl tracking-tighter block animate-slide-up italic uppercase">
-                {appSlogan}
+                Transformando indignação em resultado real.
               </span>
               <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[0.95] sm:leading-[0.9] animate-slide-up italic">
-                Sem burocracia. <br />
-                Direto ao <span className="text-secondary underline decoration-2 sm:decoration-4 decoration-secondary/30 underline-offset-4 sm:underline-offset-8">ponto.</span>
+                Chega de burocracia. <br />
+                Direto ao <span className="text-secondary underline decoration-2 sm:decoration-4 decoration-secondary/30 underline-offset-4 sm:underline-offset-8">resultado.</span>
               </h1>
             </div>
 
             <p className="text-sm sm:text-xl text-white/70 max-w-xl lg:mx-0 mx-auto leading-relaxed animate-fade-in font-medium px-2 sm:px-0">
-              Viu algo errado? Não precisa de senha nem de cadastro. Relate agora e a{' '}
-              <span className="text-white font-black uppercase tracking-tighter">{appName}</span>{' '}
-              faz a ponte direta com quem resolve.{' '}
-              <span className="text-secondary font-black">Sua voz vira ação!</span>
+              Viu algo errado na sua cidade? Esqueça senhas e cadastros lentos. No{' '}
+              <span className="text-white font-black uppercase tracking-tighter">{appName}</span>,{' '}
+              você relata em segundos e nós conectamos sua voz diretamente aos órgãos de controle.{' '}
+              <span className="text-secondary font-black">Sua fiscalização move a mudança!</span>
             </p>
 
             <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-3 sm:gap-4 pt-4">
@@ -261,6 +270,16 @@ export default async function PublicHomePage() {
         </div>
       </section>
 
+      {/* Seção de Engajamento: Enquete & Newsletter */}
+      {enqueteLanding && (
+        <section className="section bg-surface">
+          <div className="container-page">
+            <EnqueteDinamica initialData={enqueteLanding} />
+          </div>
+        </section>
+      )}
+
+      <FeedbackNewsletter ativa={configMap['funcionalidade.pesquisa_satisfacao_ativa'] === 'true'} />
 
     </div>
   )

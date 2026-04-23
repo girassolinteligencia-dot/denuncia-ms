@@ -49,6 +49,8 @@ export async function registrarDenuncia(
   try {
     // 1. Validações Iniciais
     if (!emailNorm) return { success: false, error: 'E-mail de identificação é obrigatório.' }
+    if (!formData.telefone) return { success: false, error: 'O número de telefone/WhatsApp é obrigatório.' }
+    if (!formData.cpf) return { success: false, error: 'O CPF é obrigatório para a identificação oficial.' }
     
     const { data: banido } = await supabase
       .from('blacklist_usuarios')

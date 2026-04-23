@@ -50,7 +50,7 @@ export default function ComoFuncionaPage() {
           <div className="hidden lg:flex justify-center relative">
              <div className="absolute inset-0 bg-secondary/5 rounded-full blur-3xl animate-pulse"></div>
              <img 
-               src="/assets/mascote.png" 
+               src="/assets/mascote_sem_fundo.png?v=2" 
                alt="Representante Denúncia MS" 
                className="w-full max-w-md h-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-float"
              />
