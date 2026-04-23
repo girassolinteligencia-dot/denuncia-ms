@@ -41,21 +41,21 @@ export default async function PublicHomePage() {
                Canal Independente de Ouvidoria — Mato Grosso do Sul
             </div>
 
-            <div className="space-y-4">
-              <span className="text-[#FFD700] font-black text-2xl sm:text-4xl tracking-tighter block animate-slide-up italic uppercase">
+            <div className="space-y-3 sm:space-y-4">
+              <span className="text-[#FFD700] font-black text-xl sm:text-4xl tracking-tighter block animate-slide-up italic uppercase">
                 Olá, eu sou Bruno Ortiz
               </span>
-              <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[0.9] animate-slide-up italic">
+              <h1 className="text-3xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[0.95] sm:leading-[0.9] animate-slide-up italic">
                 Sem burocracia. <br />
-                Direto ao <span className="text-secondary underline decoration-4 decoration-secondary/30 underline-offset-8">ponto.</span>
+                Direto ao <span className="text-secondary underline decoration-2 sm:decoration-4 decoration-secondary/30 underline-offset-4 sm:underline-offset-8">ponto.</span>
               </h1>
             </div>
 
-            <p className="text-base sm:text-xl text-white/70 max-w-xl lg:mx-0 mx-auto leading-relaxed animate-fade-in font-medium">
+            <p className="text-sm sm:text-xl text-white/70 max-w-xl lg:mx-0 mx-auto leading-relaxed animate-fade-in font-medium px-4 sm:px-0">
               Viu algo errado? Não precisa de senha nem de cadastro. Relate agora e a{' '}
               <span className="text-white font-black uppercase tracking-tighter">Denuncia MS</span>{' '}
-              faz a ponte direta com quem resolve. Suas fotos e documentos vão direto para os órgãos de fiscalização, com toda a segurança que a lei exige.{' '}
-              <span className="text-secondary font-black">É a sua voz virando ação!</span>
+              faz a ponte direta com quem resolve.{' '}
+              <span className="text-secondary font-black">Sua voz vira ação!</span>
             </p>
 
             <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-4 pt-4">
@@ -159,22 +159,21 @@ export default async function PublicHomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
             {categorias?.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/denunciar?categoria=${cat.slug}`}
-                className="bg-white rounded-2xl p-3 sm:p-8 border border-border shadow-card hover:shadow-glow-cyan hover:border-primary/30 transition-all group relative overflow-hidden text-center flex flex-col items-center gap-2 sm:gap-4"
+                className="bg-white rounded-2xl p-2 sm:p-8 border border-border/60 shadow-sm hover:shadow-glow-cyan hover:border-primary/30 transition-all group flex flex-col items-center justify-center gap-1 sm:gap-4 aspect-square sm:aspect-auto"
               >
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="text-3xl sm:text-5xl group-hover:scale-110 transition-transform duration-300 transform-gpu text-dark">
+                <div className="text-2xl sm:text-5xl group-hover:scale-110 transition-transform duration-300 transform-gpu text-dark">
                   {cat.emoji || '📂'}
                 </div>
                 <div>
-                  <h3 className="font-black text-dark text-[9px] sm:text-lg leading-tight uppercase tracking-tight">{cat.label}</h3>
+                  <h3 className="font-black text-dark text-[8px] sm:text-lg leading-tight uppercase tracking-tighter sm:tracking-tight px-1">{cat.label}</h3>
                   <p className="hidden sm:block text-[10px] text-muted font-bold uppercase mt-1">Reportar ocorrência</p>
                 </div>
-                <div className="mt-1 sm:mt-2 p-1.5 sm:p-2 rounded-full bg-surface text-muted group-hover:bg-primary group-hover:text-white transition-all scale-75 sm:scale-100">
+                <div className="hidden sm:flex mt-2 p-2 rounded-full bg-surface text-muted group-hover:bg-primary group-hover:text-white transition-all">
                   <ArrowUpRight size={18} />
                 </div>
               </Link>
