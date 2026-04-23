@@ -153,7 +153,7 @@ export default async function DetalhesProtocoloPage({
               <div className="space-y-4">
                  <div>
                     <p className="text-[10px] text-muted font-bold uppercase mb-1">Categoria</p>
-                    <p className="text-sm font-bold text-dark italic">{denuncia.categorias?.label}</p>
+                     <p className="text-sm font-bold text-dark italic">{(denuncia as any).categorias?.label}</p>
                  </div>
                  <div>
                     <p className="text-[10px] text-muted font-bold uppercase mb-1">Título da Ocorrência</p>
@@ -179,10 +179,13 @@ export default async function DetalhesProtocoloPage({
               <p className="text-xs text-white/60 leading-relaxed font-medium">
                  Para visualização do documento completo, clique no botão abaixo. Este link expira em 30 minutos após a geração por questões de segurança.
               </p>
-              <button className="btn-primary w-full gap-2 bg-secondary border-none hover:bg-secondary-600 shadow-glow-green uppercase italic font-black text-sm py-4">
+              <a 
+                href={`/api/pdf/download?protocolo=${denuncia.protocolo}&chave=${chaveAcesso}`}
+                className="btn-primary w-full gap-2 bg-secondary border-none hover:bg-secondary-600 shadow-glow-green uppercase italic font-black text-sm py-4 flex items-center justify-center"
+              >
                  Baixar Documento Original
                  <ExternalLink size={18} />
-              </button>
+              </a>
            </div>
         </div>
       </div>
