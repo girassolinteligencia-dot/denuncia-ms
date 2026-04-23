@@ -46,33 +46,42 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
     setLoading(false)
   }
 
-  const handleUpdateCategory = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleUpdateCategory = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
     if (!editingCat) return
     
     setLoading(true)
+    console.log('Tentando salvar categoria:', editingCat)
     
-    // Se ID for vazio, trata como nova categoria
-    if (!editingCat.id) {
-      const result = await createCategoria(editingCat)
-      if (result.success && result.data) {
-        setCategorias(prev => [...prev, result.data as Categoria].sort((a, b) => a.ordem - b.ordem))
-        setEditingCat(null)
-        toast.success('Categoria criada com sucesso!')
+    try {
+      // Se ID for vazio, trata como nova categoria
+      if (!editingCat.id || editingCat.id === '') {
+        const result = await createCategoria(editingCat)
+        if (result.success && result.data) {
+          setCategorias(prev => [...prev, result.data as Categoria].sort((a, b) => a.ordem - b.ordem))
+          setEditingCat(null)
+          toast.success('Categoria criada com sucesso!')
+        } else {
+          console.error('Falha ao criar:', result.error)
+          toast.error(result.error || 'Erro ao criar categoria')
+        }
       } else {
-        toast.error(result.error || 'Erro ao criar categoria')
+        const result = await updateCategoria(editingCat.id, editingCat)
+        if (result.success) {
+          setCategorias(prev => prev.map(c => c.id === editingCat.id ? editingCat : c))
+          setEditingCat(null)
+          toast.success('Categoria parametrizada com sucesso!')
+        } else {
+          console.error('Falha ao atualizar:', result.error)
+          toast.error(result.error || 'Erro ao salvar alterações')
+        }
       }
-    } else {
-      const result = await updateCategoria(editingCat.id, editingCat)
-      if (result.success) {
-        setCategorias(prev => prev.map(c => c.id === editingCat.id ? editingCat : c))
-        setEditingCat(null)
-        toast.success('Categoria parametrizada com sucesso!')
-      } else {
-        toast.error(result.error || 'Erro ao salvar alterações')
-      }
+    } catch (err: any) {
+      console.error('Erro fatal no salvamento:', err)
+      toast.error('Erro interno ao processar requisição')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const handleDelete = async (id: string) => {
@@ -319,23 +328,21 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
                       </button>
                    </div>
                 </div>
+                <div className="p-6 border-t border-border bg-surface flex items-center gap-3">
+                    <button 
+                      type="submit"
+                      disabled={loading}
+                      className="btn-primary flex-1 gap-2"
+                    >
+                       {loading ? (
+                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                       ) : (
+                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                       )}
+                       Salvar Configuração
+                    </button>
+                </div>
              </form>
-
-             <div className="p-6 border-t border-border bg-surface flex items-center gap-3">
-                <button 
-                  type="submit"
-                  onClick={handleUpdateCategory}
-                  disabled={loading}
-                  className="btn-primary flex-1 gap-2"
-                >
-                   {loading ? (
-                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-                   ) : (
-                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                   )}
-                   Salvar Configuração
-                </button>
-             </div>
           </div>
         </>
       )}
