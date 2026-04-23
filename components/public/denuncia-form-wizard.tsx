@@ -235,6 +235,10 @@ export function DenunciaFormWizard({
     if (res.success) {
       setOtpValidado(true)
       toast.success('Identidade pré-validada com sucesso!')
+      // Rolar para os campos de CPF/WhatsApp que apareceram
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 500)
     } else {
       toast.error(res.error || 'Código incorreto ou expirado.')
     }
@@ -362,7 +366,13 @@ export function DenunciaFormWizard({
                 {categorias.map((cat) => (
                   <button
                     key={cat.id}
-                    onClick={() => handleInputChange('categoria_id', cat.id)}
+                    onClick={() => {
+                      handleInputChange('categoria_id', cat.id)
+                      // Rolar suavemente para o botão de avançar após selecionar
+                      setTimeout(() => {
+                        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                      }, 100)
+                    }}
                     className={`p-6 rounded-[2rem] border-2 transition-all text-left relative group ${
                       formData.categoria_id === cat.id 
                       ? 'bg-primary/5 border-primary shadow-glow-cyan' 
@@ -426,7 +436,7 @@ export function DenunciaFormWizard({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-8 border-t border-border/40">
+              <div ref={bottomRef} className="flex items-center justify-between pt-8 border-t border-border/40">
                 <button onClick={handleBack} className="group flex items-center gap-3 text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
                   <ArrowLeft size={18} /> Voltar
                 </button>
@@ -471,7 +481,7 @@ export function DenunciaFormWizard({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-8 border-t border-border/40">
+              <div ref={bottomRef} className="flex items-center justify-between pt-8 border-t border-border/40">
                 <button onClick={handleBack} className="group flex items-center gap-3 text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
                   <ArrowLeft size={18} /> Voltar
                 </button>
@@ -516,7 +526,7 @@ export function DenunciaFormWizard({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-8 border-t border-border/40">
+              <div ref={bottomRef} className="flex items-center justify-between pt-8 border-t border-border/40">
                 <button onClick={handleBack} className="group flex items-center gap-3 text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
                   <ArrowLeft size={18} /> Voltar
                 </button>
@@ -677,7 +687,7 @@ export function DenunciaFormWizard({
                   </div>
                 )}
 
-                <div className="flex flex-col sm:flex-row items-center justify-between pt-6 gap-6">
+                <div ref={bottomRef} className="flex flex-col sm:flex-row items-center justify-between pt-6 gap-6">
                   <button onClick={handleBack} disabled={loading} className="group flex items-center gap-3 text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
                     <ArrowLeft size={20} /> Voltar
                   </button>
