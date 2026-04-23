@@ -96,6 +96,25 @@ export const BannerManager: React.FC<{ initialBanners: Banner[] }> = ({ initialB
           </button>
       </div>
 
+      {/* GUIA DE DIMENSÕES PREMIUM */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-primary/5 border border-primary/10 rounded-3xl p-6">
+        <div className="space-y-1">
+          <h4 className="text-[10px] font-black text-primary uppercase tracking-widest">Topo (Hero)</h4>
+          <p className="text-xs font-bold text-dark italic">1920x600px ou 1280x450px</p>
+          <p className="text-[9px] text-muted font-medium italic">Ideal para comunicados principais.</p>
+        </div>
+        <div className="space-y-1">
+          <h4 className="text-[10px] font-black text-primary uppercase tracking-widest">Lateral (Card)</h4>
+          <p className="text-xs font-bold text-dark italic">400x600px ou 400x400px</p>
+          <p className="text-[9px] text-muted font-medium italic">Campanhas e avisos rápidos.</p>
+        </div>
+        <div className="space-y-1">
+          <h4 className="text-[10px] font-black text-primary uppercase tracking-widest">Formatos & Peso</h4>
+          <p className="text-xs font-bold text-dark italic">JPG, PNG ou WEBP (Max 2MB)</p>
+          <p className="text-[9px] text-muted font-medium italic">Use WEBP para maior velocidade.</p>
+        </div>
+      </div>
+
       <div className="space-y-4">
         {banners.map((banner) => (
           <div key={banner.id} className="bg-white rounded-card shadow-card border border-border overflow-hidden flex items-center gap-6 p-4 hover:shadow-card-md transition-all">
@@ -162,15 +181,23 @@ export const BannerManager: React.FC<{ initialBanners: Banner[] }> = ({ initialB
 
                 <form onSubmit={handleSave} className="p-8 space-y-6">
                   <div>
-                      <label className="label">Arte do Banner</label>
-                      <label className="mt-2 border-2 border-dashed border-border rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-surface transition-all overflow-hidden relative min-h-[140px]">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="label">Arte do Banner</label>
+                        <span className="text-[9px] font-black text-muted uppercase tracking-widest italic">Máx 2MB</span>
+                      </div>
+                      <label className="border-2 border-dashed border-border rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-surface transition-all overflow-hidden relative min-h-[140px]">
                         <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                         {tempPreview ? (
                           <img src={tempPreview} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-20" />
                         ) : null}
-                        <div className="relative z-10 flex flex-col items-center">
+                        <div className="relative z-10 flex flex-col items-center text-center">
                             <Upload size={24} className="text-primary mb-2" />
                             <p className="text-xs font-bold">{tempPreview ? 'Trocar Imagem' : 'Upload da Arte'}</p>
+                            <p className="text-[9px] text-muted font-medium italic mt-1 px-4">
+                              {editingBanner?.posicao === 'topo' ? 'Recomendado: 1920x600px' : 
+                               editingBanner?.posicao === 'lateral' ? 'Recomendado: 400x600px' : 
+                               'Recomendado: 1200x200px'}
+                            </p>
                         </div>
                       </label>
                   </div>
