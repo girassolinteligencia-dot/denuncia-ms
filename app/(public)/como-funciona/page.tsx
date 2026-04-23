@@ -27,22 +27,22 @@ export default function ComoFuncionaPage() {
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-secondary/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4 z-0 animate-pulse"></div>
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-primary/20 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/2 z-0"></div>
         
-        <div className="container-page relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white text-xs font-black uppercase tracking-[0.2em] animate-fade-in">
-               <Zap size={14} className="text-secondary fill-secondary" />
-               Transparência e Inteligência Cívica
+        <div className="container-page relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+          <div className="space-y-6 sm:space-y-8 text-center lg:text-left px-2 sm:px-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white text-[10px] font-black uppercase tracking-[0.2em] animate-fade-in mx-auto lg:mx-0">
+               <Zap size={12} className="text-secondary fill-secondary" />
+               Inteligência Cívica
             </div>
-            <h1 className="text-4xl md:text-7xl font-black text-white tracking-tighter leading-[0.9] italic">
-               Sua denúncia percorre um <span className="text-secondary">caminho seguro.</span>
+            <h1 className="text-3xl sm:text-7xl font-black text-white tracking-tighter leading-[1] sm:leading-[0.9] italic">
+               Sua denúncia num <span className="text-secondary">caminho seguro.</span>
             </h1>
-            <p className="text-lg text-white/70 max-w-xl font-medium leading-relaxed">
-              Entenda como a plataforma <span className="text-white font-black">DENUNCIA MS</span> utiliza tecnologia de ponta para garantir seu anonimato e a entrega rápida aos órgãos competentes.
+            <p className="text-sm sm:text-lg text-white/70 max-w-xl font-medium leading-relaxed mx-auto lg:mx-0">
+              Entenda como a <span className="text-white font-black">DENUNCIA MS</span> usa tecnologia para garantir seu anonimato e a entrega rápida aos órgãos.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-               <Link href="/denunciar" className="btn-primary gap-3 px-8 bg-secondary hover:bg-secondary-600 text-dark border-none shadow-glow-green h-14">
-                  Iniciar Registro agora
-                  <ArrowRight size={20} />
+            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+               <Link href="/denunciar" className="btn-primary gap-3 px-8 bg-secondary hover:bg-secondary-600 text-dark border-none shadow-glow-green h-12 sm:h-14 text-xs font-black uppercase tracking-widest">
+                  Iniciar agora
+                  <ArrowRight size={18} />
                </Link>
             </div>
           </div>
@@ -59,11 +59,11 @@ export default function ComoFuncionaPage() {
       </section>
 
       {/* Grid de Processo - 4 Passos */}
-      <section className="py-24 bg-white relative">
-         <div className="container-page space-y-16">
-            <div className="text-center space-y-4">
-               <h2 className="text-3xl md:text-4xl font-black text-dark tracking-tight italic uppercase">O Fluxo da Informação</h2>
-               <p className="text-muted max-w-2xl mx-auto font-medium">Desde o primeiro clique até o encaminhamento institucional, cada etapa é monitorada com rigor técnico.</p>
+      <section className="py-16 sm:py-24 bg-white relative">
+         <div className="container-page space-y-12 sm:space-y-16">
+            <div className="text-center space-y-3 px-4">
+               <h2 className="text-2xl sm:text-4xl font-black text-dark tracking-tight italic uppercase">O Fluxo da Informação</h2>
+               <p className="text-muted text-xs sm:text-base max-w-2xl mx-auto font-medium">Cada etapa é monitorada com rigor técnico, do início ao fim.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -107,12 +107,12 @@ export default function ComoFuncionaPage() {
                
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                   <div className="space-y-8 relative z-10">
-                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg text-[10px] font-black uppercase tracking-widest text-secondary">
-                        <ShieldCheck size={14} />
+                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg text-[9px] font-black uppercase tracking-widest text-secondary">
+                        <ShieldCheck size={12} />
                         Blindagem Digital
                      </div>
-                     <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-tight italic uppercase">
-                        Como garantimos seu <span className="text-secondary underline decoration-4 underline-offset-8">Anonimato?</span>
+                     <h2 className="text-2xl sm:text-5xl font-black tracking-tighter leading-tight italic uppercase">
+                        Como garantimos seu <span className="text-secondary underline decoration-2 sm:decoration-4 underline-offset-4 sm:underline-offset-8">Anonimato?</span>
                      </h2>
                      <div className="space-y-6">
                         <FeatureItem 
@@ -234,17 +234,17 @@ export default function ComoFuncionaPage() {
 
 function ProcessStep({ num, title, desc, icon: Icon, color }: { num: string, title: string, desc: string, icon: React.ElementType, color: string }) {
   return (
-    <div className="bg-surface p-8 rounded-[40px] border border-border group hover:border-primary/30 transition-all hover:shadow-card-md flex flex-col gap-6 relative overflow-hidden">
+    <div className="bg-surface p-6 sm:p-8 rounded-[2rem] sm:rounded-[40px] border border-border group hover:border-primary/30 transition-all hover:shadow-card-md flex flex-col gap-4 sm:gap-6 relative overflow-hidden mx-2 sm:mx-0">
        <div className={`absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity`}></div>
        <div className="flex items-center justify-between">
-          <span className="text-5xl font-black text-dark/10 italic leading-none">{num}</span>
-          <div className={`p-4 rounded-2xl ${color} group-hover:scale-110 transition-transform`}>
-             <Icon size={24} />
+          <span className="text-3xl sm:text-5xl font-black text-dark/10 italic leading-none">{num}</span>
+          <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl ${color} group-hover:scale-110 transition-transform`}>
+             <Icon size={24} className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
        </div>
-       <div className="space-y-3">
-          <h3 className="text-xl font-black text-dark uppercase tracking-tighter italic">{title}</h3>
-          <p className="text-sm text-muted font-medium leading-relaxed">{desc}</p>
+       <div className="space-y-2 sm:space-y-3">
+          <h3 className="text-lg sm:text-xl font-black text-dark uppercase tracking-tighter italic">{title}</h3>
+          <p className="text-xs sm:text-sm text-muted font-medium leading-relaxed">{desc}</p>
        </div>
     </div>
   )

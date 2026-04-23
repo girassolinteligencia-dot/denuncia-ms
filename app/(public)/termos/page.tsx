@@ -9,41 +9,41 @@ export const metadata = {
 
 export default function TermosPage() {
   return (
-    <div className="min-h-screen bg-surface py-20 px-4">
-      <div className="max-w-4xl mx-auto space-y-12">
+    <div className="min-h-screen bg-surface py-12 sm:py-20">
+      <div className="container-page max-w-4xl space-y-8 sm:space-y-12">
         
         {/* Header */}
-        <div className="text-center space-y-4">
-           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-xs font-black uppercase tracking-[0.2em]">
-              <Scale size={14} />
+        <div className="text-center space-y-3 sm:space-y-4 px-4">
+           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-[0.2em] mx-auto">
+              <Scale size={12} />
               Segurança Jurídica
            </div>
-           <h1 className="text-4xl md:text-5xl font-black text-dark tracking-tighter italic uppercase">
+           <h1 className="text-3xl sm:text-5xl font-black text-dark tracking-tighter italic uppercase">
               Termos e <span className="text-primary">Responsabilidades</span>
            </h1>
-           <p className="text-muted font-medium max-w-2xl mx-auto">
-              Este documento estabelece as diretrizes legais da plataforma DENUNCIA MS, fundamentado na legislação federal brasileira.
+           <p className="text-xs sm:text-md text-muted font-medium max-w-2xl mx-auto">
+              Diretrizes legais fundamentadas na legislação federal brasileira.
            </p>
         </div>
 
         {/* Navigation Shortcut */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-           <a href="#lai" className="p-4 bg-white border border-border rounded-2xl hover:border-primary transition-all flex flex-col gap-2 group">
-              <FileText size={20} className="text-primary group-hover:scale-110 transition-transform" />
-              <span className="font-bold text-xs uppercase tracking-tighter">Lei de Acesso à Informação</span>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-4">
+           <a href="#lai" className="p-3 sm:p-4 bg-white border border-border/50 rounded-xl sm:rounded-2xl hover:border-primary transition-all flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-2 group">
+              <FileText size={18} className="text-primary group-hover:scale-110 transition-transform" />
+              <span className="font-bold text-[10px] sm:text-xs uppercase tracking-tighter">Lei de Acesso</span>
            </a>
-           <a href="#lgpd" className="p-4 bg-white border border-border rounded-2xl hover:border-primary transition-all flex flex-col gap-2 group">
-              <Lock size={20} className="text-primary group-hover:scale-110 transition-transform" />
-              <span className="font-bold text-xs uppercase tracking-tighter">Proteção de Dados (LGPD)</span>
+           <a href="#lgpd" className="p-3 sm:p-4 bg-white border border-border/50 rounded-xl sm:rounded-2xl hover:border-primary transition-all flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-2 group">
+              <Lock size={18} className="text-primary group-hover:scale-110 transition-transform" />
+              <span className="font-bold text-[10px] sm:text-xs uppercase tracking-tighter">Proteção LGPD</span>
            </a>
-           <a href="#deveres" className="p-4 bg-white border border-border rounded-2xl hover:border-primary transition-all flex flex-col gap-2 group">
-              <Gavel size={20} className="text-primary group-hover:scale-110 transition-transform" />
-              <span className="font-bold text-xs uppercase tracking-tighter">Deveres do Denunciante</span>
+           <a href="#deveres" className="p-3 sm:p-4 bg-white border border-border/50 rounded-xl sm:rounded-2xl hover:border-primary transition-all flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-2 group">
+              <Gavel size={18} className="text-primary group-hover:scale-110 transition-transform" />
+              <span className="font-bold text-[10px] sm:text-xs uppercase tracking-tighter">Seus Deveres</span>
            </a>
         </div>
 
         {/* Content Section */}
-        <div className="bg-white rounded-[40px] shadow-card-lg border border-border overflow-hidden p-8 md:p-16 space-y-12 leading-relaxed">
+        <div className="bg-white/95 backdrop-blur-sm rounded-[2rem] sm:rounded-[40px] shadow-card-lg border border-border/40 overflow-hidden p-6 sm:p-16 space-y-10 sm:space-y-12 leading-relaxed mx-2 sm:mx-0">
            
            {/* Section 1 */}
            <section id="lai" className="space-y-6">
@@ -103,26 +103,26 @@ export default function TermosPage() {
         </div>
 
         {/* CTA */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-8 bg-dark rounded-[30px] text-white">
-           <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-primary/20 text-primary rounded-2xl flex items-center justify-center shadow-glow-cyan">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-6 sm:p-10 bg-dark rounded-[2.5rem] sm:rounded-[30px] text-white mx-2 sm:mx-0">
+           <div className="flex items-center gap-4 text-center sm:text-left">
+              <div className="hidden sm:flex w-14 h-14 bg-primary/20 text-primary rounded-2xl items-center justify-center shadow-glow-cyan">
                  <Shield size={28} />
               </div>
-              <div>
-                 <p className="text-lg font-black tracking-tighter italic uppercase">Pronto para colaborar?</p>
-                 <p className="text-xs text-white/50 font-bold uppercase tracking-widest">Sua voz é uma ferramenta de mudança.</p>
+              <div className="space-y-1">
+                 <p className="text-xl sm:text-lg font-black tracking-tighter italic uppercase">Pronto para colaborar?</p>
+                 <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest">Sua voz é uma ferramenta de mudança.</p>
               </div>
            </div>
-           <Link href="/denunciar" className="btn-primary gap-3 px-8 h-14 shadow-glow-cyan border-none">
-              Iniciar Denúncia Segura
-              <ArrowRight size={20} />
+           <Link href="/denunciar" className="btn-primary gap-3 px-8 h-12 sm:h-14 shadow-glow-cyan border-none w-full sm:w-auto text-xs font-black uppercase tracking-widest">
+              Denunciar Agora
+              <ArrowRight size={18} />
            </Link>
         </div>
 
         {/* Footer Link */}
-        <div className="text-center">
-           <Link href="/" className="inline-flex items-center gap-2 text-xs font-black text-muted hover:text-primary transition-colors uppercase tracking-widest">
-              <ArrowLeft size={14} />
+        <div className="text-center px-4">
+           <Link href="/" className="inline-flex items-center gap-2 text-[10px] font-black text-muted hover:text-primary transition-colors uppercase tracking-[0.2em]">
+              <ArrowLeft size={12} />
               Voltar ao Início
            </Link>
         </div>

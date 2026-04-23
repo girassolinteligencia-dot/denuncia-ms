@@ -25,7 +25,8 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
 
   return (
     <div className="bg-white rounded-card shadow-card-lg border border-border overflow-hidden animate-slide-up">
-      <div className="overflow-x-auto">
+      {/* Versão Desktop — Tabela */}
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-surface text-[10px] font-black text-muted uppercase tracking-widest border-b border-border">
@@ -60,7 +61,6 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
                   <td className="px-6 py-4">
                     <span className="text-xs font-semibold text-muted">
                       {new Date(denuncia.criado_em).toLocaleDateString()}
-                      <span className="text-[10px] ml-1 opacity-60">{new Date(denuncia.criado_em).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -78,7 +78,6 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
                     <Link 
                       href={`/admin/denuncias/${denuncia.id}`}
                       className="p-2 text-muted hover:text-dark hover:bg-white border border-transparent hover:border-border rounded-lg transition-all inline-block shadow-none group-hover:shadow-card group-hover:bg-white"
-                      title="Ver Detalhes"
                     >
                       <ChevronRight size={18} />
                     </Link>
@@ -88,16 +87,60 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
             })}
           </tbody>
         </table>
-
-        {denuncias.length === 0 && (
-          <div className="p-20 text-center space-y-4">
-             <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mx-auto text-muted">
-                <Search size={32} />
-             </div>
-             <p className="text-muted font-medium">Nenhuma denúncia encontrada.</p>
-          </div>
-        )}
       </div>
+
+      {/* Versão Mobile — Card List */}
+      <div className="sm:hidden divide-y divide-border/50">
+        {denuncias.map((denuncia) => {
+          const status = STATUS_STYLE[denuncia.status as StatusDenuncia] || STATUS_STYLE.recebida
+          const Icon = status.icon
+          
+          return (
+            <Link 
+              key={denuncia.id}
+              href={`/admin/denuncias/${denuncia.id}`}
+              className="flex flex-col p-5 hover:bg-surface transition-colors gap-3"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-primary tracking-tight uppercase">
+                  {denuncia.protocolo}
+                </span>
+                <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-tighter ${status.color}`}>
+                   <Icon size={10} />
+                   {status.label}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-muted uppercase tracking-wider">
+                  {denuncia.categorias?.emoji} {denuncia.categorias?.label}
+                </p>
+                <h4 className="text-sm font-bold text-dark leading-snug line-clamp-2">
+                  {denuncia.titulo}
+                </h4>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                 <span className="text-[10px] font-bold text-muted/60 uppercase">
+                    {new Date(denuncia.criado_em).toLocaleDateString()}
+                 </span>
+                 <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border ${denuncia.anonima ? 'bg-surface text-muted border-border' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                    {denuncia.anonima ? 'ANÔNIMA' : 'IDENTIFICADA'}
+                 </span>
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+
+      {denuncias.length === 0 && (
+        <div className="p-12 sm:p-20 text-center space-y-4">
+           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-surface rounded-full flex items-center justify-center mx-auto text-muted">
+              <Search size={24} className="sm:size-32" />
+           </div>
+           <p className="text-muted font-medium text-sm">Nenhuma denúncia encontrada.</p>
+        </div>
+      )}
       
       <div className="p-4 bg-surface border-t border-border flex items-center justify-between text-[10px] font-black text-muted uppercase tracking-widest">
          <span>Total de ocorrências: {denuncias.length}</span>

@@ -22,8 +22,8 @@ export default async function NoticiasPage() {
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-dark">Portal de Notícias</h1>
-          <p className="text-muted text-sm">
+          <h1 className="text-2xl font-black text-dark tracking-tighter uppercase italic">Portal de <span className="text-primary underline decoration-secondary decoration-4 underline-offset-4">Notícias</span></h1>
+          <p className="text-muted text-sm font-medium">
             Gerencie o conteúdo informativo exibido aos cidadãos no portal público.
           </p>
         </div>

@@ -34,7 +34,7 @@ export function MascoteParallax() {
       <img 
         src="/assets/mascote.png" 
         alt="Representante Denúncia MS" 
-        className="h-[105%] xl:h-[115%] w-auto object-contain object-bottom drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+        className="h-[85%] xl:h-[95%] w-auto object-contain object-bottom drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
       />
     </div>
   )

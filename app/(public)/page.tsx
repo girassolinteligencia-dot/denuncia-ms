@@ -12,7 +12,6 @@ import {
   Fingerprint,
   Radio
 } from 'lucide-react'
-import { PainelImpacto } from '@/components/public/painel-impacto'
 import { MascoteParallax } from '@/components/public/mascote-parallax'
 
 export default async function PublicHomePage() {
@@ -237,7 +236,6 @@ export default async function PublicHomePage() {
         </div>
       </section>
 
-      <PainelImpacto />
 
     </div>
   )

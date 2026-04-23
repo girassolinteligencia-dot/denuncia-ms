@@ -128,6 +128,10 @@ export async function getDashboardStats() {
       arquivada: counts.filter(d => d.status === 'arquivada').length,
     }
 
+    // Gatilho silencioso de limpeza (Lazy Cleanup)
+    // Em produção, isso seria um Cron Job, mas aqui garantimos a execução periódica
+    limparArquivosAntigos().catch(console.error)
+
     return { success: true, stats }
   } catch (err: any) {
     console.error('Erro ao buscar stats:', err)
@@ -152,6 +156,132 @@ export async function getRecentActivities() {
     return { success: true, data }
   } catch (err: any) {
     console.error('Erro ao buscar atividades:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Executa a limpeza de anexos com mais de 30 dias (LGPD/Economia)
+ * Mantém os PDFs oficiais intactos.
+ */
+export async function limparArquivosAntigos() {
+  const supabase = createAdminClient()
+  const dataLimite = new Date()
+  dataLimite.setDate(dataLimite.getDate() - 30)
+
+  try {
+    // 1. Buscar arquivos de denúncias criadas há mais de 30 dias
+    // e que ainda não foram marcados como removidos
+    const { data: arquivos } = await supabase
+      .from('arquivos_denuncia')
+      .select('id, bucket_path, denuncia_id')
+      .lt('criado_em', dataLimite.toISOString())
+
+    if (!arquivos || arquivos.length === 0) return { success: true, count: 0 }
+
+    const pathsToDelete = arquivos.map(a => a.bucket_path).filter(Boolean)
+
+    if (pathsToDelete.length > 0) {
+      // 2. Deletar binários do storage (Bucket de anexos)
+      const { error: deleteErr } = await supabase.storage
+        .from('denuncias')
+        .remove(pathsToDelete)
+
+      if (deleteErr) console.warn('[cleanup] Erro ao deletar binários:', deleteErr)
+
+      // 3. Remover registros do banco (ou marcar como deletado)
+      // Aqui vamos remover para liberar espaço e cumprir LGPD
+      const { error: dbErr } = await supabase
+        .from('arquivos_denuncia')
+        .delete()
+        .in('id', arquivos.map(a => a.id))
+
+      if (dbErr) throw dbErr
+    }
+
+    return { success: true, count: pathsToDelete.length }
+  } catch (err) {
+    console.error('[cleanup] Erro crítico na limpeza:', err)
+    return { success: false, error: (err as Error).message }
+  }
+}
+
+/**
+ * Busca o ranking de usuários por recorrência para auditoria de credibilidade.
+ */
+export async function getRankingAuditUsuarios() {
+  const supabase = createAdminClient()
+
+  try {
+    // 1. Agrupar incidências por email_hash (identidades)
+    const { data: identidades, error: idErr } = await supabase
+      .from('identidades')
+      .select('email_hash, denuncia_id, denuncias(status)')
+
+    if (idErr) throw idErr
+
+    // 2. Processar ranking
+    const rankingMap = new Map()
+
+    identidades.forEach((id: any) => {
+      const hash = id.email_hash
+      if (!hash) return
+
+      const status = id.denuncias?.status
+      
+      if (!rankingMap.has(hash)) {
+        rankingMap.set(hash, {
+          hash,
+          total: 0,
+          resolvidas: 0,
+          arquivadas: 0,
+          pendentes: 0,
+          credibilidade: 100
+        })
+      }
+
+      const stats = rankingMap.get(hash)
+      stats.total++
+      if (status === 'resolvida') stats.resolvidas++
+      if (status === 'arquivada') stats.arquivadas++
+      if (['recebida', 'em_analise'].includes(status)) stats.pendentes++
+
+      // Cálculo de credibilidade
+      const totalFinalizados = stats.resolvidas + stats.arquivadas
+      if (totalFinalizados > 0) {
+        stats.credibilidade = Math.round((stats.resolvidas / totalFinalizados) * 100)
+      }
+    })
+
+    const ranking = Array.from(rankingMap.values())
+      .sort((a: any, b: any) => b.total - a.total)
+      .slice(0, 50)
+
+    return { success: true, ranking }
+  } catch (err: any) {
+    console.error('[audit] Erro no ranking:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Bane um usuário do sistema (adiciona à lista negra)
+ */
+export async function banirUsuario(emailHash: string, motivo: string) {
+  const supabase = createAdminClient()
+  
+  try {
+    const { error } = await supabase
+      .from('blacklist_usuarios')
+      .insert({
+        email_hash: emailHash,
+        motivo: motivo,
+        banido_em: new Date().toISOString()
+      })
+
+    if (error) throw error
+    return { success: true }
+  } catch (err: any) {
     return { success: false, error: err.message }
   }
 }

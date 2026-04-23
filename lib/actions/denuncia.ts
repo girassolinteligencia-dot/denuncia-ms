@@ -16,6 +16,19 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
 
   try {
     if (!formData.anonima && formData.email) {
+      const emailHash = createHash('sha256').update(formData.email.toLowerCase().trim()).digest('hex')
+      
+      // Verificar se o usuário está na blacklist
+      const { data: banido } = await supabase
+        .from('blacklist_usuarios')
+        .select('id, motivo')
+        .eq('email_hash', emailHash)
+        .maybeSingle()
+
+      if (banido) {
+        return { success: false, error: 'Este e-mail está temporariamente suspenso para envio de denúncias por violação dos termos de uso (Suspeita de denúncia falsa).' }
+      }
+
       const otpValido = await validarOTP(formData.email, formData.otpToken || '')
       if (!otpValido) return { success: false, error: 'Código de verificação inválido ou expirado.' }
     }
@@ -137,17 +150,28 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
 
       const pdfHash = sha256Buffer(pdfBuffer)
 
+      // Upload do PDF para Storage Permanente
+      const pdfPath = `oficial_${protocolo}.pdf`
+      await supabase.storage
+        .from('relatos-oficiais')
+        .upload(pdfPath, pdfBuffer, {
+          contentType: 'application/pdf',
+          upsert: true
+        })
+
+      const { data: pdfUrlData } = supabase.storage.from('relatos-oficiais').getPublicUrl(pdfPath)
+
       await supabase.from('pdf_assinaturas').insert({
         denuncia_id: denuncia.id,
         protocolo,
         sha256:      pdfHash,
+        url_storage: pdfUrlData.publicUrl,
         gerado_em:   new Date().toISOString(),
       })
 
       await supabase.from('despacho_queue').insert({
         denuncia_id: denuncia.id,
         pdf_base64:  pdfBuffer.toString('base64'),
-        tentativas:  0,
         status:      'pendente',
         criado_em:   new Date().toISOString(),
       })

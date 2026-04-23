@@ -44,7 +44,7 @@ export default async function DenunciasAdminPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
          <StatCard label="Recebidas" value={denuncias?.filter(d => d.status === 'recebida').length || 0} color="text-primary" />
          <StatCard label="Em Análise" value={denuncias?.filter(d => d.status === 'em_analise').length || 0} color="text-info" />
          <StatCard label="Encaminhadas" value={denuncias?.filter(d => d.status === 'encaminhada').length || 0} color="text-secondary" />

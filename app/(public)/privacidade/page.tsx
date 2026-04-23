@@ -9,33 +9,33 @@ export const metadata = {
 
 export default function PrivacidadePage() {
   return (
-    <div className="min-h-screen bg-surface py-20 px-4">
-      <div className="max-w-4xl mx-auto space-y-12">
+    <div className="min-h-screen bg-surface py-12 sm:py-20">
+      <div className="container-page max-w-4xl space-y-8 sm:space-y-12">
         
         {/* Header */}
-        <div className="text-center space-y-4">
-           <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 text-secondary rounded-full text-xs font-black uppercase tracking-[0.2em]">
-              <ShieldCheck size={14} />
+        <div className="text-center space-y-3 sm:space-y-4 px-4">
+           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary/10 text-secondary rounded-full text-[10px] font-black uppercase tracking-[0.2em] mx-auto">
+              <ShieldCheck size={12} />
               Proteção de Dados
            </div>
-           <h1 className="text-4xl md:text-5xl font-black text-dark tracking-tighter italic uppercase">
+           <h1 className="text-3xl sm:text-5xl font-black text-dark tracking-tighter italic uppercase">
               Política de <span className="text-secondary">Privacidade</span>
            </h1>
-           <p className="text-muted font-medium max-w-2xl mx-auto">
-              Sua segurança e anonimato são as bases da nossa plataforma. Entenda como protegemos sua identidade em Mato Grosso do Sul.
+           <p className="text-xs sm:text-md text-muted font-medium max-w-2xl mx-auto">
+              Sua segurança e anonimato são as bases da nossa plataforma.
            </p>
         </div>
 
         {/* Content Section */}
-        <div className="bg-white rounded-[40px] shadow-card-lg border border-border overflow-hidden p-8 md:p-16 space-y-10 leading-relaxed">
+        <div className="bg-white/95 backdrop-blur-sm rounded-[2rem] sm:rounded-[40px] shadow-card-lg border border-border/40 overflow-hidden p-6 sm:p-16 space-y-8 sm:space-y-10 leading-relaxed mx-2 sm:mx-0">
            
            <section className="space-y-4">
               <h2 className="text-xl font-black text-dark tracking-tight uppercase flex items-center gap-2">
                  <EyeOff size={20} className="text-secondary" />
                  1. Compromisso com o Anonimato
               </h2>
-              <p className="text-muted text-sm text-justify font-medium">
-                O <strong>DENUNCIA MS</strong> permite o envio de denúncias sem a necessidade de identificação. Quando você escolhe a opção "Anônimo", nosso sistema remove metadados dos arquivos e não armazena vínculos diretos entre sua identidade e o protocolo gerado, garantindo o sigilo técnico absoluto.
+              <p className="text-muted text-xs sm:text-sm text-justify font-medium">
+                O <strong>DENUNCIA MS</strong> permite o envio de denúncias sem a necessidade de identificação. Quando você escolhe a opção &quot;Anônimo&quot;, nosso sistema remove metadados dos arquivos e não armazena vínculos diretos entre sua identidade e o protocolo gerado, garantindo o sigilo técnico absoluto.
               </p>
            </section>
 
@@ -88,13 +88,13 @@ export default function PrivacidadePage() {
         </div>
 
         {/* Footer Area */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-           <Link href="/termos" className="flex items-center gap-2 text-xs font-black text-muted hover:text-secondary transition-colors uppercase tracking-[0.2em]">
-              Ver Termos de Responsabilidade
-              <ArrowRight size={14} />
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6 px-4">
+           <Link href="/termos" className="flex items-center gap-2 text-[10px] font-black text-muted hover:text-secondary transition-colors uppercase tracking-[0.2em]">
+              Termos de Responsabilidade
+              <ArrowRight size={12} />
            </Link>
-           <Link href="/" className="btn-outline h-12 px-6 gap-2 border-border text-muted uppercase text-[10px] font-black tracking-widest">
-              <ArrowLeft size={16} /> Voltar para o Início
+           <Link href="/" className="btn-outline h-10 sm:h-12 px-5 sm:px-6 gap-2 border-border text-muted uppercase text-[9px] sm:text-[10px] font-black tracking-widest w-full sm:w-auto">
+              <ArrowLeft size={14} /> Início
            </Link>
         </div>
 

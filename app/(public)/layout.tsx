@@ -9,15 +9,16 @@ export default function PublicLayout({
 }) {
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="h-24 sm:h-32 bg-white border-b border-border sticky top-0 z-50 shadow-sm">
+      <header className="h-24 sm:h-40 bg-white border-b border-border sticky top-0 z-50 shadow-sm transition-all">
         <div className="container-page flex items-center justify-between h-full gap-2">
           <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <img src="/assets/logo.png" alt="Denúncia MS" className="h-16 sm:h-24 w-auto transition-transform group-hover:scale-105" />
+            <img src="/assets/logo.png" alt="Denúncia MS" className="h-16 sm:h-32 w-auto transition-transform group-hover:scale-105" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
             <Link href="/" className="text-sm font-bold text-dark hover:text-primary transition-colors">Início</Link>
             <Link href="/como-funciona" className="text-sm font-bold text-dark hover:text-primary transition-colors">Como funciona</Link>
+            <Link href="/transparencia" className="text-sm font-bold text-dark hover:text-primary transition-colors">Transparência</Link>
             <Link href="/noticias" className="text-sm font-bold text-dark hover:text-primary transition-colors">Notícias</Link>
           </nav>
 
@@ -43,8 +44,8 @@ export default function PublicLayout({
             <div className="grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-white/5 pb-12">
                <div className="md:col-span-2 space-y-6">
                   <div className="flex items-center gap-3">
-                    <div className="bg-white p-3 rounded-2xl">
-                      <img src="/assets/logo.png" alt="Denúncia MS" className="h-20 w-auto" />
+                    <div className="bg-white p-4 rounded-[2rem] shadow-xl">
+                      <img src="/assets/logo.png" alt="Denúncia MS" className="h-28 w-auto" />
                     </div>
                   </div>
                   <p className="text-sm text-white/60 max-w-md leading-relaxed text-justify">
@@ -55,6 +56,7 @@ export default function PublicLayout({
                <div>
                   <h3 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Links Rápidos</h3>
                   <ul className="space-y-4 text-sm text-white/50">
+                     <li><Link href="/transparencia" className="hover:text-electric transition-colors">Transparência Pública</Link></li>
                      <li><Link href="/privacidade" className="hover:text-electric transition-colors">Política de Privacidade</Link></li>
                      <li><Link href="/termos" className="hover:text-electric transition-colors">Termos de Uso</Link></li>
                      <li><Link href="/faq" className="hover:text-electric transition-colors">Dúvidas Frequentes</Link></li>

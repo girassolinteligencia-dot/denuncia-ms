@@ -15,7 +15,9 @@ import {
   History,
   ChevronRight,
   LogOut,
-  Megaphone
+  Megaphone,
+  ShieldCheck,
+  ShieldAlert
 } from 'lucide-react'
 
 const MENU_ITEMS = [
@@ -37,29 +39,49 @@ const CONFIG_ITEMS = [
 
 const ADMIN_ITEMS = [
   { label: 'Usuários', icon: Users, href: '/admin/usuarios' },
+  { label: 'Privacidade & LGPD', icon: ShieldCheck, href: '/admin/privacidade' },
+  { label: 'Auditoria de Uso', icon: ShieldAlert, href: '/admin/usuarios/audit' },
   { label: 'Logs de Auditoria', icon: History, href: '/admin/logs' },
 ]
 
-export const AdminSidebar: React.FC = () => {
+export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> = ({ isOpen, onClose }) => {
   const pathname = usePathname()
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
 
   return (
-    <aside className="w-68 bg-dark border-r border-white/5 h-screen flex flex-col sticky top-0 overflow-y-auto text-white/70 shadow-2xl">
-      <div className="p-6 border-b border-white/5 bg-gradient-to-br from-primary to-primary-dark">
-        <Link href="/admin/dashboard" className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-accent shadow-glow-cyan border border-white/20 backdrop-blur-md">
-            <Megaphone size={24} className="fill-accent" />
-          </div>
-          <div>
-            <h1 className="font-black text-white text-base leading-none tracking-tighter">DENUNCIA MS</h1>
-            <p className="text-[9px] text-electric font-black uppercase tracking-[0.2em] mt-1 drop-shadow-sm">Admin Engine</p>
-          </div>
-        </Link>
-      </div>
+    <>
+      {/* Overlay mobile */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] lg:hidden"
+          onClick={onClose}
+        />
+      )}
 
-      <nav className="flex-1 p-4 space-y-8 scrollbar-hide">
+      <aside className={`fixed lg:sticky top-0 left-0 w-64 lg:w-68 bg-dark border-r border-white/5 h-screen flex flex-col z-[70] transition-transform duration-300 overflow-y-auto text-white/70 shadow-2xl ${
+        isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
+        <div className="p-6 border-b border-white/5 bg-gradient-to-br from-primary to-primary-dark shrink-0">
+          <div className="flex items-center justify-between">
+            <Link href="/admin/dashboard" className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-accent shadow-glow-cyan border border-white/20 backdrop-blur-md">
+                <Megaphone size={24} className="fill-accent" />
+              </div>
+              <div>
+                <h1 className="font-black text-white text-base leading-none tracking-tighter">DENUNCIA MS</h1>
+                <p className="text-[9px] text-electric font-black uppercase tracking-[0.2em] mt-1 drop-shadow-sm">Admin Engine</p>
+              </div>
+            </Link>
+            
+            <button onClick={onClose} className="lg:hidden p-2 text-white/40 hover:text-white">
+               <ChevronRight size={24} className="rotate-180" />
+            </button>
+          </div>
+        </div>
+
+        <nav className="flex-1 p-4 space-y-8 scrollbar-hide">
+          {/* Menu Items logic remains same but cleaner padding */}
         <div>
           <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-4">Geral</p>
           <ul className="space-y-1">
@@ -134,6 +156,7 @@ export const AdminSidebar: React.FC = () => {
         </button>
       </div>
     </aside>
+    </>
   )
 }
 
