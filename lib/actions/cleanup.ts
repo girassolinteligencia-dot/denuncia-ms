@@ -31,7 +31,8 @@ export async function limparArquivosOrfaos() {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
     const orphans = storageFiles.filter(file => {
       const isRegistered = registeredPaths.has(file.name)
-      const isOld = new Date(file.created_at) < twentyFourHoursAgo
+      const createdAt = file.created_at ? new Date(file.created_at) : new Date()
+      const isOld = createdAt < twentyFourHoursAgo
       // Ignorar arquivos de sistema ou pastas
       return !isRegistered && isOld && file.name !== '.emptyFolderPlaceholder'
     })
@@ -44,11 +45,23 @@ export async function limparArquivosOrfaos() {
     // 4. Deletar órfãos
     console.log(`[cleanup] Deletando ${orphans.length} arquivos órfãos...`)
     const pathsToDelete = orphans.map(f => f.name)
+    const totalBytesRecuperados = orphans.reduce((acc, f) => acc + (f.metadata?.size || 0), 0)
+    
     const { error: delErr } = await supabase.storage
       .from('denuncias')
       .remove(pathsToDelete)
 
     if (delErr) throw delErr
+
+    // 5. Registrar log de manutenção
+    await supabase.from('logs_manutencao').insert({
+      tipo: 'cleanup_storage',
+      status: 'sucesso',
+      detalhes: {
+        arquivos_deletados: pathsToDelete.length,
+        espaco_recuperado_mb: (totalBytesRecuperados / (1024 * 1024)).toFixed(2)
+      }
+    })
 
     console.log('[cleanup] Faxina concluída com sucesso.')
     return { success: true, deleted: pathsToDelete.length }

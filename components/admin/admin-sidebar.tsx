@@ -17,7 +17,8 @@ import {
   LogOut,
   Megaphone,
   ShieldCheck,
-  ShieldAlert
+  ShieldAlert,
+  Activity
 } from 'lucide-react'
 
 const MENU_ITEMS = [
@@ -38,6 +39,7 @@ const CONFIG_ITEMS = [
 ]
 
 const ADMIN_ITEMS = [
+  { label: 'Saúde do Sistema', icon: Activity, href: '/admin/saude' },
   { label: 'Usuários', icon: Users, href: '/admin/usuarios' },
   { label: 'Privacidade & LGPD', icon: ShieldCheck, href: '/admin/privacidade' },
   { label: 'Auditoria de Uso', icon: ShieldAlert, href: '/admin/usuarios/audit' },
