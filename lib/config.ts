@@ -86,7 +86,11 @@ export async function getConfigsByPrefix(prefixo: string): Promise<Record<string
     .like('chave', `${prefixo}%`)
 
   if (error) {
-    throw new Error(`Erro ao buscar configurações com prefixo '${prefixo}': ${error.message}`)
+    const isHtml = error.message.includes('<!DOCTYPE html>')
+    const cleanMessage = isHtml 
+      ? 'A URL do Supabase está incorreta (retornou HTML em vez de dados). Verifique NEXT_PUBLIC_SUPABASE_URL na Vercel.' 
+      : error.message
+    throw new Error(`Erro ao buscar configurações com prefixo '${prefixo}': ${cleanMessage}`)
   }
 
   return Object.fromEntries((data ?? []).map(({ chave, valor }) => [chave, valor]))
