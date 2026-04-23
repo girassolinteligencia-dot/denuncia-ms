@@ -35,7 +35,7 @@ const STEPS = [
 ]
 
 const MAX_ARQUIVOS = 5
-const MAX_FILE_SIZE = 4 * 1024 * 1024 // 4MB (Limite de segurança para Vercel)
+const MAX_FILE_SIZE = 8 * 1024 * 1024 // 8MB
 
 interface Categoria {
   id: string
