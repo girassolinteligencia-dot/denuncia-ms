@@ -126,7 +126,7 @@ function LoginForm() {
         </div>
 
         <div className="mt-6 sm:mt-8 text-center">
-           <Link href="/sobre" className="text-[10px] sm:text-xs font-bold text-muted hover:text-primary transition-colors uppercase tracking-widest">
+           <Link href="/recuperar-senha" className="text-[10px] sm:text-xs font-bold text-muted hover:text-primary transition-colors uppercase tracking-widest">
               Esqueci minha senha
            </Link>
         </div>
