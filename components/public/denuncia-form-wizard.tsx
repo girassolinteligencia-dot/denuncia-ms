@@ -306,18 +306,27 @@ export function DenunciaFormWizard({
         size: a.size
       })))
       
+      console.log('[wizard] Resposta do servidor:', res)
+
       if (res.success) {
         await removerRascunho('rascunho_atual')
         toast.success('Denúncia protocolada com sucesso!')
         router.push(`/sucesso?protocolo=${res.protocolo}&chave=${res.chaveAcesso}`)
       } else {
         setLoading(false)
-        toast.error(res.error || 'Erro ao processar denúncia.')
+        console.error('[wizard] Erro retornado pelo servidor:', res.error)
+        toast.error(res.error || 'Erro ao processar denúncia.', {
+          description: 'Ocorreu um problema no servidor ao gerar seu protocolo. Tente novamente em instantes.',
+          duration: 6000
+        })
       }
     } catch (err: any) {
       setLoading(false)
-      console.error('Erro crítico no envio:', err)
-      toast.error('Falha no protocolo oficial. Tente novamente.')
+      console.error('[wizard] Erro catastrófico na chamada:', err)
+      toast.error('Falha de comunicação com o servidor.', {
+        description: err.message || 'Verifique sua conexão e tente novamente.',
+        duration: 5000
+      })
     }
   }
 

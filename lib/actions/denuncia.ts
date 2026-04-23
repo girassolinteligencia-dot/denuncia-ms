@@ -87,26 +87,37 @@ export async function registrarDenuncia(
         local:              localCompleto || null,
         data_ocorrido:      formData.data_ocorrido || null,
         status:             'recebida',
+        documento_final:    '', // Placeholder para satisfazer NOT NULL se a migração não tiver rodado
       })
       .select('id, protocolo, criado_em')
       .single()
 
     if (denErr || !denuncia) {
-      console.error('[denuncia] Erro ao salvar:', denErr)
+      console.error('[denuncia] Erro ao salvar registro principal:', denErr)
       return { success: false, error: 'Erro ao persistir denúncia: ' + (denErr?.message || 'Erro desconhecido') }
     }
 
     // 5. Vincular Arquivos à Denúncia
     if (arquivosVinculados.length > 0) {
       console.log(`[denuncia] Vinculando ${arquivosVinculados.length} arquivos ao registro...`)
-      const insertData = arquivosVinculados.map(f => ({
-        denuncia_id: denuncia.id,
-        tipo: f.type,
-        url: f.url,
-        bucket_path: f.bucket_path,
-        tamanho_bytes: f.size,
-        name: f.name
-      }))
+      
+      const insertData = arquivosVinculados.map(f => {
+        // Mapeia MIME type para o tipo simplificado esperado pelo banco (CHECK constraint)
+        let tipoSimplificado = 'documento'
+        if (f.type.startsWith('image/')) tipoSimplificado = 'foto'
+        else if (f.type.startsWith('audio/')) tipoSimplificado = 'audio'
+        else if (f.type.startsWith('video/')) tipoSimplificado = 'video'
+        else if (f.type.includes('pdf')) tipoSimplificado = 'pdf'
+
+        return {
+          denuncia_id: denuncia.id,
+          tipo: tipoSimplificado,
+          url: f.url,
+          bucket_path: f.bucket_path,
+          tamanho_bytes: f.size,
+          name: f.name
+        }
+      })
       const { error: linkErr } = await supabase.from('arquivos_denuncia').insert(insertData)
       if (linkErr) console.error('[denuncia] Erro ao vincular arquivos:', linkErr)
     }

@@ -14,13 +14,22 @@ export async function gerarProtocolo(): Promise<{ protocolo: string, chaveAcesso
   const supabase = createAdminClient()
 
   // Incrementa atomicamente e retorna o novo valor
+  console.log('[protocolo] Chamando RPC incrementar_protocolo...')
   const { data, error } = await supabase.rpc('incrementar_protocolo')
 
-  if (error || !data) {
-    throw new Error(`Erro ao gerar protocolo: ${error?.message ?? 'resposta vazia'}`)
+  if (error) {
+    console.error('[protocolo] Erro no RPC:', error)
+    throw new Error(`Erro ao gerar protocolo: ${error.message}`)
+  }
+
+  if (!data || (Array.isArray(data) && data.length === 0)) {
+    console.error('[protocolo] RPC retornou dados vazios. Verifique a tabela config_protocolo.')
+    throw new Error('Erro ao gerar protocolo: configuração de sequenciamento não encontrada no banco.')
   }
 
   const config = (Array.isArray(data) ? data[0] : data) as ConfigProtocolo
+  console.log('[protocolo] Config obtida:', { prefixo: config.prefixo, seq: config.sequencia_atual })
+
   const ano = config.formato_ano === 'YYYY'
     ? new Date().getFullYear().toString()
     : new Date().getFullYear().toString().slice(-2)
