@@ -44,10 +44,24 @@ const ADMIN_ITEMS = [
   { label: 'Logs de Auditoria', icon: History, href: '/admin/logs' },
 ]
 
+import { createBrowserClient } from '@supabase/ssr'
+import { useRouter } from 'next/navigation'
+
 export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> = ({ isOpen, onClose }) => {
   const pathname = usePathname()
+  const router = useRouter()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
 
   return (
     <>
@@ -150,7 +164,10 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
       </nav>
 
       <div className="p-4 border-t border-white/5 mt-auto">
-        <button className="w-full h-11 flex items-center justify-center gap-3 px-3 rounded-btn text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all">
+        <button 
+          onClick={handleLogout}
+          className="w-full h-11 flex items-center justify-center gap-3 px-3 rounded-btn text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all"
+        >
           <LogOut size={16} />
           Encerrar Sessão
         </button>
