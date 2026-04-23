@@ -70,8 +70,8 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${denuncia.anonima ? 'bg-surface text-muted border border-border' : 'bg-amber-50 text-amber-700 border border-amber-100'}`}>
-                       {denuncia.anonima ? 'ANÔNIMA' : 'IDENTIFICADA'}
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100">
+                       IDENTIFICADA
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
@@ -124,8 +124,8 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
                  <span className="text-[10px] font-bold text-muted/60 uppercase">
                     {new Date(denuncia.criado_em).toLocaleDateString()}
                  </span>
-                 <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border ${denuncia.anonima ? 'bg-surface text-muted border-border' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
-                    {denuncia.anonima ? 'ANÔNIMA' : 'IDENTIFICADA'}
+                 <span className="text-[8px] font-black px-1.5 py-0.5 rounded border bg-amber-50 text-amber-700 border-amber-100">
+                    IDENTIFICADA
                  </span>
               </div>
             </Link>

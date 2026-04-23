@@ -57,7 +57,7 @@ export async function processarFilaDespacho(limite = 10) {
 
   const { data: itens } = await supabase
     .from('despacho_queue')
-    .select('id, denuncia_id, pdf_base64, tentativas, status, denuncias(id, protocolo, categoria_id, local, anonima)')
+    .select('id, denuncia_id, pdf_base64, tentativas, status, denuncias(id, protocolo, categoria_id, local)')
     .in('status', ['pendente', 'pendente_pdf', 'erro'])
     .lt('tentativas', 5)
     .order('criado_em', { ascending: true })
@@ -77,39 +77,37 @@ export async function processarFilaDespacho(limite = 10) {
         .update({ tentativas: item.tentativas + 1, status: 'processando' })
         .eq('id', item.id)
 
-      // 1. Buscar informações de contato se for identificada
+      // 1. Buscar informações de contato criptografadas
       let contatoHtml = ''
-      let nomeExibicao = 'Anônimo (Sigilo Garantido)'
+      let nomeExibicao = 'Não disponível'
       let emailExibicao = 'N/A'
       
-      if (!den.anonima) {
-        const { data: ident } = await supabase
-          .from('identidades')
-          .select('nome_enc, email_enc')
-          .eq('denuncia_id', den.id)
-          .single()
-        
-        if (ident) {
-          try {
-            const nomeCompleto = await decryptData(ident.nome_enc)
-            const email = await decryptData(ident.email_enc)
-            const primeiroNome = nomeCompleto.split(' ')[0]
-            nomeExibicao = primeiroNome
-            emailExibicao = email
-            
-            contatoHtml = `
-              <tr>
-                <td style="font-size:11px;font-weight:900;color:#888;text-transform:uppercase;padding:12px 0;border-bottom:1px solid #f0f0f0;width:120px">Cidadão</td>
-                <td style="font-size:14px;font-weight:700;color:#333;padding:12px 0;border-bottom:1px solid #f0f0f0">${primeiroNome}</td>
-              </tr>
-              <tr>
-                <td style="font-size:11px;font-weight:900;color:#888;text-transform:uppercase;padding:12px 0;border-bottom:1px solid #f0f0f0;width:120px">E-mail de Contato</td>
-                <td style="font-size:14px;font-weight:700;color:#333;padding:12px 0;border-bottom:1px solid #f0f0f0">${email}</td>
-              </tr>
-            `
-          } catch (e) {
-            console.error('Erro ao descriptografar identidade no despacho:', e)
-          }
+      const { data: ident } = await supabase
+        .from('identidades')
+        .select('nome_enc, email_enc')
+        .eq('denuncia_id', den.id)
+        .single()
+      
+      if (ident) {
+        try {
+          const nomeCompleto = await decryptData(ident.nome_enc)
+          const email = await decryptData(ident.email_enc)
+          const primeiroNome = nomeCompleto.split(' ')[0]
+          nomeExibicao = primeiroNome
+          emailExibicao = email
+          
+          contatoHtml = `
+            <tr>
+              <td style="font-size:11px;font-weight:900;color:#888;text-transform:uppercase;padding:12px 0;border-bottom:1px solid #f0f0f0;width:120px">Cidadão</td>
+              <td style="font-size:14px;font-weight:700;color:#333;padding:12px 0;border-bottom:1px solid #f0f0f0">${primeiroNome}</td>
+            </tr>
+            <tr>
+              <td style="font-size:11px;font-weight:900;color:#888;text-transform:uppercase;padding:12px 0;border-bottom:1px solid #f0f0f0;width:120px">E-mail de Contato</td>
+              <td style="font-size:14px;font-weight:700;color:#333;padding:12px 0;border-bottom:1px solid #f0f0f0">${email}</td>
+            </tr>
+          `
+        } catch (e) {
+          console.error('Erro ao descriptografar identidade no despacho:', e)
         }
       }
 
@@ -180,7 +178,7 @@ export async function processarFilaDespacho(limite = 10) {
                 </tr>
                 <tr>
                   <td style="font-size:11px;font-weight:900;color:#888;text-transform:uppercase;padding:12px 0;border-bottom:1px solid #f0f0f0;width:120px">Identificação</td>
-                  <td style="font-size:14px;font-weight:700;color:#333;padding:12px 0;border-bottom:1px solid #f0f0f0">${den.anonima ? 'Anônima (Sigilo Garantido)' : 'Identificada'}</td>
+                  <td style="font-size:14px;font-weight:700;color:#333;padding:12px 0;border-bottom:1px solid #f0f0f0">Identificada</td>
                 </tr>
                 ${contatoHtml}
                 <tr>
@@ -200,15 +198,26 @@ export async function processarFilaDespacho(limite = 10) {
         </div>
       `
 
-      // O destinatário deve vir da configuração da categoria ou uma variável padrão
-      // Vou buscar o e-mail de destino da categoria se existir, ou usar o padrão do ENV
+      // Buscar e-mail de destino da integração por categoria
+      const { data: integracao } = await supabase
+        .from('integracoes_destino')
+        .select('email_para')
+        .eq('categoria_id', den.categoria_id)
+        .eq('ativo', true)
+        .eq('tipo', 'email')
+        .limit(1)
+        .maybeSingle()
+      
+      const destinoFinal = (integracao?.email_para && integracao.email_para.length > 0)
+        ? integracao.email_para
+        : [process.env.DEFAULT_DESTINY_EMAIL || 'ouvidoria@denunciams.com.br']
+
+      // Buscar label da categoria para o assunto
       const { data: catInfo } = await supabase
         .from('categorias')
-        .select('id, label')
+        .select('label')
         .eq('id', den.categoria_id)
         .single()
-      
-      const destinoFinal = process.env.DEFAULT_DESTINY_EMAIL || 'ouvidoria@denunciams.com.br'
 
       await sendEmail({
         to:      destinoFinal,

@@ -73,7 +73,7 @@ export default async function PublicHomePage() {
             <div className="flex items-center lg:justify-start justify-center gap-8 pt-8 text-xs font-black text-white/40 uppercase tracking-[0.3em]">
               <div className="flex items-center gap-2">
                 <Lock size={14} className="text-secondary" />
-                Sem Senha ou Cadastro
+                Sem Cadastro. Validação Rápida
               </div>
               <div className="w-1.5 h-1.5 rounded-full bg-white/10"></div>
               <div className="flex items-center gap-2">

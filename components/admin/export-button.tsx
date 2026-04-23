@@ -16,7 +16,7 @@ export const ExportButton: React.FC<{ denuncia: Denuncia }> = ({ denuncia }) => 
       data_ocorrido: denuncia.data_ocorrido,
       criado_em: denuncia.criado_em,
       status: denuncia.status,
-      anonima: denuncia.anonima,
+      identificacao: 'Identificada',
       nome: denuncia.denunciante_nome,
       email: denuncia.denunciante_email,
       telefone: denuncia.denunciante_telefone

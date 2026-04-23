@@ -70,7 +70,7 @@ export default function TermosPage() {
                 Em total conformidade com a <strong>Lei nº 13.709/2018 (Lei Geral de Proteção de Dados Pessoais)</strong>, a plataforma garante:
               </p>
               <ul className="space-y-3 text-sm text-muted list-disc pl-5 font-medium">
-                 <li><strong>Anonimização Técnica:</strong> Processos de desindentificação para denúncias anônimas, impedindo a reversão de identidade, exceto por ordem judicial.</li>
+                 <li><strong>Proteção de Dados Sensíveis:</strong> Todos os dados de identificação são criptografados com AES-256-GCM e armazenados em tabelas segregadas, acessíveis apenas por autoridades competentes mediante autorização judicial.</li>
                  <li><strong>Finalidade Estrita:</strong> Os dados coletados são utilizados exclusivamente para o processamento da denúncia e fins estatísticos de impacto social.</li>
                  <li><strong>Segurança:</strong> Armazenamento em servidores criptografados com controle de acesso rigoroso por parte dos moderadores.</li>
               </ul>

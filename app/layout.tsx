@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: `%s | ${APP_NAME}`,
   },
   description:
-    'Registre denúncias de forma segura, anônima e independente. Iniciativa cívica de ouvidoria digital para cidadãos de Mato Grosso do Sul.',
+    'Registre denúncias de forma segura e identificada. Plataforma cívica independente de ouvidoria digital para cidadãos de Mato Grosso do Sul.',
   keywords: ['denúncia', 'ouvidoria independente', 'Mato Grosso do Sul', 'cidadania', 'transparência', 'inteligência cívica'],
   authors: [{ name: 'DENUNCIA MS (Iniciativa Independente)' }],
   openGraph: {
@@ -19,12 +19,12 @@ export const metadata: Metadata = {
     locale: 'pt_BR',
     siteName: APP_NAME,
     title: `${APP_NAME} — Ouvidoria Cívica Independente`,
-    description: 'Registre denúncias de forma segura, anônima e cívica.',
+    description: 'Registre denúncias de forma segura e identificada. Ouvidoria cívica independente.',
   },
   twitter: {
     card: 'summary_large_image',
     title: `${APP_NAME} — Ouvidoria Digital`,
-    description: 'Registre denúncias de forma segura e anônima em Mato Grosso do Sul.',
+    description: 'Registre denúncias de forma segura e identificada em Mato Grosso do Sul.',
   },
   robots: {
     index: true,

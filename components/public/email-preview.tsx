@@ -24,7 +24,7 @@ export function EmailPreview(props: Props) {
     descricao: props.descricao || '(Descrição da denúncia)',
     local: props.local || 'Não informado',
     data_ocorrido: props.data_ocorrido || new Date().toISOString(),
-    anonima: false,
+    identificada: true,
     nome: props.nome || '(Seu nome)',
     email: props.email || '(Seu e-mail)',
     telefone: props.telefone || '(Seu telefone)',

@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase-admin'
+import { randomBytes } from 'crypto'
 import type { ConfigProtocolo } from '@/types'
 
 /**
@@ -28,11 +29,11 @@ export async function gerarProtocolo(): Promise<{ protocolo: string, chaveAcesso
     .toString()
     .padStart(config.digitos_seq, '0')
 
-  // Gera sufixo aleatório para segurança (Salt)
-  const salt = Math.random().toString(36).substring(2, 6).toUpperCase()
+  // Gera sufixo aleatório criptograficamente seguro (Salt)
+  const salt = randomBytes(3).toString('hex').toUpperCase().slice(0, 4)
   
-  // Gera Chave de Acesso única para o cidadão
-  const chaveAcesso = Math.random().toString(36).substring(2, 8).toUpperCase()
+  // Gera Chave de Acesso única e segura para o cidadão
+  const chaveAcesso = randomBytes(4).toString('hex').toUpperCase().slice(0, 6)
 
   const protocoloFinal = [config.prefixo, ano, seq, salt].join(config.separador)
   

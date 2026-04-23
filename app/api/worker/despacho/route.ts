@@ -3,7 +3,8 @@ import { processarFilaDespacho } from '@/lib/webhook'
 
 export async function POST(req: NextRequest) {
   const auth = req.headers.get('x-cron-secret')
-  if (auth !== process.env.CRON_SECRET) {
+  const secret = process.env.CRON_SECRET
+  if (!secret || !auth || auth !== secret) {
     return NextResponse.json({ erro: 'Nao autorizado' }, { status: 401 })
   }
   try {

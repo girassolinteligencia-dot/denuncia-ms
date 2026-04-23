@@ -10,7 +10,7 @@ export interface EmailTemplateData {
   descricao: string
   local: string
   data_ocorrido: string
-  anonima: boolean
+  identificada?: boolean
   // Dados do denunciante (visíveis ao órgão)
   nome?: string
   email?: string
