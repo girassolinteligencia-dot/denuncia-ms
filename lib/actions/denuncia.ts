@@ -13,82 +13,65 @@ function sha256Buffer(buf: Buffer): string {
 
 export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivos: { name: string, type: string, content: string }[]) {
   const supabase = createAdminClient()
+  console.log('[denuncia] Iniciando registro:', { categoria: formData.categoria_id, titulo: formData.titulo })
 
   try {
-    // Validação obrigatória de OTP para todos os usuários
-    if (formData.email) {
-      const emailHash = createHash('sha256').update(formData.email.toLowerCase().trim()).digest('hex')
-      
-      const { data: banido } = await supabase
-        .from('blacklist_usuarios')
-        .select('id, motivo')
-        .eq('email_hash', emailHash)
-        .maybeSingle()
+    // 1. Validação de E-mail e OTP
+    if (!formData.email) return { success: false, error: 'O e-mail de identificação é obrigatório.' }
+    
+    console.log('[denuncia] Validando OTP para:', formData.email)
+    const emailHash = createHash('sha256').update(formData.email.toLowerCase().trim()).digest('hex')
+    
+    const { data: banido } = await supabase
+      .from('blacklist_usuarios')
+      .select('id')
+      .eq('email_hash', emailHash)
+      .maybeSingle()
 
-      if (banido) {
-        return { success: false, error: 'Este e-mail está temporariamente suspenso para envio de denúncias por violação dos termos de uso.' }
-      }
+    if (banido) return { success: false, error: 'Acesso suspenso por violação dos termos.' }
 
-      const otpValido = await validarOTP(formData.email, formData.otpToken || '')
-      if (!otpValido) return { success: false, error: 'Código de verificação inválido ou expirado.' }
-    } else {
-      return { success: false, error: 'O e-mail de identificação é obrigatório.' }
-    }
+    const otpValido = await validarOTP(formData.email, formData.otpToken || '')
+    if (!otpValido) return { success: false, error: 'Código de verificação inválido ou expirado.' }
 
+    // 2. Gerar Protocolo
+    console.log('[denuncia] Gerando protocolo...')
     const { protocolo, chaveAcesso } = await gerarProtocolo()
 
-    // Upload de arquivos para o Storage (Server-side)
+    // 3. Upload de Arquivos
     const arquivosUrls: string[] = []
     if (arquivos && arquivos.length > 0) {
+      console.log(`[denuncia] Fazendo upload de ${arquivos.length} arquivos...`)
       for (const file of arquivos) {
-        const buffer = Buffer.from(file.content, 'base64')
-        const ext = file.name.split('.').pop()
-        const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
-        
-        const { error: uploadError } = await supabase.storage
-          .from('denuncias')
-          .upload(path, buffer, {
-            contentType: file.type,
-            upsert: false
-          })
+        try {
+          const buffer = Buffer.from(file.content, 'base64')
+          const ext = file.name.split('.').pop()
+          const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+          
+          const { error: uploadError } = await supabase.storage
+            .from('denuncias')
+            .upload(path, buffer, { contentType: file.type })
 
-        if (uploadError) {
-          console.error('[upload] Erro no servidor:', uploadError)
-          throw new Error(`Erro ao salvar arquivo ${file.name}`)
+          if (!uploadError) {
+            const { data: urlData } = supabase.storage.from('denuncias').getPublicUrl(path)
+            arquivosUrls.push(urlData.publicUrl)
+          }
+        } catch (fErr) {
+          console.error('[denuncia] Erro no arquivo:', file.name, fErr)
         }
-
-        const { data: urlData } = supabase.storage.from('denuncias').getPublicUrl(path)
-        arquivosUrls.push(urlData.publicUrl)
       }
     }
 
-    // Busca dados da categoria para o documento final
+    // 4. Buscar Categoria
     const { data: catData } = await supabase
       .from('categorias')
       .select('label, slug')
       .eq('id', formData.categoria_id)
       .single()
 
-    // Monta o documento final com template real
-    const { montarDocumentoFinal, construirVariaveis } = await import('@/lib/documento')
+    // 5. Persistir Denúncia
+    console.log('[denuncia] Salvando no banco de dados...')
     const localCompleto = [formData.local, formData.numero, formData.bairro, formData.cidade]
       .filter(Boolean).join(', ')
-    const variaveis = construirVariaveis({
-      protocolo,
-      categoriaNome: catData?.label || formData.categoria_id,
-      categoriaSlug: catData?.slug || '',
-      orgaoNome:     'DenunciaMS',
-      local:         localCompleto,
-      nome:          formData.nome,
-      email:         formData.email,
-      telefone:      formData.telefone,
-    })
-    const documentoFinal = montarDocumentoFinal({
-      cabecalho: `DENUNCIA MS — Protocolo: ${protocolo}\nCategoria: ${catData?.label || formData.categoria_id}\nData: ${variaveis.data_envio} às ${variaveis.hora_envio}\nLocal: ${localCompleto || 'Não informado'}\nIdentificação: ${formData.nome || '-'}`,
-      corpo:     formData.descricao_original,
-      rodape:    `Denúncia registrada oficialmente pela plataforma DenunciaMS.\nHash de integridade disponível no painel administrativo.\nMato Grosso do Sul — ${variaveis.data_envio}`,
-      variaveis,
-    })
 
     const { data: denuncia, error: denErr } = await supabase
       .from('denuncias')
@@ -100,107 +83,84 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
         descricao_original: formData.descricao_original,
         local:              localCompleto || null,
         data_ocorrido:      formData.data_ocorrido || null,
-        documento_final:    documentoFinal,
         status:             'recebida',
       })
       .select('id, protocolo, criado_em')
       .single()
 
     if (denErr || !denuncia) {
-      console.error('[denuncia] Erro ao persistir:', denErr)
-      return { success: false, error: 'Não foi possível registrar a denúncia no banco de dados.' }
+      console.error('[denuncia] Erro ao salvar:', denErr)
+      return { success: false, error: 'Erro ao persistir denúncia: ' + (denErr?.message || 'Erro desconhecido') }
     }
 
-    // Registrar arquivos no banco se houver URLs
-    if (arquivosUrls.length > 0) {
-      await supabase.from('arquivos_denuncia').insert(
-        arquivosUrls.map(url => ({
-          denuncia_id: denuncia.id,
-          url,
-          tipo: url.match(/\.(pdf)$/i) ? 'pdf' : url.match(/\.(mp3|wav|ogg|m4a)$/i) ? 'audio' : 'foto',
-          bucket_path: url.split('/').pop() || '',
-        }))
-      )
-    }
-
+    // 6. Salvar Identidade (PII Criptografado)
+    console.log('[denuncia] Salvando identidade criptografada...')
     if (formData.nome && formData.email) {
       const { encryptData } = await import('@/lib/encrypt')
-      await supabase.from('identidades').insert({
+      const { error: identErr } = await supabase.from('identidades').insert({
         denuncia_id:  denuncia.id,
         nome_enc:     await encryptData(formData.nome.trim()),
         email_enc:    await encryptData(formData.email.toLowerCase().trim()),
-        email_hash:   createHash('sha256').update(formData.email.toLowerCase().trim()).digest('hex'),
+        email_hash:   emailHash,
         telefone_enc: formData.telefone ? await encryptData(formData.telefone.trim()) : null,
         cpf_enc:      formData.cpf ? await encryptData(formData.cpf.trim()) : null,
       })
+      if (identErr) console.error('[denuncia] Erro ao salvar PII:', identErr)
     }
 
+    // 7. Gerar PDF e Fila de Despacho (Não trava o retorno se falhar)
+    console.log('[denuncia] Iniciando processos em segundo plano...')
     try {
       const pdfBuffer = await gerarPDFDenuncia({
         protocolo,
-        categoria:     formData.categoria_id,
+        categoria:     catData?.label || formData.categoria_id,
         titulo:        formData.titulo,
         descricao:     formData.descricao_original,
-        local:         [formData.local, formData.numero, formData.bairro, formData.cidade].filter(Boolean).join(', '),
+        local:         localCompleto,
         data_ocorrido: formData.data_ocorrido || '',
         criado_em:     denuncia.criado_em,
         orgao_nome:    'Denúncia MS'
       })
 
-      const pdfHash = sha256Buffer(pdfBuffer)
-
-      // Upload do PDF para Storage Permanente
       const pdfPath = `oficial_${protocolo}.pdf`
-      await supabase.storage
+      const { error: pdfUpErr } = await supabase.storage
         .from('relatos-oficiais')
-        .upload(pdfPath, pdfBuffer, {
-          contentType: 'application/pdf',
-          upsert: true
+        .upload(pdfPath, pdfBuffer, { contentType: 'application/pdf', upsert: true })
+
+      if (!pdfUpErr) {
+        const { data: pdfUrlData } = supabase.storage.from('relatos-oficiais').getPublicUrl(pdfPath)
+        await supabase.from('pdf_assinaturas').insert({
+          denuncia_id: denuncia.id,
+          protocolo,
+          sha256:      createHash('sha256').update(pdfBuffer).digest('hex'),
+          url_storage: pdfUrlData.publicUrl,
         })
 
-      const { data: pdfUrlData } = supabase.storage.from('relatos-oficiais').getPublicUrl(pdfPath)
-
-      await supabase.from('pdf_assinaturas').insert({
-        denuncia_id: denuncia.id,
-        protocolo,
-        sha256:      pdfHash,
-        url_storage: pdfUrlData.publicUrl,
-        gerado_em:   new Date().toISOString(),
-      })
-
-      await supabase.from('despacho_queue').insert({
-        denuncia_id: denuncia.id,
-        pdf_base64:  pdfBuffer.toString('base64'),
-        status:      'pendente',
-        criado_em:   new Date().toISOString(),
-      })
-
+        await supabase.from('despacho_queue').insert({
+          denuncia_id: denuncia.id,
+          pdf_base64:  pdfBuffer.toString('base64'),
+          status:      'pendente',
+        })
+      }
     } catch (pdfErr) {
-      console.error('[denuncia] Erro no PDF:', pdfErr)
-      await supabase.from('despacho_queue').insert({
-        denuncia_id: denuncia.id,
-        tentativas:  0,
-        status:      'pendente_pdf',
-        criado_em:   new Date().toISOString(),
-      })
+      console.error('[denuncia] Erro no processamento do PDF:', pdfErr)
     }
 
-    // E-mail profissional para o denunciante
-    if (formData.email) {
-      const { gerarEmailDenunciante } = await import('@/lib/email-template')
-      sendEmail({
-        to:      formData.email,
-        subject: `[DenunciaMS] Protocolo ${protocolo} — Denúncia registrada com sucesso`,
-        html:    gerarEmailDenunciante(protocolo, chaveAcesso, formData.nome || 'Cidadão'),
-        text:    `Protocolo: ${protocolo} | Chave: ${chaveAcesso}`,
-      }).catch(e => console.error('[denuncia] Erro ao enviar e-mail denunciante:', e))
-    }
+    // 8. Enviar E-mail (Async)
+    console.log('[denuncia] Enviando e-mail de confirmação...')
+    const { gerarEmailDenunciante } = await import('@/lib/email-template')
+    sendEmail({
+      to:      formData.email,
+      subject: `[DenunciaMS] Protocolo ${protocolo} — Denúncia registrada`,
+      html:    gerarEmailDenunciante(protocolo, chaveAcesso, formData.nome || 'Cidadão'),
+      text:    `Protocolo: ${protocolo} | Chave: ${chaveAcesso}`,
+    }).catch(e => console.error('[denuncia] Erro e-mail:', e))
 
+    console.log('[denuncia] Sucesso absoluto:', protocolo)
     return { success: true, protocolo, chaveAcesso }
-  } catch (err) {
-    console.error('[denuncia] Erro crítico:', err)
-    return { success: false, error: (err as Error).message }
+
+  } catch (err: any) {
+    console.error('[denuncia] Erro crítico final:', err)
+    return { success: false, error: 'Erro inesperado: ' + err.message }
   }
 }
-
-

@@ -39,9 +39,9 @@ export async function GET(
 
   if (denuncia.identidades) {
     try {
-      nome = await decryptData(denuncia.identidades.nome_cripto)
-      email = await decryptData(denuncia.identidades.email_cripto)
-      telefone = await decryptData(denuncia.identidades.telefone_cripto)
+      nome = await decryptData(denuncia.identidades.nome_enc)
+      email = await decryptData(denuncia.identidades.email_enc)
+      telefone = await decryptData(denuncia.identidades.telefone_enc)
     } catch (e) {
       console.error('Erro ao descriptografar dados para o PDF:', e)
     }
