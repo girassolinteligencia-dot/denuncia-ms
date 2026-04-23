@@ -8,7 +8,37 @@ import { validarOTP } from './auth'
 import { createHash } from 'crypto'
 
 
-export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivos: { name: string, type: string, content: string }[]) {
+export async function uploadArquivoDenuncia(name: string, type: string, contentBase64: string) {
+  const supabase = createAdminClient()
+  try {
+    const buffer = Buffer.from(contentBase64, 'base64')
+    const ext = name.split('.').pop()
+    const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+    
+    const { error: uploadError } = await supabase.storage
+      .from('denuncias')
+      .upload(path, buffer, { contentType: type })
+
+    if (uploadError) throw uploadError
+
+    const { data: urlData } = supabase.storage.from('denuncias').getPublicUrl(path)
+    
+    return { 
+      success: true, 
+      url: urlData.publicUrl, 
+      bucket_path: path, 
+      size: buffer.length 
+    }
+  } catch (err: any) {
+    console.error('[upload] Erro:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+export async function registrarDenuncia(
+  formData: SubmitDenunciaRequest, 
+  arquivosVinculados: { name: string, type: string, url: string, bucket_path: string, size: number }[]
+) {
   const supabase = createAdminClient()
   console.log('[denuncia] Iniciando registro:', { categoria: formData.categoria_id, titulo: formData.titulo })
 
@@ -34,46 +64,14 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
     console.log('[denuncia] Gerando protocolo...')
     const { protocolo, chaveAcesso } = await gerarProtocolo()
 
-    // 3. Upload de Arquivos
-    const uploadedFiles: { denuncia_id: string; tipo: string; url: string; bucket_path: string; tamanho_bytes: number; name: string }[] = []
-    
-    if (arquivos && arquivos.length > 0) {
-      console.log(`[denuncia] Fazendo upload de ${arquivos.length} arquivos...`)
-      for (const file of arquivos) {
-        try {
-          const buffer = Buffer.from(file.content, 'base64')
-          const ext = file.name.split('.').pop()
-          const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
-          
-          const { error: uploadError } = await supabase.storage
-            .from('denuncias')
-            .upload(path, buffer, { contentType: file.type })
-
-          if (!uploadError) {
-            const { data: urlData } = supabase.storage.from('denuncias').getPublicUrl(path)
-            uploadedFiles.push({
-              denuncia_id: '', // Será preenchido após criar a denúncia
-              tipo: file.type,
-              url: urlData.publicUrl,
-              bucket_path: path,
-              tamanho_bytes: buffer.length,
-              name: file.name
-            })
-          }
-        } catch (fErr) {
-          console.error('[denuncia] Erro no arquivo:', file.name, fErr)
-        }
-      }
-    }
-
-    // 4. Buscar Categoria
+    // 3. Buscar Categoria
     const { data: catData } = await supabase
       .from('categorias')
       .select('label, slug')
       .eq('id', formData.categoria_id)
       .single()
 
-    // 5. Persistir Denúncia
+    // 4. Persistir Denúncia
     console.log('[denuncia] Salvando no banco de dados...')
     const localCompleto = [formData.local, formData.numero, formData.bairro, formData.cidade]
       .filter(Boolean).join(', ')
@@ -98,10 +96,17 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
       return { success: false, error: 'Erro ao persistir denúncia: ' + (denErr?.message || 'Erro desconhecido') }
     }
 
-    // 5.1 Vincular Arquivos à Denúncia
-    if (uploadedFiles.length > 0) {
-      console.log(`[denuncia] Vinculando ${uploadedFiles.length} arquivos ao registro...`)
-      const insertData = uploadedFiles.map(f => ({ ...f, denuncia_id: denuncia.id }))
+    // 5. Vincular Arquivos à Denúncia
+    if (arquivosVinculados.length > 0) {
+      console.log(`[denuncia] Vinculando ${arquivosVinculados.length} arquivos ao registro...`)
+      const insertData = arquivosVinculados.map(f => ({
+        denuncia_id: denuncia.id,
+        tipo: f.type,
+        url: f.url,
+        bucket_path: f.bucket_path,
+        tamanho_bytes: f.size,
+        name: f.name
+      }))
       const { error: linkErr } = await supabase.from('arquivos_denuncia').insert(insertData)
       if (linkErr) console.error('[denuncia] Erro ao vincular arquivos:', linkErr)
     }
@@ -121,7 +126,7 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
       if (identErr) console.error('[denuncia] Erro ao salvar PII:', identErr)
     }
 
-    // 7. Gerar PDF e Fila de Despacho (Não trava o retorno se falhar)
+    // 7. Gerar PDF e Fila de Despacho
     console.log('[denuncia] Iniciando processos em segundo plano...')
     try {
       const pdfBuffer = await gerarPDFDenuncia({

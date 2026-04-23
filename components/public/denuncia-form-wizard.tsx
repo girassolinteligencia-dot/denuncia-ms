@@ -21,10 +21,9 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { registrarDenuncia } from '@/lib/actions/denuncia'
 import { EmailPreview } from './email-preview'
 import { solicitarCodigoOTP, verificarOTP } from '@/lib/actions/auth'
-import { salvarRascunhoOffline, buscarRascunhosPendentes, removerRascunho } from '@/lib/offline-storage'
+import { salvarRascunhoOffline, removerRascunho } from '@/lib/offline-storage'
 
 const STEPS = [
   { id: 1, label: 'Categoria', icon: Zap },
@@ -35,7 +34,7 @@ const STEPS = [
 ]
 
 const MAX_ARQUIVOS = 5
-const MAX_FILE_SIZE = 8 * 1024 * 1024 // 8MB
+const MAX_FILE_SIZE = 4 * 1024 * 1024 // 4MB individual
 
 interface Categoria {
   id: string
@@ -46,6 +45,15 @@ interface Categoria {
   instrucao_publica: string | null
   aviso_legal: string | null
   template_descricao: { topico: string; placeholder: string }[]
+}
+
+interface ArquivoAnexo {
+  name: string
+  size: number
+  type: string
+  url?: string
+  bucket_path?: string
+  status: 'pendente' | 'enviando' | 'sucesso' | 'erro'
 }
 
 interface DenunciaFormData {
@@ -62,7 +70,7 @@ interface DenunciaFormData {
   email: string
   telefone: string
   cpf: string
-  arquivos: { name: string; size: number; type: string; content: string }[]
+  arquivos: ArquivoAnexo[]
   consentimento: boolean
   otpToken: string
 }
@@ -114,7 +122,6 @@ export function DenunciaFormWizard({
     const handleOnline = () => {
       setIsOnline(true)
       toast.success('Conexão restabelecida! Sincronizando dados...', { icon: <Wifi size={16} /> })
-      syncOfflineDrafts()
     }
     const handleOffline = () => {
       setIsOnline(false)
@@ -144,19 +151,9 @@ export function DenunciaFormWizard({
     }
   }, [formData, step])
 
-  const syncOfflineDrafts = async () => {
-    const pendentes = await buscarRascunhosPendentes()
-    if (pendentes.length > 0) {
-      // Aqui poderíamos tentar enviar automaticamente, 
-      // mas por segurança e UX, apenas garantimos que os dados estão prontos.
-      console.log('Sincronização: Há dados pendentes no cofre local.')
-    }
-  }
-
   const handleInputChange = (field: keyof DenunciaFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     
-    // Rolagem inteligente: Se selecionou categoria ou bloco, rola para baixo para ver o botão Próximo
     if (field === 'categoria_id' || field === 'titulo') {
       setTimeout(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -166,8 +163,6 @@ export function DenunciaFormWizard({
 
   const handleNext = () => {
     setStep(s => Math.min(s + 1, 5))
-    // Em vez de sempre ir para o topo absoluto, vamos para o topo do container do wizard
-    // para não perder o contexto visual se o header for muito grande
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -185,71 +180,56 @@ export function DenunciaFormWizard({
       return
     }
 
-    // Tenta encontrar o limite máximo definido nas políticas do banco (se houver)
-    const dbLimit = politicasArquivo.length > 0 
-      ? Math.max(...politicasArquivo.map(p => p.tamanho_max_mb || 0)) * 1024 * 1024
-      : 0
-    const activeLimit = dbLimit > 0 ? dbLimit : MAX_FILE_SIZE
-
-    // Extensões permitidas (Whitelist)
-    const allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx', 'mp3', 'wav', 'm4a']
-    const allowedMimeTypes = [
-      'image/jpeg', 'image/png', 'image/webp',
-      'application/pdf', 'application/msword', 
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'audio/mpeg', 'audio/wav', 'audio/x-m4a', 'audio/mp4'
-    ]
-
-    const newFiles: any[] = []
-    const toastId = toast.loading(`Processando ${files.length} arquivo(s)...`)
+    const { uploadArquivoDenuncia } = await import('@/lib/actions/denuncia')
 
     for (const file of files) {
-      const ext = file.name.split('.').pop()?.toLowerCase()
-      const isTypeAllowed = allowedExtensions.includes(ext || '') || allowedMimeTypes.includes(file.type)
-
-      if (!isTypeAllowed) {
-        toast.error(`Formato inválido: ${file.name}`, {
-          description: 'Use imagens, PDF, Word ou Áudio.',
-          id: `err-type-${file.name}`
-        })
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(`Arquivo muito grande: ${file.name}`, { description: 'O limite é de 4MB por arquivo.' })
         continue
       }
 
-      if (file.size > activeLimit) {
-        toast.error(`Arquivo muito grande: ${file.name}`, {
-          description: `O limite permitido é de ${(activeLimit / (1024 * 1024)).toFixed(0)}MB. Este possui ${(file.size / (1024 * 1024)).toFixed(1)}MB.`,
-          id: `err-size-${file.name}`
-        })
-        continue
+      const novoArquivo: ArquivoAnexo = {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        status: 'enviando'
       }
-      
+
+      setFormData(prev => ({ ...prev, arquivos: [...prev.arquivos, novoArquivo] }))
+
       try {
         const reader = new FileReader()
-        const content = await new Promise<string>((resolve, reject) => {
+        const base64 = await new Promise<string>((resolve, reject) => {
           reader.onload = () => resolve((reader.result as string).split(',')[1])
-          reader.onerror = () => reject(new Error('Erro ao ler arquivo'))
+          reader.onerror = () => reject(new Error('Erro na leitura'))
           reader.readAsDataURL(file)
         })
 
-        newFiles.push({
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          content
-        })
-      } catch {
-        toast.error(`Erro ao processar ${file.name}`)
+        const res = await uploadArquivoDenuncia(file.name, file.type, base64)
+        
+        if (res.success && res.url && res.bucket_path) {
+          setFormData(prev => ({
+            ...prev,
+            arquivos: prev.arquivos.map(a => 
+              a.name === file.name && a.status === 'enviando' 
+              ? { ...a, status: 'sucesso', url: res.url, bucket_path: res.bucket_path } 
+              : a
+            )
+          }))
+          toast.success(`Arquivo pronto: ${file.name}`)
+        } else {
+          throw new Error(res.error || 'Erro no upload')
+        }
+      } catch (err) {
+        setFormData(prev => ({
+          ...prev,
+          arquivos: prev.arquivos.map(a => 
+            a.name === file.name && a.status === 'enviando' ? { ...a, status: 'erro' } : a
+          )
+        }))
+        toast.error(`Falha ao subir ${file.name}`)
       }
     }
-
-    if (newFiles.length > 0) {
-      setFormData(prev => ({ ...prev, arquivos: [...prev.arquivos, ...newFiles] }))
-      toast.success(`${newFiles.length} arquivo(s) adicionado(s) com sucesso.`, { id: toastId })
-    } else {
-      toast.dismiss(toastId)
-    }
-
-    // Limpa o input para permitir selecionar o mesmo arquivo novamente se necessário
     e.target.value = ''
   }
 
@@ -290,7 +270,6 @@ export function DenunciaFormWizard({
     if (res.success) {
       setOtpValidado(true)
       toast.success('Identidade pré-validada com sucesso!')
-      // Rolar para os campos de CPF/WhatsApp que apareceram
       setTimeout(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       }, 500)
@@ -305,23 +284,27 @@ export function DenunciaFormWizard({
       return
     }
 
+    const arquivosProntos = formData.arquivos.filter(a => a.status === 'sucesso')
+    const arquivosFalhando = formData.arquivos.filter(a => a.status === 'erro' || a.status === 'enviando')
+
+    if (arquivosFalhando.length > 0) {
+      toast.error('Aguarde o envio de todos os arquivos ou remova os que falharam.')
+      return
+    }
+
     setLoading(true)
-    console.log('[wizard] Iniciando submissão final...')
+    console.log('[wizard] Iniciando submissão final com links...')
 
     try {
-      // Validação de segurança: Vercel Server Actions têm limite de 4.5MB total.
-      const totalSize = formData.arquivos.reduce((acc, f) => acc + f.size, 0)
-      const estimatedPayloadSize = totalSize * 1.35 
-
-      if (estimatedPayloadSize > 4.2 * 1024 * 1024) {
-        setLoading(false)
-        toast.error('Volume de anexos muito alto.', {
-          description: 'A soma dos seus arquivos excede o limite de segurança da Vercel (4.5MB). Tente remover algum anexo.'
-        })
-        return
-      }
-
-      const res = await registrarDenuncia(formData, formData.arquivos)
+      const { registrarDenuncia } = await import('@/lib/actions/denuncia')
+      
+      const res = await registrarDenuncia(formData, arquivosProntos.map(a => ({
+        name: a.name,
+        type: a.type,
+        url: a.url!,
+        bucket_path: a.bucket_path!,
+        size: a.size
+      })))
       
       if (res.success) {
         await removerRascunho('rascunho_atual')
@@ -334,9 +317,7 @@ export function DenunciaFormWizard({
     } catch (err: any) {
       setLoading(false)
       console.error('Erro crítico no envio:', err)
-      toast.error('Falha no envio dos dados.', {
-        description: 'Pode ser uma oscilação de rede ou tempo de resposta excedido. Tente novamente em alguns segundos.'
-      })
+      toast.error('Falha no protocolo oficial. Tente novamente.')
     }
   }
 
