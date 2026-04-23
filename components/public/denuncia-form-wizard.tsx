@@ -170,32 +170,68 @@ export function DenunciaFormWizard({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (formData.arquivos.length + files.length > MAX_ARQUIVOS) {
-      toast.error(`Limite máximo de ${MAX_ARQUIVOS} arquivos.`)
+      toast.error(`Limite máximo de ${MAX_ARQUIVOS} arquivos atingido.`)
       return
     }
 
+    // Extensões permitidas (Whitelist)
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx', 'mp3', 'wav', 'm4a']
+    const allowedMimeTypes = [
+      'image/jpeg', 'image/png', 'image/webp',
+      'application/pdf', 'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'audio/mpeg', 'audio/wav', 'audio/x-m4a', 'audio/mp4'
+    ]
+
     const newFiles: any[] = []
+    let hasError = false
+
     for (const file of files) {
+      const ext = file.name.split('.').pop()?.toLowerCase()
+      const isTypeAllowed = allowedExtensions.includes(ext || '') || allowedMimeTypes.includes(file.type)
+
+      if (!isTypeAllowed) {
+        toast.error(`Formato inválido: ${file.name}. Use imagens, PDF, Word ou Áudio.`, {
+          description: 'Formatos aceitos: JPG, PNG, PDF, DOCX, MP3.'
+        })
+        hasError = true
+        continue
+      }
+
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(`Arquivo ${file.name} excede 10MB.`)
+        toast.error(`Arquivo muito grande: ${file.name}`, {
+          description: `O limite é de 10MB por arquivo. Este possui ${(file.size / (1024 * 1024)).toFixed(1)}MB.`
+        })
+        hasError = true
         continue
       }
       
-      const reader = new FileReader()
-      const content = await new Promise<string>((resolve) => {
-        reader.onload = () => resolve((reader.result as string).split(',')[1])
-        reader.readAsDataURL(file)
-      })
+      try {
+        const reader = new FileReader()
+        const content = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve((reader.result as string).split(',')[1])
+          reader.onerror = () => reject(new Error('Erro ao ler arquivo'))
+          reader.readAsDataURL(file)
+        })
 
-      newFiles.push({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        content
-      })
+        newFiles.push({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          content
+        })
+      } catch (err) {
+        toast.error(`Erro ao processar ${file.name}`)
+      }
     }
 
-    setFormData(prev => ({ ...prev, arquivos: [...prev.arquivos, ...newFiles] }))
+    if (newFiles.length > 0) {
+      setFormData(prev => ({ ...prev, arquivos: [...prev.arquivos, ...newFiles] }))
+      if (!hasError) toast.success(`${newFiles.length} arquivo(s) adicionado(s).`)
+    }
+
+    // Limpa o input para permitir selecionar o mesmo arquivo novamente se necessário
+    e.target.value = ''
   }
 
   const removeFile = (index: number) => {
@@ -505,7 +541,14 @@ export function DenunciaFormWizard({
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="relative group">
-                  <input type="file" multiple onChange={handleFileChange} className="hidden" id="file-upload" />
+                  <input 
+                    type="file" 
+                    multiple 
+                    onChange={handleFileChange} 
+                    className="hidden" 
+                    id="file-upload" 
+                    accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,audio/*"
+                  />
                   <label htmlFor="file-upload" className="flex flex-col items-center justify-center p-12 border-4 border-dashed border-border/60 rounded-[3rem] bg-surface cursor-pointer">
                     <Paperclip size={40} className="mb-4 text-primary" />
                     <span className="text-lg font-black text-dark uppercase tracking-tight">Anexar Arquivos</span>
