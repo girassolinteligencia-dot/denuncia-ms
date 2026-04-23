@@ -305,20 +305,22 @@ export function DenunciaFormWizard({
       return
     }
 
-    // Validação de segurança: Vercel Server Actions têm limite de 4.5MB total.
-    // Calculamos o tamanho aproximado do payload (Base64 aumenta ~33% do tamanho original).
-    const totalSize = formData.arquivos.reduce((acc, f) => acc + f.size, 0)
-    const estimatedPayloadSize = totalSize * 1.35 // Margem para Base64 + outros campos
-
-    if (estimatedPayloadSize > 4 * 1024 * 1024) {
-      toast.error('O volume total de anexos é muito grande para uma única denúncia.', {
-        description: 'Tente enviar menos arquivos ou arquivos menores (Máximo total sugerido: 3MB).'
-      })
-      return
-    }
-
     setLoading(true)
+    console.log('[wizard] Iniciando submissão final...')
+
     try {
+      // Validação de segurança: Vercel Server Actions têm limite de 4.5MB total.
+      const totalSize = formData.arquivos.reduce((acc, f) => acc + f.size, 0)
+      const estimatedPayloadSize = totalSize * 1.35 
+
+      if (estimatedPayloadSize > 4.2 * 1024 * 1024) {
+        setLoading(false)
+        toast.error('Volume de anexos muito alto.', {
+          description: 'A soma dos seus arquivos excede o limite de segurança da Vercel (4.5MB). Tente remover algum anexo.'
+        })
+        return
+      }
+
       const res = await registrarDenuncia(formData, formData.arquivos)
       
       if (res.success) {
@@ -332,8 +334,8 @@ export function DenunciaFormWizard({
     } catch (err: any) {
       setLoading(false)
       console.error('Erro crítico no envio:', err)
-      toast.error('Erro de conexão ou volume de dados excedido.', {
-        description: 'Se estiver enviando arquivos grandes, tente reduzi-los ou enviar um por vez.'
+      toast.error('Falha no envio dos dados.', {
+        description: 'Pode ser uma oscilação de rede ou tempo de resposta excedido. Tente novamente em alguns segundos.'
       })
     }
   }
@@ -777,6 +779,7 @@ export function DenunciaFormWizard({
                   </button>
                   <button 
                     onClick={() => {
+                      console.log('[wizard] Clique no botão Finalizar detectado.')
                       if (!formData.consentimento) { toast.error('Concorde com os termos primeiro.'); return }
                       handleSubmit()
                     }}
