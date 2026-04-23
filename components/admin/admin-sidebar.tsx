@@ -18,7 +18,8 @@ import {
   Megaphone,
   ShieldCheck,
   ShieldAlert,
-  Activity
+  Activity,
+  RefreshCw
 } from 'lucide-react'
 
 const MENU_ITEMS = [
@@ -46,23 +47,25 @@ const ADMIN_ITEMS = [
   { label: 'Logs de Auditoria', icon: History, href: '/admin/logs' },
 ]
 
-import { createBrowserClient } from '@supabase/ssr'
-import { useRouter } from 'next/navigation'
+import { logout } from '@/lib/actions/auth'
 
 export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> = ({ isOpen, onClose }) => {
   const pathname = usePathname()
-  const router = useRouter()
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false)
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+    if (isLoggingOut) return
+    setIsLoggingOut(true)
+    try {
+      await logout()
+    } catch (error) {
+      console.error('Erro ao sair:', error)
+      // Fallback radical se a action falhar
+      window.location.href = '/login'
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   return (
@@ -168,10 +171,11 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
       <div className="p-4 border-t border-white/5 mt-auto">
         <button 
           onClick={handleLogout}
-          className="w-full h-11 flex items-center justify-center gap-3 px-3 rounded-btn text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all"
+          disabled={isLoggingOut}
+          className="w-full h-11 flex items-center justify-center gap-3 px-3 rounded-btn text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
         >
-          <LogOut size={16} />
-          Encerrar Sessão
+          {isLoggingOut ? <RefreshCw size={16} className="animate-spin" /> : <LogOut size={16} />}
+          {isLoggingOut ? 'Saindo...' : 'Encerrar Sessão'}
         </button>
       </div>
     </aside>

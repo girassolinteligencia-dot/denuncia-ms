@@ -2,6 +2,9 @@
 import { createHash, randomInt } from 'crypto'
 import { createAdminClient } from '../supabase-admin'
 import { sendEmail } from '../email'
+import { createClient } from '../../utils/supabase/server'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 function sha256(value: string): string {
   return createHash('sha256').update(value.toLowerCase().trim()).digest('hex')
@@ -111,4 +114,17 @@ export async function verificarOTP(emailRaw: string, codigoDigitado: string): Pr
 
   if (!data) return { success: false, error: 'Código inválido ou expirado.' }
   return { success: true }
+}
+
+/**
+ * Encerra a sessão do usuário (Lado do Servidor)
+ */
+export async function logout() {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+  
+  await supabase.auth.signOut()
+  
+  // O redirect deve ser chamado fora do try/catch se houvesse um, mas aqui está limpo
+  return redirect('/login')
 }
