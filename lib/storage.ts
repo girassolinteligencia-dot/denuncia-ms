@@ -1,3 +1,4 @@
+'use server'
 import { createAdminClient } from '@/lib/supabase-admin'
 
 /**
@@ -8,23 +9,28 @@ import { createAdminClient } from '@/lib/supabase-admin'
  * Faz upload de um arquivo para o Supabase Storage.
  */
 export async function uploadArquivo(params: {
-  file: File | Buffer
+  file: File | Buffer | string // Aceita base64 string também
   fileName: string
   contentType: string
   bucket: 'denuncias' | 'banners' | 'noticias' | 'config'
-  path?: string // Caminho opcional dentro do bucket
+  path?: string 
 }): Promise<{ url: string; bucketPath: string; tamanhoBytes: number }> {
   const supabase = createAdminClient()
 
   const timestamp = Date.now()
   const safeName = params.fileName.replace(/[^a-zA-Z0-9._-]/g, '_')
-  
-  // Se não houver path, usa um padrão baseado no timestamp
   const bucketPath = params.path || `${timestamp}_${safeName}`
 
-  const fileData = params.file instanceof File
-    ? await params.file.arrayBuffer().then(buf => Buffer.from(buf))
-    : params.file
+  let fileData: Buffer
+
+  if (typeof params.file === 'string' && params.file.includes('base64,')) {
+    // Caso seja uma string base64 vinda do cliente
+    fileData = Buffer.from(params.file.split('base64,')[1], 'base64')
+  } else if (params.file instanceof File) {
+    fileData = Buffer.from(await params.file.arrayBuffer())
+  } else {
+    fileData = params.file as Buffer
+  }
 
   const { error } = await supabase.storage
     .from(params.bucket)

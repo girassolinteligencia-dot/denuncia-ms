@@ -18,6 +18,7 @@ interface PlataformaConfigData {
 }
 
 export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialData }) => {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState<PlataformaConfigData>({
     'identidade.nome': initialData['identidade.nome'] || 'DENUNCIA MS',
@@ -41,6 +42,16 @@ export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialDa
     favicon: initialData['identidade.favicon'] || ''
   })
 
+  // Helper para converter File em Base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = error => reject(error)
+    })
+  }
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'favicon') => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -63,9 +74,10 @@ export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialDa
 
       // 1. Processar Upload da Logo se houver
       if (logoFile) {
+        const base64 = await fileToBase64(logoFile)
         const upload = await uploadArquivo({
-          file: logoFile,
-          fileName: `logo_${Date.now()}`,
+          file: base64,
+          fileName: `logo_${Date.now()}.${logoFile.name.split('.').pop()}`,
           contentType: logoFile.type,
           bucket: 'config',
           path: 'identidade/logo.png'
@@ -75,9 +87,10 @@ export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialDa
 
       // 2. Processar Upload do Favicon se houver
       if (faviconFile) {
+        const base64 = await fileToBase64(faviconFile)
         const upload = await uploadArquivo({
-          file: faviconFile,
-          fileName: `favicon_${Date.now()}`,
+          file: base64,
+          fileName: `favicon_${Date.now()}.${faviconFile.name.split('.').pop()}`,
           contentType: faviconFile.type,
           bucket: 'config',
           path: 'identidade/favicon.png'
@@ -89,11 +102,13 @@ export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialDa
       
       if (result.success) {
         toast.success('Configurações salvas com sucesso!')
+        router.refresh()
       } else {
         throw new Error(result.error)
       }
     } catch (err: any) {
-      toast.error('Erro ao salvar: ' + err.message)
+      console.error('Erro detalhado ao salvar:', err)
+      toast.error('Erro ao salvar: ' + (err.message || 'Erro desconhecido'))
     } finally {
       setLoading(false)
     }
