@@ -48,13 +48,16 @@ export async function createCategoria(categoria: Partial<Categoria>) {
   const supabase = createAdminClient()
 
   try {
+    // Remove o ID se for uma string vazia para o Supabase gerar um novo UUID
+    const { id, ...saveData } = categoria
+    
     const { data, error } = await supabase
       .from('categorias')
       .insert({
-        ...categoria,
-        slug: categoria.slug || categoria.label?.toLowerCase().replace(/\s+/g, '-'),
+        ...saveData,
+        slug: saveData.slug || saveData.label?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-'),
         ativo: true,
-        ordem: 0 // Mock ordem inicial
+        ordem: saveData.ordem || 0
       })
       .select()
       .single()
