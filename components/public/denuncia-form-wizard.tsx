@@ -178,10 +178,18 @@ export function DenunciaFormWizard({
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+
     if (formData.arquivos.length + files.length > MAX_ARQUIVOS) {
       toast.error(`Limite máximo de ${MAX_ARQUIVOS} arquivos atingido.`)
       return
     }
+
+    // Tenta encontrar o limite máximo definido nas políticas do banco (se houver)
+    const dbLimit = politicasArquivo.length > 0 
+      ? Math.max(...politicasArquivo.map(p => p.tamanho_max_mb || 0)) * 1024 * 1024
+      : 0
+    const activeLimit = dbLimit > 0 ? dbLimit : MAX_FILE_SIZE
 
     // Extensões permitidas (Whitelist)
     const allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx', 'mp3', 'wav', 'm4a']
@@ -193,25 +201,25 @@ export function DenunciaFormWizard({
     ]
 
     const newFiles: any[] = []
-    let hasError = false
+    const toastId = toast.loading(`Processando ${files.length} arquivo(s)...`)
 
     for (const file of files) {
       const ext = file.name.split('.').pop()?.toLowerCase()
       const isTypeAllowed = allowedExtensions.includes(ext || '') || allowedMimeTypes.includes(file.type)
 
       if (!isTypeAllowed) {
-        toast.error(`Formato inválido: ${file.name}. Use imagens, PDF, Word ou Áudio.`, {
-          description: 'Formatos aceitos: JPG, PNG, PDF, DOCX, MP3.'
+        toast.error(`Formato inválido: ${file.name}`, {
+          description: 'Use imagens, PDF, Word ou Áudio.',
+          id: `err-type-${file.name}`
         })
-        hasError = true
         continue
       }
 
-      if (file.size > MAX_FILE_SIZE) {
+      if (file.size > activeLimit) {
         toast.error(`Arquivo muito grande: ${file.name}`, {
-          description: `O limite é de 10MB por arquivo. Este possui ${(file.size / (1024 * 1024)).toFixed(1)}MB.`
+          description: `O limite permitido é de ${(activeLimit / (1024 * 1024)).toFixed(0)}MB. Este possui ${(file.size / (1024 * 1024)).toFixed(1)}MB.`,
+          id: `err-size-${file.name}`
         })
-        hasError = true
         continue
       }
       
@@ -236,7 +244,9 @@ export function DenunciaFormWizard({
 
     if (newFiles.length > 0) {
       setFormData(prev => ({ ...prev, arquivos: [...prev.arquivos, ...newFiles] }))
-      if (!hasError) toast.success(`${newFiles.length} arquivo(s) adicionado(s).`)
+      toast.success(`${newFiles.length} arquivo(s) adicionado(s) com sucesso.`, { id: toastId })
+    } else {
+      toast.dismiss(toastId)
     }
 
     // Limpa o input para permitir selecionar o mesmo arquivo novamente se necessário
