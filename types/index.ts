@@ -3,7 +3,9 @@ export type UserRole = 'superadmin' | 'admin' | 'moderador' | 'gestor_cupula'
 export interface Profile {
   id: string
   nome: string
+  email?: string
   role: UserRole
+  ativo?: boolean
   criado_em: string
 }
 
