@@ -16,6 +16,18 @@ import { MascoteParallax } from '@/components/public/mascote-parallax'
 
 export default async function PublicHomePage() {
   const supabase = createAdminClient()
+  
+  // Busca configurações do Módulo 0
+  const { data: configs } = await supabase.from('plataforma_config').select('chave, valor')
+  const configMap = (configs || []).reduce((acc: any, cur) => {
+    acc[cur.chave] = cur.valor
+    return acc
+  }, {})
+
+  const appName = configMap['identidade.nome'] || 'DENUNCIA MS'
+  const appSlogan = configMap['identidade.slogan'] || 'Sua voz, nossa missão'
+  const appLogo = configMap['identidade.logo'] || '/assets/logo.png'
+  const tickerText = configMap['identidade.ticker'] || ''
 
   const { data: categorias } = await supabase
     .from('categorias')
@@ -28,39 +40,50 @@ export default async function PublicHomePage() {
 
       {/* Hero Section */}
       <section className="relative bg-[#021691] overflow-hidden min-h-[500px] sm:min-h-[700px] flex items-center border-b border-white/5 transition-all">
+        {tickerText && (
+          <div className="absolute top-0 w-full bg-secondary/90 backdrop-blur-sm z-50 h-8 flex items-center overflow-hidden">
+            <div className="whitespace-nowrap animate-marquee flex items-center gap-10 text-[10px] font-black text-dark uppercase tracking-widest">
+              <span>{tickerText}</span>
+              <span>{tickerText}</span>
+              <span>{tickerText}</span>
+              <span>{tickerText}</span>
+            </div>
+          </div>
+        )}
+
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 z-0 animate-pulse"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/5 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 z-0"></div>
 
-        <MascoteParallax />
+        <MascoteParallax imageUrl={configMap['identidade.mascote'] || '/assets/mascote.png'} />
 
-        <div className="container-page relative z-20 py-12 sm:py-20 lg:py-32">
-          <div className="max-w-2xl text-center lg:text-left space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white text-xs font-black uppercase tracking-[0.2em] animate-fade-in mx-auto lg:mx-0">
+        <div className="container-page relative z-20 py-20 sm:py-20 lg:py-32">
+          <div className="max-w-2xl text-center lg:text-left space-y-6 sm:space-y-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] animate-fade-in mx-auto lg:mx-0">
                <Zap size={14} className="text-secondary fill-secondary" />
                Canal Independente de Ouvidoria — Mato Grosso do Sul
             </div>
 
-            <div className="space-y-3 sm:space-y-4">
-              <span className="text-[#FFD700] font-black text-xl sm:text-4xl tracking-tighter block animate-slide-up italic uppercase">
-                Olá, eu sou Bruno Ortiz
+            <div className="space-y-2 sm:space-y-4">
+              <span className="text-[#FFD700] font-black text-lg sm:text-4xl tracking-tighter block animate-slide-up italic uppercase">
+                {appSlogan}
               </span>
-              <h1 className="text-3xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[0.95] sm:leading-[0.9] animate-slide-up italic">
+              <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[0.95] sm:leading-[0.9] animate-slide-up italic">
                 Sem burocracia. <br />
                 Direto ao <span className="text-secondary underline decoration-2 sm:decoration-4 decoration-secondary/30 underline-offset-4 sm:underline-offset-8">ponto.</span>
               </h1>
             </div>
 
-            <p className="text-sm sm:text-xl text-white/70 max-w-xl lg:mx-0 mx-auto leading-relaxed animate-fade-in font-medium px-4 sm:px-0">
+            <p className="text-sm sm:text-xl text-white/70 max-w-xl lg:mx-0 mx-auto leading-relaxed animate-fade-in font-medium px-2 sm:px-0">
               Viu algo errado? Não precisa de senha nem de cadastro. Relate agora e a{' '}
-              <span className="text-white font-black uppercase tracking-tighter">Denuncia MS</span>{' '}
+              <span className="text-white font-black uppercase tracking-tighter">{appName}</span>{' '}
               faz a ponte direta com quem resolve.{' '}
               <span className="text-secondary font-black">Sua voz vira ação!</span>
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-3 sm:gap-4 pt-4">
               <Link
                 href="/denunciar"
-                className="btn-primary w-full sm:w-auto gap-3 text-lg py-5 bg-secondary hover:bg-secondary-600 border-none text-dark shadow-glow-green group"
+                className="btn-primary w-full sm:w-auto gap-3 text-lg py-5 bg-secondary hover:bg-secondary-600 border-none text-dark shadow-glow-green group h-[60px]"
               >
                 DENUNCIAR AGORA
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -158,19 +181,21 @@ export default async function PublicHomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
+          <div className="grid grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
             {categorias?.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/denunciar?categoria=${cat.slug}`}
                 className="bg-white rounded-2xl p-2 sm:p-8 border border-border/60 shadow-sm hover:shadow-glow-cyan hover:border-primary/30 transition-all group flex flex-col items-center justify-center gap-1 sm:gap-4 aspect-square sm:aspect-auto"
               >
-                <div className="text-2xl sm:text-5xl group-hover:scale-110 transition-transform duration-300 transform-gpu text-dark">
+                <div className="text-xl sm:text-5xl group-hover:scale-110 transition-transform duration-300 transform-gpu text-dark">
                   {cat.emoji || '📂'}
                 </div>
-                <div>
-                  <h3 className="font-black text-dark text-[8px] sm:text-lg leading-tight uppercase tracking-tighter sm:tracking-tight px-1">{cat.label}</h3>
-                  <p className="hidden sm:block text-[10px] text-muted font-bold uppercase mt-1">Reportar ocorrência</p>
+                <div className="text-center">
+                  <h3 className="font-black text-dark text-[7px] sm:text-lg leading-none uppercase tracking-tighter sm:tracking-tight px-0.5">
+                    {cat.label}
+                  </h3>
+                  <p className="hidden sm:block text-[10px] text-muted font-bold uppercase mt-1">Reportar</p>
                 </div>
                 <div className="hidden sm:flex mt-2 p-2 rounded-full bg-surface text-muted group-hover:bg-primary group-hover:text-white transition-all">
                   <ArrowUpRight size={18} />

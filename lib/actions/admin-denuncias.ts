@@ -88,6 +88,16 @@ export async function getDenunciaDetalhes(id: string) {
         if (identidade.nome_enc)     denunciante_nome     = await decryptData(identidade.nome_enc)
         if (identidade.email_enc)    denunciante_email    = await decryptData(identidade.email_enc)
         if (identidade.telefone_enc) denunciante_telefone = await decryptData(identidade.telefone_enc)
+
+        // 3. Registrar acesso ao PII (Auditoria LGPD)
+        if (denunciante_nome || denunciante_email || denunciante_telefone) {
+          const { data: { user } } = await supabase.auth.getUser()
+          await supabase.from('audit_identidade').insert({
+            denuncia_id: id,
+            usuario_id: user?.id || null,
+            ip_acesso: 'ADMIN_PANEL'
+          })
+        }
       } catch (decryptErr) {
         console.error('[admin] Erro ao descriptografar identidade:', decryptErr)
       }

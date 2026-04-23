@@ -6,7 +6,8 @@ import { gerarPDFDenuncia } from '@/lib/pdf'
 import { sendEmail } from '@/lib/email'
 import { validarOTP } from './auth'
 import { createHash } from 'crypto'
-
+import { encryptData } from '@/lib/encrypt'
+import { gerarEmailDenunciante } from '@/lib/email-template'
 
 export async function uploadArquivoDenuncia(name: string, type: string, contentBase64: string) {
   const supabase = createAdminClient()
@@ -40,14 +41,14 @@ export async function registrarDenuncia(
   arquivosVinculados: { name: string, type: string, url: string, bucket_path: string, size: number }[]
 ) {
   const supabase = createAdminClient()
+  const emailNorm = formData.email?.toLowerCase().trim()
+  const emailHash = emailNorm ? createHash('sha256').update(emailNorm).digest('hex') : ''
+
   console.log('[denuncia] Iniciando registro:', { categoria: formData.categoria_id, titulo: formData.titulo })
 
   try {
-    // 1. Validação de E-mail e OTP
-    if (!formData.email) return { success: false, error: 'O e-mail de identificação é obrigatório.' }
-    
-    console.log('[denuncia] Validando OTP para:', formData.email)
-    const emailHash = createHash('sha256').update(formData.email.toLowerCase().trim()).digest('hex')
+    // 1. Validações Iniciais
+    if (!emailNorm) return { success: false, error: 'E-mail de identificação é obrigatório.' }
     
     const { data: banido } = await supabase
       .from('blacklist_usuarios')
@@ -57,22 +58,23 @@ export async function registrarDenuncia(
 
     if (banido) return { success: false, error: 'Acesso suspenso por violação dos termos.' }
 
-    const otpValido = await validarOTP(formData.email, formData.otpToken || '')
-    if (!otpValido) return { success: false, error: 'Código de verificação inválido ou expirado.' }
+    // 2. Validar OTP (O código agora é consumido apenas se passar por aqui)
+    const otpValido = await validarOTP(emailNorm, formData.otpToken || '')
+    if (!otpValido) {
+      return { success: false, error: 'Código de verificação inválido ou já utilizado. Solicite um novo.' }
+    }
 
-    // 2. Gerar Protocolo
-    console.log('[denuncia] Gerando protocolo...')
+    // 3. Gerar Protocolo
     const { protocolo, chaveAcesso } = await gerarProtocolo()
 
-    // 3. Buscar Categoria
+    // 4. Buscar Categoria para o PDF
     const { data: catData } = await supabase
       .from('categorias')
-      .select('label, slug')
+      .select('label')
       .eq('id', formData.categoria_id)
       .single()
 
-    // 4. Persistir Denúncia
-    console.log('[denuncia] Salvando no banco de dados...')
+    // 5. Inserir Registro Principal (Atomicidade)
     const localCompleto = [formData.local, formData.numero, formData.bairro, formData.cidade]
       .filter(Boolean).join(', ')
 
@@ -87,62 +89,52 @@ export async function registrarDenuncia(
         local:              localCompleto || null,
         data_ocorrido:      formData.data_ocorrido || null,
         status:             'recebida',
-        documento_final:    '', // Placeholder para satisfazer NOT NULL se a migração não tiver rodado
       })
-      .select('id, protocolo, criado_em')
+      .select('id, criado_em')
       .single()
 
     if (denErr || !denuncia) {
-      console.error('[denuncia] Erro ao salvar registro principal:', denErr)
-      return { success: false, error: 'Erro ao persistir denúncia: ' + (denErr?.message || 'Erro desconhecido') }
+      throw new Error(`Erro no Banco: ${denErr?.message || 'Falha ao criar registro'}`)
     }
 
-    // 5. Vincular Arquivos à Denúncia
-    if (arquivosVinculados.length > 0) {
-      console.log(`[denuncia] Vinculando ${arquivosVinculados.length} arquivos ao registro...`)
-      
-      const insertData = arquivosVinculados.map(f => {
-        // Mapeia MIME type para o tipo simplificado esperado pelo banco (CHECK constraint)
-        let tipoSimplificado = 'documento'
-        if (f.type.startsWith('image/')) tipoSimplificado = 'foto'
-        else if (f.type.startsWith('audio/')) tipoSimplificado = 'audio'
-        else if (f.type.startsWith('video/')) tipoSimplificado = 'video'
-        else if (f.type.includes('pdf')) tipoSimplificado = 'pdf'
+    // 6. Processamento em Segundo Plano (Non-blocking para o usuário)
+    // Usamos um try/catch interno para que falhas no PDF ou E-mail não cancelem o sucesso da denúncia
+    try {
+      // Arquivos
+      if (arquivosVinculados.length > 0) {
+        const insertData = arquivosVinculados.map(f => {
+          let tipoSimplificado = 'documento'
+          if (f.type.startsWith('image/')) tipoSimplificado = 'foto'
+          else if (f.type.startsWith('audio/')) tipoSimplificado = 'audio'
+          else if (f.type.startsWith('video/')) tipoSimplificado = 'video'
+          else if (f.type.includes('pdf')) tipoSimplificado = 'pdf'
 
-        return {
-          denuncia_id: denuncia.id,
-          tipo: tipoSimplificado,
-          url: f.url,
-          bucket_path: f.bucket_path,
-          tamanho_bytes: f.size,
-          name: f.name
-        }
-      })
-      const { error: linkErr } = await supabase.from('arquivos_denuncia').insert(insertData)
-      if (linkErr) console.error('[denuncia] Erro ao vincular arquivos:', linkErr)
-    }
+          return {
+            denuncia_id: denuncia.id,
+            tipo: tipoSimplificado,
+            url: f.url,
+            bucket_path: f.bucket_path,
+            tamanho_bytes: f.size,
+            name: f.name
+          }
+        })
+        await supabase.from('arquivos_denuncia').insert(insertData)
+      }
 
-    // 6. Salvar Identidade (PII Criptografado)
-    console.log('[denuncia] Salvando identidade criptografada...')
-    if (formData.nome && formData.email) {
-      const { encryptData } = await import('@/lib/encrypt')
-      const { error: identErr } = await supabase.from('identidades').insert({
+      // Identidade (PII)
+      await supabase.from('identidades').insert({
         denuncia_id:  denuncia.id,
-        nome_enc:     await encryptData(formData.nome.trim()),
-        email_enc:    await encryptData(formData.email.toLowerCase().trim()),
+        nome_enc:     await encryptData(formData.nome?.trim() || 'Cidadão'),
+        email_enc:    await encryptData(emailNorm),
         email_hash:   emailHash,
         telefone_enc: formData.telefone ? await encryptData(formData.telefone.trim()) : null,
         cpf_enc:      formData.cpf ? await encryptData(formData.cpf.trim()) : null,
       })
-      if (identErr) console.error('[denuncia] Erro ao salvar PII:', identErr)
-    }
 
-    // 7. Gerar PDF e Fila de Despacho
-    console.log('[denuncia] Iniciando processos em segundo plano...')
-    try {
+      // PDF & Fila
       const pdfBuffer = await gerarPDFDenuncia({
         protocolo,
-        categoria:     catData?.label || formData.categoria_id,
+        categoria:     catData?.label || 'Geral',
         titulo:        formData.titulo,
         descricao:     formData.descricao_original,
         local:         localCompleto,
@@ -152,11 +144,11 @@ export async function registrarDenuncia(
       })
 
       const pdfPath = `oficial_${protocolo}.pdf`
-      const { error: pdfUpErr } = await supabase.storage
+      const { data: upData } = await supabase.storage
         .from('relatos-oficiais')
         .upload(pdfPath, pdfBuffer, { contentType: 'application/pdf', upsert: true })
 
-      if (!pdfUpErr) {
+      if (upData) {
         const { data: pdfUrlData } = supabase.storage.from('relatos-oficiais').getPublicUrl(pdfPath)
         await supabase.from('pdf_assinaturas').insert({
           denuncia_id: denuncia.id,
@@ -164,32 +156,30 @@ export async function registrarDenuncia(
           sha256:      createHash('sha256').update(pdfBuffer).digest('hex'),
           url_storage: pdfUrlData.publicUrl,
         })
-
+        
         await supabase.from('despacho_queue').insert({
           denuncia_id: denuncia.id,
           pdf_base64:  pdfBuffer.toString('base64'),
           status:      'pendente',
         })
       }
-    } catch (pdfErr) {
-      console.error('[denuncia] Erro no processamento do PDF:', pdfErr)
+
+      // E-mail final
+      sendEmail({
+        to:      emailNorm,
+        subject: `[DenunciaMS] Protocolo ${protocolo} — Denúncia registrada`,
+        html:    gerarEmailDenunciante(protocolo, chaveAcesso, formData.nome || 'Cidadão'),
+        text:    `Protocolo: ${protocolo} | Chave: ${chaveAcesso}`,
+      }).catch(e => console.error('[email] Erro:', e))
+
+    } catch (bgErr) {
+      console.error('[denuncia] Erro em processo secundário (não crítico):', bgErr)
     }
 
-    // 8. Enviar E-mail (Async)
-    console.log('[denuncia] Enviando e-mail de confirmação...')
-    const { gerarEmailDenunciante } = await import('@/lib/email-template')
-    sendEmail({
-      to:      formData.email,
-      subject: `[DenunciaMS] Protocolo ${protocolo} — Denúncia registrada`,
-      html:    gerarEmailDenunciante(protocolo, chaveAcesso, formData.nome || 'Cidadão'),
-      text:    `Protocolo: ${protocolo} | Chave: ${chaveAcesso}`,
-    }).catch(e => console.error('[denuncia] Erro e-mail:', e))
-
-    console.log('[denuncia] Sucesso absoluto:', protocolo)
     return { success: true, protocolo, chaveAcesso }
 
   } catch (err: any) {
-    console.error('[denuncia] Erro crítico final:', err)
-    return { success: false, error: 'Erro inesperado: ' + err.message }
+    console.error('[denuncia] ERRO CRÍTICO:', err)
+    return { success: false, error: err.message || 'Falha técnica ao processar denúncia.' }
   }
 }

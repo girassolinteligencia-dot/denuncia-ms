@@ -43,13 +43,13 @@ export default async function AdminHealthPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* CARD: DATA HEALTH */}
-        <div className="bg-dark-soft border border-white/10 p-6 rounded-[2rem] space-y-4 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+        <div className="bg-dark-soft border border-white/15 p-6 rounded-[2rem] space-y-4 relative overflow-hidden group hover:border-blue-500/30 transition-all shadow-xl">
+          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity text-blue-400">
             <Database size={80} />
           </div>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-500/20 text-blue-400 rounded-2xl"><HardDrive size={20} /></div>
-            <h3 className="text-[10px] font-black text-white/30 uppercase tracking-widest">Integridade de Dados</h3>
+            <div className="p-3 bg-blue-500/30 text-blue-300 rounded-2xl shadow-inner"><HardDrive size={20} /></div>
+            <h3 className="text-[10px] font-black text-white/50 uppercase tracking-widest">Integridade de Dados</h3>
           </div>
           <div className="space-y-1">
             <p className="text-2xl font-black text-white italic">Limpeza OK</p>
@@ -64,15 +64,15 @@ export default async function AdminHealthPage() {
         </div>
 
         {/* CARD: INTEGRATION HEALTH */}
-        <div className="bg-dark-soft border border-white/10 p-6 rounded-[2rem] space-y-4 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+        <div className="bg-dark-soft border border-white/15 p-6 rounded-[2rem] space-y-4 relative overflow-hidden group hover:border-green-500/30 transition-all shadow-xl">
+          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity text-green-400">
             <Share2 size={80} />
           </div>
           <div className="flex items-center gap-3">
-            <div className={`p-3 rounded-2xl ${stats.integrationHealth.failedCount > 0 ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
+            <div className={`p-3 rounded-2xl shadow-inner ${stats.integrationHealth.failedCount > 0 ? 'bg-red-500/30 text-red-300' : 'bg-green-500/30 text-green-300'}`}>
               <Share2 size={20} />
             </div>
-            <h3 className="text-[10px] font-black text-white/30 uppercase tracking-widest">Integrações</h3>
+            <h3 className="text-[10px] font-black text-white/50 uppercase tracking-widest">Integrações</h3>
           </div>
           <div className="space-y-1">
             <p className="text-2xl font-black text-white italic">
@@ -83,13 +83,13 @@ export default async function AdminHealthPage() {
         </div>
 
         {/* CARD: SECURITY PULSE */}
-        <div className="bg-dark-soft border border-white/10 p-6 rounded-[2rem] space-y-4 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+        <div className="bg-dark-soft border border-white/15 p-6 rounded-[2rem] space-y-4 relative overflow-hidden group hover:border-purple-500/30 transition-all shadow-xl">
+          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity text-purple-400">
             <ShieldCheck size={80} />
           </div>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-purple-500/20 text-purple-400 rounded-2xl"><ShieldCheck size={20} /></div>
-            <h3 className="text-[10px] font-black text-white/30 uppercase tracking-widest">Segurança & PII</h3>
+            <div className="p-3 bg-purple-500/30 text-purple-300 rounded-2xl shadow-inner"><ShieldCheck size={20} /></div>
+            <h3 className="text-[10px] font-black text-white/50 uppercase tracking-widest">Segurança & PII</h3>
           </div>
           <div className="space-y-1">
             <p className="text-2xl font-black text-white italic">{stats.securityPulse.recentPiiAccess} Acessos</p>
@@ -98,13 +98,13 @@ export default async function AdminHealthPage() {
         </div>
 
         {/* CARD: SYSTEM VITAL */}
-        <div className="bg-dark-soft border border-white/10 p-6 rounded-[2rem] space-y-4 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+        <div className="bg-dark-soft border border-white/15 p-6 rounded-[2rem] space-y-4 relative overflow-hidden group hover:border-accent/30 transition-all shadow-xl">
+          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity text-accent">
             <Activity size={80} />
           </div>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-accent/20 text-accent rounded-2xl"><Activity size={20} /></div>
-            <h3 className="text-[10px] font-black text-white/30 uppercase tracking-widest">Vitalidade Geral</h3>
+            <div className="p-3 bg-accent/30 text-accent rounded-2xl shadow-inner"><Activity size={20} /></div>
+            <h3 className="text-[10px] font-black text-white/50 uppercase tracking-widest">Vitalidade Geral</h3>
           </div>
           <div className="space-y-1">
             <p className="text-2xl font-black text-white italic">Estável</p>
@@ -122,25 +122,25 @@ export default async function AdminHealthPage() {
               <Clock size={20} className="text-white/20" />
             </div>
             <div className="p-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="p-6 bg-white/5 border border-white/10 rounded-3xl space-y-4">
+              <div className="p-6 bg-white/5 border border-white/15 rounded-3xl space-y-4">
                 <div className="space-y-1">
                   <h4 className="text-sm font-black text-white uppercase italic">Forçar Faxina Agora</h4>
                   <p className="text-[10px] text-white/40 font-bold leading-relaxed">Deleta arquivos órfãos sem esperar o agendamento da madrugada.</p>
                 </div>
                 <form action={async () => { 'use server'; await limparArquivosOrfaos(); }}>
-                  <button className="w-full h-12 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+                  <button className="w-full h-12 bg-white/20 hover:bg-white/30 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-white/10">
                     <Trash2 size={14} /> Executar Faxina
                   </button>
                 </form>
               </div>
 
-              <div className="p-6 bg-white/5 border border-white/10 rounded-3xl space-y-4">
+              <div className="p-6 bg-white/5 border border-white/15 rounded-3xl space-y-4">
                 <div className="space-y-1">
                   <h4 className="text-sm font-black text-white uppercase italic">Re-tentar Integrações</h4>
                   <p className="text-[10px] text-white/40 font-bold leading-relaxed">Tenta reenviar e-mails e webhooks que ficaram travados com erro.</p>
                 </div>
                 <form action={async () => { 'use server'; await retryFailedIntegrations(); }}>
-                  <button className="w-full h-12 bg-secondary/20 hover:bg-secondary text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-secondary/30">
+                  <button className="w-full h-12 bg-secondary/30 hover:bg-secondary text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-secondary/40">
                     <RotateCcw size={14} /> Re-tentar Falhas
                   </button>
                 </form>

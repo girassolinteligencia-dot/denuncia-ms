@@ -56,38 +56,38 @@ function SucessoContent() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
         {/* CARD PRINCIPAL - PROTOCOLO */}
-        <div className="bg-white rounded-[3rem] border-2 border-primary/20 p-10 space-y-8 shadow-xl relative overflow-hidden group hover:border-primary transition-all">
+        <div className="bg-white rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 space-y-6 sm:space-y-8 border-2 border-primary/20 shadow-xl relative overflow-hidden group hover:border-primary transition-all">
           <div className="absolute top-0 right-0 p-8 text-primary/5 -z-10 group-hover:scale-110 transition-transform">
              <ShieldCheck size={180} />
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div className="flex items-center gap-2 text-primary">
-              <CheckCircle2 size={20} />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em]">Número do Protocolo</p>
+              <CheckCircle2 size={18} className="sm:w-5 sm:h-5" />
+              <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em]">Número do Protocolo</p>
             </div>
-            <div className="flex items-center justify-between bg-surface p-6 rounded-3xl border border-border/50 group-hover:border-primary/30 transition-all">
-              <span className="text-2xl sm:text-3xl font-black text-dark tracking-tighter">{protocolo}</span>
-              <button onClick={() => copyToClipboard(protocolo)} className="p-3 bg-white text-muted hover:text-primary rounded-xl transition-all shadow-sm">
-                <Copy size={20} />
+            <div className="flex items-center justify-between bg-surface p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-border/50 group-hover:border-primary/30 transition-all">
+              <span className="text-xl sm:text-3xl font-black text-dark tracking-tighter">{protocolo}</span>
+              <button onClick={() => copyToClipboard(protocolo)} className="p-2 sm:p-3 bg-white text-muted hover:text-primary rounded-xl transition-all shadow-sm">
+                <Copy size={18} className="sm:w-5 sm:h-5" />
               </button>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div className="flex items-center gap-2 text-secondary">
-              <ShieldCheck size={20} />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em]">Chave de Acesso Única</p>
+              <ShieldCheck size={18} className="sm:w-5 sm:h-5" />
+              <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em]">Chave de Acesso Única</p>
             </div>
-            <div className="flex items-center justify-between bg-dark p-6 rounded-3xl shadow-2xl">
-              <span className="text-2xl sm:text-3xl font-black text-secondary tracking-tighter">{chave}</span>
-              <button onClick={() => copyToClipboard(chave)} className="p-3 bg-white/10 text-secondary hover:bg-white/20 rounded-xl transition-all">
-                <Copy size={20} />
+            <div className="flex items-center justify-between bg-dark p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-2xl">
+              <span className="text-xl sm:text-3xl font-black text-secondary tracking-tighter">{chave}</span>
+              <button onClick={() => copyToClipboard(chave)} className="p-2 sm:p-3 bg-white/10 text-secondary hover:bg-white/20 rounded-xl transition-all">
+                <Copy size={18} className="sm:w-5 sm:h-5" />
               </button>
             </div>
-            <p className="text-[10px] text-muted font-medium italic">
+            <p className="text-[9px] sm:text-[10px] text-muted font-medium italic">
               * Importante: Guarde esta chave em local seguro. Você precisará dela para acompanhar o andamento da sua denúncia.
             </p>
           </div>
@@ -95,26 +95,26 @@ function SucessoContent() {
 
         {/* CARD DE AÇÃO */}
         <div className="flex flex-col gap-6">
-          <div className="bg-surface rounded-[3rem] p-10 flex-1 flex flex-col justify-between border-2 border-transparent hover:border-secondary/20 transition-all">
+          <div className="bg-surface rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 flex-1 flex flex-col justify-between border-2 border-transparent hover:border-secondary/20 transition-all gap-8">
             <div className="space-y-4">
-              <h3 className="text-xl font-black text-dark uppercase italic leading-none">O que acontece agora?</h3>
-              <p className="text-sm text-muted font-medium leading-relaxed">
+              <h3 className="text-lg sm:text-xl font-black text-dark uppercase italic leading-none">O que acontece agora?</h3>
+              <p className="text-xs sm:text-sm text-muted font-medium leading-relaxed">
                 Seu relato foi criptografado e enviado para a nossa central de triagem. Você receberá um e-mail com a cópia digital do protocolo. Acompanhe a evolução do caso usando suas credenciais.
               </p>
             </div>
             
-            <div className="space-y-4 pt-8">
+            <div className="space-y-4">
               <Link 
                 href={`/acompanhar/${protocolo}?key=${chave}`}
-                className="btn-primary w-full h-16 rounded-2xl bg-secondary hover:bg-secondary-600 gap-3 shadow-glow-green"
+                className="btn-primary w-full h-14 sm:h-16 rounded-2xl bg-secondary hover:bg-secondary-600 gap-3 shadow-glow-green"
               >
-                <span className="font-black uppercase tracking-widest text-xs">Acompanhar Status</span>
+                <span className="font-black uppercase tracking-widest text-[10px] sm:text-xs">Acompanhar Status</span>
                 <ExternalLink size={18} />
               </Link>
               
               <Link 
                 href="/"
-                className="flex items-center justify-center gap-2 text-[10px] font-black text-muted uppercase tracking-widest hover:text-dark transition-colors"
+                className="flex items-center justify-center gap-2 text-[9px] sm:text-[10px] font-black text-muted uppercase tracking-widest hover:text-dark transition-colors"
               >
                 Voltar para a Página Inicial
               </Link>

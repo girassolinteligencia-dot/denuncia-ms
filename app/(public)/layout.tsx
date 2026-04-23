@@ -1,18 +1,31 @@
 import React from 'react'
 import Link from 'next/link'
 import { Search, ShieldCheck } from 'lucide-react'
+import { createAdminClient } from '@/lib/supabase-admin'
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const supabase = createAdminClient()
+  
+  // Busca configurações do Módulo 0 (Cached by Next.js if enabled, or just fetch)
+  const { data: configs } = await supabase.from('plataforma_config').select('chave, valor')
+  const configMap = (configs || []).reduce((acc: any, cur) => {
+    acc[cur.chave] = cur.valor
+    return acc
+  }, {})
+
+  const appName = configMap['identidade.nome'] || 'DENUNCIA MS'
+  const appLogo = configMap['identidade.logo'] || '/assets/logo.png'
+
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="h-24 sm:h-40 bg-white border-b border-border sticky top-0 z-50 shadow-sm transition-all">
-        <div className="container-page flex items-center justify-between h-full gap-2">
+      <header className="h-20 sm:h-32 bg-white border-b border-border sticky top-0 z-50 shadow-sm transition-all">
+        <div className="container-page flex items-center justify-between h-full gap-2 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <img src="/assets/logo.png" alt="Denúncia MS" className="h-16 sm:h-32 w-auto transition-transform group-hover:scale-105" />
+            <img src={appLogo} alt={appName} className="h-12 sm:h-24 w-auto transition-transform group-hover:scale-105" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -45,11 +58,11 @@ export default function PublicLayout({
                <div className="md:col-span-2 space-y-6">
                   <div className="flex items-center gap-3">
                     <div className="bg-white p-4 rounded-[2rem] shadow-xl">
-                      <img src="/assets/logo.png" alt="Denúncia MS" className="h-28 w-auto" />
+                      <img src={appLogo} alt={appName} className="h-28 w-auto" />
                     </div>
                   </div>
                   <p className="text-sm text-white/60 max-w-md leading-relaxed text-justify">
-                     O <strong>DENUNCIA MS</strong> opera como uma plataforma cívica estritamente independente, sem vínculo com entes públicos ou políticos. Atuamos como um elo tecnológico que conecta o cidadão de MS diretamente aos órgãos competentes, facilitando a fiscalização e a transparência em todo o Estado.
+                     O <strong>{appName}</strong> opera como uma plataforma cívica estritamente independente, sem vínculo com entes públicos ou políticos. Atuamos como um elo tecnológico que conecta o cidadão de MS diretamente aos órgãos competentes, facilitando a fiscalização e a transparência em todo o Estado.
                   </p>
                </div>
                
@@ -75,7 +88,7 @@ export default function PublicLayout({
 
             <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
                <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
-                  © 2026 DENUNCIA MS — Governança e Inteligência Cívica
+                  © {new Date().getFullYear()} {appName} — Governança e Inteligência Cívica
                </p>
                <div className="flex gap-4">
                   <div className="h-2 w-12 bg-primary rounded-full"></div>
