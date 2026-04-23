@@ -271,12 +271,16 @@ export async function banirUsuario(emailHash: string, motivo: string) {
   const supabase = createAdminClient()
   
   try {
+    // Obter ID do admin logado
+    const { data: { user } } = await supabase.auth.getUser()
+
     const { error } = await supabase
       .from('blacklist_usuarios')
       .insert({
         email_hash: emailHash,
         motivo: motivo,
-        banido_em: new Date().toISOString()
+        bloqueado_por: user?.id || null,
+        criado_em: new Date().toISOString()
       })
 
     if (error) throw error

@@ -7,9 +7,6 @@ import { sendEmail } from '@/lib/email'
 import { validarOTP } from './auth'
 import { createHash } from 'crypto'
 
-function sha256Buffer(buf: Buffer): string {
-  return createHash('sha256').update(buf).digest('hex')
-}
 
 export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivos: { name: string, type: string, content: string }[]) {
   const supabase = createAdminClient()
@@ -38,7 +35,8 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
     const { protocolo, chaveAcesso } = await gerarProtocolo()
 
     // 3. Upload de Arquivos
-    const arquivosUrls: string[] = []
+    const uploadedFiles: { denuncia_id: string; tipo: string; url: string; bucket_path: string; tamanho_bytes: number; name: string }[] = []
+    
     if (arquivos && arquivos.length > 0) {
       console.log(`[denuncia] Fazendo upload de ${arquivos.length} arquivos...`)
       for (const file of arquivos) {
@@ -53,7 +51,14 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
 
           if (!uploadError) {
             const { data: urlData } = supabase.storage.from('denuncias').getPublicUrl(path)
-            arquivosUrls.push(urlData.publicUrl)
+            uploadedFiles.push({
+              denuncia_id: '', // Será preenchido após criar a denúncia
+              tipo: file.type,
+              url: urlData.publicUrl,
+              bucket_path: path,
+              tamanho_bytes: buffer.length,
+              name: file.name
+            })
           }
         } catch (fErr) {
           console.error('[denuncia] Erro no arquivo:', file.name, fErr)
@@ -91,6 +96,14 @@ export async function registrarDenuncia(formData: SubmitDenunciaRequest, arquivo
     if (denErr || !denuncia) {
       console.error('[denuncia] Erro ao salvar:', denErr)
       return { success: false, error: 'Erro ao persistir denúncia: ' + (denErr?.message || 'Erro desconhecido') }
+    }
+
+    // 5.1 Vincular Arquivos à Denúncia
+    if (uploadedFiles.length > 0) {
+      console.log(`[denuncia] Vinculando ${uploadedFiles.length} arquivos ao registro...`)
+      const insertData = uploadedFiles.map(f => ({ ...f, denuncia_id: denuncia.id }))
+      const { error: linkErr } = await supabase.from('arquivos_denuncia').insert(insertData)
+      if (linkErr) console.error('[denuncia] Erro ao vincular arquivos:', linkErr)
     }
 
     // 6. Salvar Identidade (PII Criptografado)
