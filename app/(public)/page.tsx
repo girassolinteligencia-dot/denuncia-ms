@@ -53,33 +53,31 @@ export default async function PublicHomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-end">
             
             {/* Coluna Esquerda: Texto e CTA */}
-            <div className="pb-16 lg:pb-32 space-y-8 text-center lg:text-left animate-fade-in">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] mx-auto lg:mx-0">
-                 <Zap size={14} className="text-secondary fill-secondary" />
-                 Canal Independente de Ouvidoria — Mato Grosso do Sul
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 justify-center lg:justify-start">
-                  <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-secondary shadow-glow-green shrink-0 bg-white/10 backdrop-blur-sm">
-                    <img 
-                      src={configMap['identidade.mascote'] || '/assets/mascote_sem_fundo.png'} 
-                      alt="Bruno Ortiz" 
-                      className="w-full h-full object-cover object-top scale-150 translate-y-2"
-                    />
-                  </div>
-                  <span className="text-white font-black text-sm sm:text-lg tracking-tight uppercase italic text-left">
-                    Olá, eu sou o Bruno Ortiz.<br className="sm:hidden" /> Sua voz tem peso aqui.
-                  </span>
+            <div className="space-y-8 text-center lg:text-left animate-fade-in">
+                
+                {/* Mascote Completo no Topo */}
+                <div className="flex justify-center lg:justify-start -mb-4">
+                  <img 
+                    src={configMap['identidade.mascote'] || '/assets/mascote_sem_fundo.png'} 
+                    alt="Bruno Ortiz" 
+                    className="h-40 sm:h-56 lg:h-64 w-auto object-contain drop-shadow-[0_10px_30px_rgba(255,255,255,0.1)] hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
-                <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tighter leading-[1.1] italic uppercase">
-                  DENUNCIA MS<br />
-                  <span className="text-secondary">Direto ao ponto.</span>
-                </h1>
-                <p className="text-lg sm:text-xl text-white/70 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
-                  Sem senhas. Sem demora. Relate o problema agora e nós levamos sua voz direto aos órgãos de controle para cobrar resultados.
-                </p>
-              </div>
+
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 justify-center lg:justify-start">
+                    <span className="text-white font-black text-lg sm:text-2xl tracking-tight uppercase italic text-left leading-tight">
+                      Olá, eu sou o Bruno Ortiz.<br /> Sua voz tem peso aqui.
+                    </span>
+                  </div>
+                  <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tighter leading-[1.1] italic uppercase">
+                    DENUNCIA MS<br />
+                    <span className="text-secondary">Direto ao ponto.</span>
+                  </h1>
+                  <p className="text-lg sm:text-xl text-white/70 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+                    Sem senhas. Sem demora. Relate o problema agora e nós levamos sua voz direto aos órgãos de controle para cobrar resultados.
+                  </p>
+                </div>
 
               <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-4 pt-4">
                 <Link
