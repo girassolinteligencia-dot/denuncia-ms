@@ -449,7 +449,7 @@ export function DenunciaFormWizard({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                 {categorias.map((cat) => (
                   <button
                     key={cat.id}
@@ -460,15 +460,15 @@ export function DenunciaFormWizard({
                         bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
                       }, 100)
                     }}
-                    className={`p-2 sm:p-6 rounded-xl sm:rounded-[2rem] border-2 transition-all text-left relative group flex flex-col items-center sm:items-start text-center sm:text-left ${
+                    className={`p-4 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border-2 transition-all text-left relative group flex flex-col items-center sm:items-start text-center sm:text-left ${
                       formData.categoria_id === cat.id 
                       ? 'bg-primary/5 border-primary shadow-glow-cyan' 
-                      : 'bg-white border-border/50 hover:border-primary/30 hover:bg-surface'
+                      : 'bg-white border-border/50 hover:border-primary/30 hover:bg-surface shadow-sm'
                     }`}
                   >
-                    <div className="text-xl sm:text-4xl mb-1 sm:mb-4 group-hover:scale-110 transition-transform inline-block">{cat.emoji}</div>
-                    <h3 className="font-black text-dark text-[7px] sm:text-lg leading-tight uppercase italic mb-1 sm:mb-2">{cat.label}</h3>
-                    <p className="hidden sm:block text-xs text-muted font-bold line-clamp-2">{cat.instrucao_publica}</p>
+                    <div className="text-3xl sm:text-5xl lg:text-6xl mb-2 sm:mb-6 group-hover:scale-110 transition-transform inline-block">{cat.emoji}</div>
+                    <h3 className="font-black text-dark text-[11px] sm:text-xl leading-tight uppercase italic mb-1 sm:mb-3">{cat.label}</h3>
+                    <p className="hidden sm:block text-xs text-muted font-bold line-clamp-2 leading-relaxed">{cat.instrucao_publica}</p>
                     {formData.categoria_id === cat.id && (
                       <div className="absolute top-1 right-1 sm:top-4 sm:right-4 text-primary animate-bounce-subtle">
                         <CheckCircle2 size={12} className="sm:w-6 sm:h-6" />
