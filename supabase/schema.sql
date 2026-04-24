@@ -303,7 +303,7 @@ INSERT INTO plataforma_config (chave, valor) VALUES
   ('identidade.nome',     '"DENUNCIA MS"'),
   ('identidade.slogan',   '"Sua voz, nossa missão"'),
   ('identidade.email',    '"contato@denunciams.com.br"'),
-  ('identidade.rodape',   '"© 2026 DENUNCIA MS — Plataforma Cívica de Ouvidoria. Governo de Mato Grosso do Sul."'),
+  ('identidade.rodape',   '"© 2026 DENUNCIA MS — Plataforma Cívica Independente."'),
   ('cores.primaria',      '"#1535C9"'),
   ('cores.secundaria',    '"#F5C800"'),
   ('notificacoes.bcc',    '""'),

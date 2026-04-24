@@ -39,7 +39,7 @@ export async function gerarSugestoesDeNoticias() {
 
     // 3. Criar a Notícia Sugerida (Pendende de Moderação)
     const tituloSugerido = `Aumento nas fiscalizações de ${categoriaTop[0]} em Mato Grosso do Sul`
-    const conteudoSugerido = `A plataforma Denúncia MS registrou um aumento de ${categoriaTop[1]} novos protocolos relacionados a ${categoriaTop[0]} na última semana. Esta tendência reflete o engajamento direto da população na fiscalização e melhoria dos serviços públicos. Lembramos que todos os dados são tratados com sigilo e encaminhados aos órgãos competentes para as devidas providências.`
+    const conteudoSugerido = `A plataforma Denúncia MS registrou um aumento de ${categoriaTop[1]} novos protocolos relacionados a ${categoriaTop[0]} na última semana. Esta tendência reflete o engajamento direto da população no monitoramento e melhoria da região. Lembramos que todos os dados são tratados com sigilo e consolidados em relatórios de transparência para as devidas providências.`
 
     const novaNoticia = {
       titulo: tituloSugerido,
@@ -101,3 +101,20 @@ export async function buscarNoticiasPublicas() {
   if (error) return { success: false, error: error.message }
   return { success: true, data: data as any[] }
 }
+
+/**
+ * Busca uma notícia específica pelo slug
+ */
+export async function buscarNoticiaPorSlug(slug: string) {
+  const supabase = createAdminClient()
+  const { data, error } = await supabase
+    .from('noticias')
+    .select('*')
+    .eq('slug', slug)
+    .eq('publicado', true)
+    .single()
+
+  if (error) return { success: false, error: error.message }
+  return { success: true, data }
+}
+

@@ -83,7 +83,7 @@ function DashboardContent() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-dark tracking-tighter uppercase italic">Painel de <span className="text-primary italic">Impacto</span></h1>
-          <p className="text-muted text-[11px] font-black uppercase tracking-widest mt-1">Centro de Comando Denúncia MS — Mato Grosso do Sul</p>
+          <p className="text-muted text-[11px] font-black uppercase tracking-widest mt-1">Centro de Comando Denúncia MS — Monitoramento Cidadão</p>
         </div>
 
         <div className="flex p-1.5 bg-surface rounded-2xl border border-border self-start shadow-inner">

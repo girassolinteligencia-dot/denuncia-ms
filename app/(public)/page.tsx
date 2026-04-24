@@ -56,13 +56,14 @@ export default async function PublicHomePage() {
           <div className="max-w-5xl mx-auto text-center space-y-12">
             
             {/* MASCOTE HERO CENTRALIZADO */}
-            <div className="flex flex-col items-center justify-center space-y-8 animate-fade-in">
+            <div className="flex flex-col items-center justify-center space-y-8 animate-fade-in relative">
               <div className="relative group">
-                <div className="absolute -inset-4 bg-primary/20 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                {/* Glow expandido para o novo tamanho */}
+                <div className="absolute -inset-20 bg-primary/20 rounded-full blur-[120px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
                 <img 
                   src="/assets/mascote_sem_fundo.png" 
                   alt="Mascote Bruno Ortiz" 
-                  className="w-48 h-48 sm:w-72 sm:h-72 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700 relative z-10"
+                  className="w-80 h-80 sm:w-[600px] sm:h-[600px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform duration-700 relative z-10"
                 />
               </div>
             </div>

@@ -1,6 +1,6 @@
-# Estrutura Técnica e Arquitetura: Plataforma MAIS Denúncia MS
+# Estrutura Técnica e Arquitetura: Plataforma MAIS
 
-Este documento detalha a arquitetura interna, o stack tecnológico e as regras de negócio da plataforma **DENUNCIA MS**, desenvolvida para o Governo de Mato Grosso do Sul. Foi concebido para fornecer contexto técnico exaustivo a agentes de IA (como Claude).
+Este documento detalha a arquitetura interna, o stack tecnológico e as regras de negócio da plataforma **DENUNCIA MS**, uma iniciativa cidadã independente para monitoramento e transparência em Mato Grosso do Sul. Foi concebido para fornecer contexto técnico exaustivo a agentes de IA (como Claude).
 
 ## 1. Visão Geral (Stack Tecnológico)
 
@@ -50,10 +50,10 @@ O banco de dados utiliza PostgreSQL no Supabase com **Row Level Security (RLS)**
    - Sobe arquivos para o Supabase Storage.
    - **Geração de PDF**: Cria um documento oficial assinado digitalmente (via jsPDF) usando os templates de cabeçalho/rodapé configurados.
    - **Persistência**: Salva a denúncia e vincula os metadados dos arquivos.
-   - **Despacho**: Dispara assincronamente webhooks e e-mails para os órgãos competentes (ex: Ouvidoria Municipal, SESAU, SEJUSP).
+   - **Despacho**: Dispara assincronamente webhooks e e-mails para as entidades responsáveis.
 
 ### B. Ingestão e Inteligência Territorial
-- A plataforma consome dados brutos (JSON/CSV) de infraestruturas estaduais.
+- A plataforma consome dados brutos (JSON/CSV) de sistemas externos.
 - O script `generate-cep-sql.mjs` converte dados de endereços para seeds SQL, permitindo que a plataforma funcione offline/localmente para buscas de endereço.
 
 ---
@@ -83,7 +83,7 @@ O banco de dados utiliza PostgreSQL no Supabase com **Row Level Security (RLS)**
 
 - **API Nominatim**: Utilizada como fallback para buscas complexas de endereços.
 - **Resend SDK**: Integrado para entrega garantida de e-mails transacionais.
-- **Webhooks**: Saídas em JSON via `POST/PUT` com suporte a autenticação Bearer/APIKey para sistemas legados do governo.
+- **Webhooks**: Saídas em JSON via `POST/PUT` com suporte a autenticação Bearer/APIKey para integração com sistemas externos.
 
 ---
 

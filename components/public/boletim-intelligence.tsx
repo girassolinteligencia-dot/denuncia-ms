@@ -11,6 +11,7 @@ import {
   CloudOff
 } from 'lucide-react'
 import { buscarNoticiasPublicas } from '@/lib/actions/intelligence'
+import Link from 'next/link'
 
 export function BoletimIntelligence() {
   const [noticias, setNoticias] = useState<any[]>([])
@@ -84,9 +85,11 @@ export function BoletimIntelligence() {
                          <span className="flex items-center gap-1"><Calendar size={12} /> {new Date(noticia.publicado_em || noticia.criado_em).toLocaleDateString()}</span>
                          <span className="text-primary">{noticia.categoria}</span>
                       </div>
-                      <h2 className="text-lg sm:text-2xl font-black text-dark group-hover:text-primary transition-colors leading-tight italic">
-                         {noticia.titulo}
-                      </h2>
+                      <Link href={`/noticias/${noticia.slug}`}>
+                         <h2 className="text-lg sm:text-2xl font-black text-dark group-hover:text-primary transition-colors leading-tight italic">
+                            {noticia.titulo}
+                         </h2>
+                      </Link>
                       <p className="text-muted text-xs sm:text-sm leading-relaxed line-clamp-2 font-medium">
                          {noticia.conteudo}
                       </p>
@@ -95,9 +98,12 @@ export function BoletimIntelligence() {
                             <Zap size={14} className="text-secondary fill-secondary" />
                             <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tighter text-dark">Alta Relevância</span>
                          </div>
-                         <button className="flex items-center gap-2 text-[9px] sm:text-[10px] font-black uppercase text-primary tracking-widest group-hover:translate-x-1 transition-transform">
+                         <Link 
+                            href={`/noticias/${noticia.slug}`}
+                            className="flex items-center gap-2 text-[9px] sm:text-[10px] font-black uppercase text-primary tracking-widest group-hover:translate-x-1 transition-transform"
+                         >
                             Ver detalhes <ArrowRight size={14} />
-                         </button>
+                         </Link>
                       </div>
                    </div>
                 </div>

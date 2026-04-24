@@ -75,7 +75,7 @@ export default async function TransparenciaPage() {
             <p className="text-muted text-sm leading-relaxed font-medium">
               A <strong>Denúncia MS</strong> não manipula dados. Nosso feed reflete a realidade das interações cidadãs, 
               utilizando algoritmos de anonimização para proteger identidades enquanto expõe problemas estruturais 
-              que necessitam de atenção imediata do poder público.
+              que necessitam de atenção imediata das entidades responsáveis.
             </p>
           </div>
           
