@@ -61,9 +61,15 @@ export default async function PublicHomePage() {
 
               <div className="space-y-6">
                 <div className="flex items-center gap-4 justify-center lg:justify-start">
-                  <span className="h-0.5 w-12 bg-secondary shadow-glow-green"></span>
-                  <span className="text-white font-black text-sm sm:text-lg tracking-[0.2em] uppercase italic">
-                    Olá, eu sou o Bruno Ortiz. Sua voz tem peso aqui.
+                  <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-secondary shadow-glow-green shrink-0 bg-white/10 backdrop-blur-sm">
+                    <img 
+                      src={configMap['identidade.mascote'] || '/assets/mascote_sem_fundo.png'} 
+                      alt="Bruno Ortiz" 
+                      className="w-full h-full object-cover object-top scale-150 translate-y-2"
+                    />
+                  </div>
+                  <span className="text-white font-black text-sm sm:text-lg tracking-tight uppercase italic text-left">
+                    Olá, eu sou o Bruno Ortiz.<br className="sm:hidden" /> Sua voz tem peso aqui.
                   </span>
                 </div>
                 <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tighter leading-[1.1] italic uppercase">
