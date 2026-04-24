@@ -1,14 +1,29 @@
 'use client'
-
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { 
   TrendingUp, 
   CheckCircle2, 
   Zap,
-  ShieldAlert
+  ShieldAlert,
+  Loader2
 } from 'lucide-react'
+import { getImpactoStats } from '@/lib/actions/impacto'
 
 export function PainelImpacto() {
+  const [stats, setStats] = useState<{ hoje: number; feedback: string; cidade: string; crescimento: string } | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const res = await getImpactoStats()
+      if (res.success && res.stats) {
+        setStats(res.stats)
+      }
+      setLoading(false)
+    }
+    fetchStats()
+  }, [])
+
   return (
     <section className="section bg-surface border-t border-border">
       <div className="container-page space-y-12">
@@ -17,43 +32,49 @@ export function PainelImpacto() {
         <header className="space-y-4 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-secondary/10 border border-secondary/20 rounded-full text-secondary text-[10px] font-black uppercase tracking-[0.3em] mb-4">
             <Zap size={14} className="fill-secondary" />
-            Métricas de Impacto
+            Métricas de Impacto Real
           </div>
           <h2 className="text-4xl md:text-5xl font-black text-dark tracking-tighter italic">
             PAINEL DE <span className="text-primary italic">EFICÁCIA</span>
           </h2>
           <p className="text-muted text-sm md:text-md max-w-2xl mx-auto font-medium leading-relaxed">
-            Dados reais sobre a resolução de demandas e o impacto social da plataforma em Mato Grosso do Sul.
+            Dados vivos extraídos diretamente da nossa base de dados sobre a atuação cidadã em Mato Grosso do Sul.
           </p>
         </header>
 
         {/* Stats Rápidas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          <div className="p-8 bg-dark text-white rounded-3xl relative overflow-hidden group shadow-glow-cyan border-none">
+          <div className="p-8 bg-dark text-white rounded-3xl relative overflow-hidden group shadow-glow-cyan border-none min-h-[180px] flex flex-col justify-center">
              <div className="absolute top-0 right-0 p-4 text-white/5 group-hover:text-white/10 transition-colors">
                 <TrendingUp size={80} />
              </div>
              <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-2">Denúncias Hoje</p>
-             <div className="text-5xl font-black italic">42</div>
-             <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold">+12% em relação a ontem</p>
+             {loading ? <Loader2 className="animate-spin text-primary" /> : (
+               <div className="text-5xl font-black italic animate-fade-in">{stats?.hoje}</div>
+             )}
+             <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold">{stats?.crescimento || '--'} em relação a ontem</p>
           </div>
 
-          <div className="p-8 bg-dark text-white rounded-3xl relative overflow-hidden group border-none shadow-glow-green">
+          <div className="p-8 bg-dark text-white rounded-3xl relative overflow-hidden group border-none shadow-glow-green min-h-[180px] flex flex-col justify-center">
              <div className="absolute top-0 right-0 p-4 text-white/5 group-hover:text-white/10 transition-colors">
                 <CheckCircle2 size={80} />
              </div>
              <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-2">Feedback Positivo</p>
-             <div className="text-5xl font-black text-secondary italic">98%</div>
+             {loading ? <Loader2 className="animate-spin text-secondary" /> : (
+               <div className="text-5xl font-black text-secondary italic animate-fade-in">{stats?.feedback}</div>
+             )}
              <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold">Da comunidade sul-mato-grossense</p>
           </div>
 
-          <div className="p-8 bg-dark text-white rounded-3xl relative overflow-hidden group border-none shadow-glow-cyan">
+          <div className="p-8 bg-dark text-white rounded-3xl relative overflow-hidden group border-none shadow-glow-cyan min-h-[180px] flex flex-col justify-center">
              <div className="absolute top-0 right-0 p-4 text-white/5 group-hover:text-white/10 transition-colors">
                 <ShieldAlert size={80} />
              </div>
              <p className="text-[10px] font-black uppercase tracking-widest text-electric mb-2">Foco Geográfico</p>
-             <div className="text-2xl font-black uppercase tracking-tight italic">Campo Grande</div>
-             <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold">Concentração de demandas em Vias</p>
+             {loading ? <Loader2 className="animate-spin text-electric" /> : (
+               <div className="text-2xl font-black uppercase tracking-tight italic animate-fade-in">{stats?.cidade}</div>
+             )}
+             <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold">Concentração atual de demandas</p>
           </div>
         </div>
 
