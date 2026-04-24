@@ -69,20 +69,20 @@ export default async function PublicHomePage() {
             <div className="space-y-2 sm:space-y-4">
               <div className="flex items-center gap-4 animate-slide-up">
                 <span className="h-0.5 w-12 bg-secondary shadow-glow-green"></span>
-                <span className="text-white font-black text-lg sm:text-3xl tracking-widest uppercase italic">
+                <span className="text-white font-black text-sm sm:text-lg tracking-[0.2em] uppercase italic">
                   Oi, aqui é o Bruno Ortiz. E aqui, sua voz tem peso.
                 </span>
               </div>
-              <span className="text-[#FFD700] font-black text-lg sm:text-4xl tracking-tighter block animate-slide-up italic uppercase">
+              <span className="text-[#FFD700] font-black text-base sm:text-2xl tracking-tighter block animate-slide-up italic uppercase">
                 Transformando indignação em resultado real.
               </span>
-              <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[0.95] sm:leading-[0.9] animate-slide-up italic">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[1.1] sm:leading-[1.05] animate-slide-up italic">
                 Chega de burocracia. <br />
                 Direto ao <span className="text-secondary underline decoration-2 sm:decoration-4 decoration-secondary/30 underline-offset-4 sm:underline-offset-8">resultado.</span>
               </h1>
             </div>
 
-            <p className="text-sm sm:text-xl text-white/70 max-w-xl lg:mx-0 mx-auto leading-relaxed animate-fade-in font-medium px-2 sm:px-0">
+            <p className="text-base sm:text-lg text-white/70 max-w-xl lg:mx-0 mx-auto leading-relaxed animate-fade-in font-medium px-2 sm:px-0">
               Viu algo errado na sua cidade? Esqueça senhas e cadastros lentos. No{' '}
               <span className="text-white font-black uppercase tracking-tighter">{appName}</span>,{' '}
               você relata em segundos e nós conectamos sua voz diretamente aos órgãos de controle.{' '}

@@ -12,7 +12,7 @@ export default async function PublicLayout({
   
   // Busca configurações do Módulo 0 (Cached by Next.js if enabled, or just fetch)
   const { data: configs } = await supabase.from('plataforma_config').select('chave, valor')
-  const configMap = (configs || []).reduce((acc: any, cur) => {
+  const configMap = (configs || []).reduce((acc: Record<string, string>, cur) => {
     acc[cur.chave] = cur.valor
     return acc
   }, {})
@@ -52,36 +52,51 @@ export default async function PublicLayout({
         {children}
       </main>
 
-      <footer className="bg-dark text-white py-12">
+      <footer className="bg-dark text-white py-16 border-t border-white/5">
          <div className="container-page">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-white/5 pb-12">
-               <div className="md:col-span-2 space-y-6">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-white p-4 rounded-[2rem] shadow-xl">
-                      <img src={appLogo} alt={appName} className="h-28 w-auto" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-white/60 max-w-md leading-relaxed text-justify">
-                     O <strong>{appName}</strong> opera como uma plataforma cívica estritamente independente, sem vínculo com entes públicos ou políticos. Atuamos como um elo tecnológico que conecta o cidadão de MS diretamente aos órgãos competentes, facilitando a fiscalização e a transparência em todo o Estado.
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 border-b border-white/5 pb-12">
+               {/* Coluna 1: Sobre */}
+               <div className="space-y-6">
+                  <h3 className="font-bold text-white uppercase tracking-widest text-[10px]">A Plataforma</h3>
+                  <p className="text-[11px] text-white/40 leading-relaxed text-justify font-medium">
+                     O <strong>{appName}</strong> opera como uma plataforma cívica estritamente independente, sem vínculo com entes públicos ou políticos. Atuamos como um elo tecnológico que conecta o cidadão de MS diretamente aos órgãos competentes.
                   </p>
                </div>
                
+               {/* Coluna 2: Navegação */}
                <div>
-                  <h3 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Links Rápidos</h3>
-                  <ul className="space-y-4 text-sm text-white/50">
-                     <li><Link href="/transparencia" className="hover:text-electric transition-colors">Transparência Pública</Link></li>
-                     <li><Link href="/privacidade" className="hover:text-electric transition-colors">Política de Privacidade</Link></li>
-                     <li><Link href="/termos" className="hover:text-electric transition-colors">Termos de Uso</Link></li>
-                     <li><Link href="/faq" className="hover:text-electric transition-colors">Dúvidas Frequentes</Link></li>
-                     <li><Link href="/login" className="hover:text-electric transition-colors">Acesso Administrativo</Link></li>
+                  <h3 className="font-bold text-white mb-6 uppercase tracking-widest text-[10px]">Navegação</h3>
+                  <ul className="space-y-3 text-[11px] text-white/50 font-medium">
+                     <li><Link href="/" className="hover:text-electric transition-colors">Início</Link></li>
+                     <li><Link href="/como-funciona" className="hover:text-electric transition-colors">Como funciona</Link></li>
+                     <li><Link href="/noticias" className="hover:text-electric transition-colors">Notícias</Link></li>
+                     <li><Link href="/transparencia" className="hover:text-electric transition-colors">Transparência</Link></li>
                   </ul>
                </div>
 
+               {/* Coluna 3: Suporte & Legal */}
                <div>
-                  <h3 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Informações</h3>
-                  <ul className="space-y-4 text-sm text-white/50">
-                     <li>contato@denunciams.com.br</li>
-                     <li>Mato Grosso do Sul, Brasil</li>
+                  <h3 className="font-bold text-white mb-6 uppercase tracking-widest text-[10px]">Suporte & Legal</h3>
+                  <ul className="space-y-3 text-[11px] text-white/50 font-medium">
+                     <li><Link href="/faq" className="hover:text-electric transition-colors">Dúvidas Frequentes</Link></li>
+                     <li><Link href="/privacidade" className="hover:text-electric transition-colors">Privacidade</Link></li>
+                     <li><Link href="/termos" className="hover:text-electric transition-colors">Termos de Uso</Link></li>
+                     <li><Link href="/login" className="hover:text-electric transition-colors">Acesso Restrito</Link></li>
+                  </ul>
+               </div>
+
+               {/* Coluna 4: Contato */}
+               <div>
+                  <h3 className="font-bold text-white mb-6 uppercase tracking-widest text-[10px]">Contato</h3>
+                  <ul className="space-y-4 text-[11px] text-white/50 font-medium">
+                     <li className="flex flex-col gap-1">
+                        <span className="text-[9px] text-white/20 uppercase font-black">E-mail oficial</span>
+                        <span className="hover:text-white transition-colors cursor-pointer">contato@denunciams.com.br</span>
+                     </li>
+                     <li className="flex flex-col gap-1">
+                        <span className="text-[9px] text-white/20 uppercase font-black">Abrangência</span>
+                        <span>Mato Grosso do Sul, Brasil</span>
+                     </li>
                   </ul>
                </div>
             </div>

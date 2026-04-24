@@ -1,6 +1,25 @@
+'use server'
+
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Inicialização lazy para evitar erros se importado no cliente acidentalmente
+let resendInstance: Resend | null = null
+
+function getResend() {
+  if (!resendInstance) {
+    if (!process.env.RESEND_API_KEY) {
+      // No servidor, isso deve estar configurado.
+      // Se chegar aqui no cliente, retornamos um proxy ou falhamos silenciosamente para não quebrar o app
+      if (typeof window !== 'undefined') {
+        console.warn('[Email] Tentativa de inicializar Resend no cliente bloqueada.')
+        return null
+      }
+      throw new Error('RESEND_API_KEY não configurada no servidor.')
+    }
+    resendInstance = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resendInstance
+}
 
 interface EmailParams {
   to: string | string[]
@@ -17,6 +36,9 @@ export async function sendEmail(params: EmailParams) {
   const { to, subject, text, html, attachments } = params
 
   try {
+    const resend = getResend()
+    if (!resend) throw new Error('Serviço de e-mail indisponível no cliente.')
+
     const { data, error } = await resend.emails.send({
       from: process.env.EMAIL_FROM || 'Denuncia MS <onboarding@resend.dev>',
       to: Array.isArray(to) ? to : [to],

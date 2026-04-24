@@ -1,11 +1,9 @@
 import React from 'react'
 import { 
   FileText, 
-  AlertTriangle, 
   CheckCircle2, 
   Clock,
   ArrowUpRight,
-  ArrowDownRight,
   Activity
 } from 'lucide-react'
 import { getDashboardStats, getRecentActivities } from '@/lib/actions/admin-denuncias'
@@ -16,7 +14,7 @@ export default async function DashboardPage() {
   const statsResult = await getDashboardStats()
   const activityResult = await getRecentActivities()
 
-  const stats = statsResult.success ? statsResult.stats : { 
+  const stats = (statsResult.success && statsResult.stats) ? statsResult.stats : { 
     total: 0, 
     recebida: 0, 
     em_analise: 0, 
@@ -28,13 +26,13 @@ export default async function DashboardPage() {
   const activities = activityResult.success ? (activityResult.data || []) : []
 
   return (
-    <div className="space-y-8 animate-fade-in px-4">
+    <div className="space-y-6 animate-fade-in px-4">
       <div>
-        <h1 className="text-2xl font-black text-dark tracking-tighter italic uppercase">Painel de Impacto</h1>
-        <p className="text-muted text-sm font-medium">Estatísticas em tempo real da plataforma Denúncia MS.</p>
+        <h1 className="text-xl font-black text-dark tracking-tighter italic uppercase">Painel de Impacto</h1>
+        <p className="text-muted text-[11px] font-medium">Estatísticas em tempo real da plataforma Denúncia MS.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <KPIItem 
           title="Denúncias" 
           value={stats.total} 
@@ -108,7 +106,7 @@ export default async function DashboardPage() {
               </h2>
            </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {activities.length > 0 ? activities.map((act: any) => (
+              {activities.length > 0 ? activities.map((act: { id: string, acao: string, usuario?: { nome: string }, criado_em: string }) => (
                 <div key={act.id} className="relative pl-6 before:absolute before:left-0 before:top-1.5 before:w-1.5 before:h-1.5 before:rounded-full before:bg-primary border-l border-border ml-1">
                    <p className="text-[11px] font-bold text-dark leading-tight uppercase">
                       {act.acao.replace('_', ' ')}
@@ -132,21 +130,21 @@ export default async function DashboardPage() {
   )
 }
 
-function KPIItem({ title, value, change, icon: Icon, color, bgColor }: any) {
+function KPIItem({ title, value, change, icon: Icon, color, bgColor }: { title: string, value: string | number, change: string, icon: React.ElementType, color: string, bgColor: string }) {
   return (
-    <div className="bg-white rounded-3xl shadow-card-lg border border-border p-6 hover:-translate-y-1 transition-all">
-      <div className="flex items-center justify-between mb-4">
-        <div className={`p-2.5 rounded-xl ${bgColor} ${color} shadow-sm`}>
-          <Icon size={22} />
+    <div className="bg-white rounded-2xl shadow-card-lg border border-border p-5 hover:-translate-y-0.5 transition-all">
+      <div className="flex items-center justify-between mb-3">
+        <div className={`p-2 rounded-xl ${bgColor} ${color} shadow-sm`}>
+          <Icon size={18} />
         </div>
-        <div className="flex items-center gap-1 text-[10px] font-black uppercase text-success bg-green-50 px-2 py-0.5 rounded-full">
-           <ArrowUpRight size={12} />
+        <div className="flex items-center gap-1 text-[9px] font-black uppercase text-success bg-green-50 px-2 py-0.5 rounded-full">
+           <ArrowUpRight size={10} />
            {change}
         </div>
       </div>
       <div>
-        <p className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">{title}</p>
-        <p className="text-3xl font-black text-dark mt-1 tracking-tighter">{value}</p>
+        <p className="text-[9px] font-black text-muted uppercase tracking-[0.2em]">{title}</p>
+        <p className="text-2xl font-black text-dark mt-0.5 tracking-tighter">{value}</p>
       </div>
     </div>
   )

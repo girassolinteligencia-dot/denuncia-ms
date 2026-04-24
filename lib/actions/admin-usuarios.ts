@@ -1,3 +1,5 @@
+'use server'
+
 import { createAdminClient } from '@/lib/supabase-admin'
 import { revalidatePath } from 'next/cache'
 import type { UserRole, Profile } from '@/types'
@@ -17,9 +19,9 @@ export async function getUsuarios() {
 
     if (error) throw error
     return { success: true, data: usuarios as Profile[] }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Erro ao buscar usuários:', err)
-    return { success: false, error: err.message }
+    return { success: false, error: (err as Error).message }
   }
 }
 
@@ -102,9 +104,9 @@ export async function createUsuarioAdmin(data: {
 
     revalidatePath('/admin/usuarios')
     return { success: true }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Erro na criação de usuário:', err)
-    return { success: false, error: err.message }
+    return { success: false, error: (err as Error).message }
   }
 }
 
@@ -124,8 +126,8 @@ export async function toggleUsuarioStatus(id: string, currentStatus: boolean) {
 
     revalidatePath('/admin/usuarios')
     return { success: true }
-  } catch (err: any) {
-    return { success: false, error: err.message }
+  } catch (err: unknown) {
+    return { success: false, error: (err as Error).message }
   }
 }
 
@@ -145,8 +147,8 @@ export async function updateUsuarioRole(id: string, role: UserRole) {
 
     revalidatePath('/admin/usuarios')
     return { success: true }
-  } catch (err: any) {
-    return { success: false, error: err.message }
+  } catch (err: unknown) {
+    return { success: false, error: (err as Error).message }
   }
 }
 
