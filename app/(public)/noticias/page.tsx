@@ -1,11 +1,13 @@
-'use client'
-
 import React from 'react'
 import { BoletimIntelligence } from '@/components/public/boletim-intelligence'
+import { EnqueteDinamica } from '@/components/public/enquete-dinamica'
+import { getEnqueteAtiva } from '@/lib/actions/enquetes'
 
-export default function NoticiasPage() {
+export default async function NoticiasPage() {
+  const enqueteNoticias = await getEnqueteAtiva('noticias')
+
   return (
-    <div className="min-h-screen bg-surface py-12 sm:py-20">
+    <div className="min-h-screen bg-surface py-12 sm:py-20 space-y-16">
       <div className="container-page max-w-6xl space-y-8 sm:space-y-12">
         
         {/* Header Simplificado */}
@@ -20,8 +22,20 @@ export default function NoticiasPage() {
 
         {/* Boletim e Inteligência (Live Feed + Tendências) */}
         <BoletimIntelligence />
-
       </div>
+
+      {/* Seção de Enquete Específica para Notícias */}
+      {enqueteNoticias && (
+        <section className="bg-white border-y border-border py-16">
+          <div className="container-page max-w-4xl">
+            <div className="text-center mb-8 space-y-2">
+               <h2 className="text-2xl font-black text-dark tracking-tight uppercase italic">Opinião <span className="text-primary">Pública</span></h2>
+               <p className="text-muted text-xs font-medium">Participe da nossa pesquisa sobre os fatos recentes.</p>
+            </div>
+            <EnqueteDinamica initialData={enqueteNoticias} />
+          </div>
+        </section>
+      )}
     </div>
   )
 }
