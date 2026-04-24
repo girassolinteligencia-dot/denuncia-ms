@@ -77,6 +77,40 @@ interface DenunciaFormData {
   otpToken: string
 }
 
+// Funções de Validação
+const validarCPF = (cpf: string) => {
+  const cleanCpf = cpf.replace(/\D/g, '')
+  if (cleanCpf.length !== 11) return false
+  if (/^(\d)\1+$/.test(cleanCpf)) return false // Elimina CPFs com todos os números iguais (111.111.111-11, etc)
+
+  let soma = 0
+  let resto
+
+  for (let i = 1; i <= 9; i++) soma = soma + parseInt(cleanCpf.substring(i - 1, i)) * (11 - i)
+  resto = (soma * 10) % 11
+  if (resto === 10 || resto === 11) resto = 0
+  if (resto !== parseInt(cleanCpf.substring(9, 10))) return false
+
+  soma = 0
+  for (let i = 1; i <= 10; i++) soma = soma + parseInt(cleanCpf.substring(i - 1, i)) * (12 - i)
+  resto = (soma * 10) % 11
+  if (resto === 10 || resto === 11) resto = 0
+  if (resto !== parseInt(cleanCpf.substring(10, 11))) return false
+
+  return true
+}
+
+const validarTelefone = (tel: string) => {
+  const cleanTel = tel.replace(/\D/g, '')
+  // Aceita 10 (fixo) ou 11 (celular) dígitos
+  return cleanTel.length >= 10 && cleanTel.length <= 11
+}
+
+const validarEmail = (email: string) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return re.test(email)
+}
+
 export function DenunciaFormWizard({ 
   categorias, 
   campos = [], 
@@ -95,6 +129,7 @@ export function DenunciaFormWizard({
   const [loadingOtp, setLoadingOtp] = useState(false)
   const [cooldown, setCooldown] = useState(0)
   const [isOnline, setIsOnline] = useState(true)
+  const [geolocalizando, setGeolocalizando] = useState(false)
   const otpInputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -261,6 +296,10 @@ export function DenunciaFormWizard({
       toast.error('Preencha seu nome e e-mail primeiro.')
       return
     }
+    if (!validarEmail(formData.email)) {
+      toast.error('E-mail em formato inválido.')
+      return
+    }
     setLoadingOtp(true)
     const res = await solicitarCodigoOTP(formData.email, formData.nome)
     setLoadingOtp(false)
@@ -387,6 +426,63 @@ export function DenunciaFormWizard({
         console.error('Erro ao buscar CEP:', e)
       }
     }
+  }
+
+  const handleGeolocalizar = () => {
+    if (!isOnline) {
+      toast.error('Você precisa de internet para usar a geolocalização.')
+      return
+    }
+
+    if (!navigator.geolocation) {
+      toast.error('Seu navegador não suporta geolocalização.')
+      return
+    }
+
+    setGeolocalizando(true)
+    toast.info('Buscando sua localização...', { duration: 3000 })
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
+            { headers: { 'Accept-Language': 'pt-BR' } }
+          )
+          const data = await res.json()
+          
+          if (data && data.address) {
+            const addr = data.address
+            setFormData(prev => ({
+              ...prev,
+              local: addr.road || addr.pedestrian || addr.suburb || prev.local,
+              bairro: addr.neighbourhood || addr.suburb || addr.city_district || prev.bairro,
+              cidade: addr.city || addr.town || addr.municipality || prev.cidade,
+              cep: addr.postcode ? (addr.postcode.includes('-') ? addr.postcode : `${addr.postcode.slice(0, 5)}-${addr.postcode.slice(5, 8)}`) : prev.cep
+            }))
+            toast.success('Endereço localizado com sucesso!')
+            handleFieldScroll()
+          } else {
+            toast.error('Não conseguimos identificar o endereço exato.')
+          }
+        } catch (err) {
+          console.error('Erro na geocodificação:', err)
+          toast.error('Erro ao converter coordenadas.')
+        } finally {
+          setGeolocalizando(false)
+        }
+      },
+      (error) => {
+        setGeolocalizando(false)
+        if (error.code === 1) {
+          toast.error('Acesso à localização negado.')
+        } else {
+          toast.error('Falha ao obter sinal do GPS.')
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
   }
 
   return (
@@ -541,8 +637,16 @@ export function DenunciaFormWizard({
                 <button onClick={handleBack} className="group flex items-center gap-3 text-[10px] sm:text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
                   <ArrowLeft size={16} className="sm:w-5 sm:h-5" /> Voltar
                 </button>
-                <button onClick={() => { if (!formData.titulo || !formData.descricao_original) { toast.error('Preencha o título e a descrição'); return }; handleNext() }} 
-                  className="btn-primary h-12 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <button 
+                  onClick={() => { 
+                    if (!formData.titulo || !formData.descricao_original) { 
+                      toast.error('Preencha o título e a descrição'); 
+                      return 
+                    }
+                    handleNext() 
+                  }} 
+                  className="btn-primary h-12 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
                   <span className="font-black uppercase tracking-widest text-[9px] sm:text-xs">Próximo: Onde foi?</span>
                   <ArrowRight size={18} className="sm:w-5 sm:h-5" />
                 </button>
@@ -558,6 +662,37 @@ export function DenunciaFormWizard({
                   <p className="text-muted text-sm font-medium">A localização exata agiliza a resposta.</p>
                 </div>
                 <div className="hidden sm:flex p-5 bg-primary/5 text-primary rounded-[2rem] border border-primary/10"><MapPin size={32} /></div>
+              </div>
+
+              {/* Botão de Geolocalização Rápida */}
+              <div className="bg-primary/5 border border-primary/10 p-6 rounded-[2rem] flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
+                <div className="flex items-center gap-4 text-center sm:text-left">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${geolocalizando ? 'bg-primary text-white animate-pulse' : 'bg-primary/10 text-primary'}`}>
+                    <Zap size={24} />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest">Preenchimento Automático</p>
+                    <p className="text-xs font-bold text-dark/70 italic">Estou no local agora e quero preencher usando meu GPS.</p>
+                  </div>
+                </div>
+                <button 
+                  type="button"
+                  onClick={handleGeolocalizar}
+                  disabled={geolocalizando}
+                  className="btn-primary w-full sm:w-auto h-12 px-8 rounded-xl bg-primary text-white font-black uppercase text-[10px] tracking-widest shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                >
+                  {geolocalizando ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Localizando...
+                    </>
+                  ) : (
+                    <>
+                      <MapPin size={16} />
+                      Usar minha localização
+                    </>
+                  )}
+                </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -703,7 +838,7 @@ export function DenunciaFormWizard({
                 {!otpValidado && (
                   <div className="pt-4 relative z-10">
                     {!otpEnviado ? (
-                      <button onClick={handleSolicitarOTP} disabled={loadingOtp || !formData.email || !formData.nome || cooldown > 0 || !isOnline}
+                      <button onClick={handleSolicitarOTP} disabled={loadingOtp || !validarEmail(formData.email) || !formData.nome || cooldown > 0 || !isOnline}
                         className="w-full h-16 bg-secondary text-white font-black uppercase text-xs tracking-[0.2em] rounded-2xl disabled:opacity-30 flex justify-center items-center gap-3 transition-all">
                         {loadingOtp ? <Loader2 size={20} className="animate-spin" /> : <Lock size={20} />}
                         {cooldown > 0 ? `Reenviar em ${cooldown}s` : 'Gerar Código de Segurança'}
@@ -797,10 +932,19 @@ export function DenunciaFormWizard({
               </div>
 
               <div className="space-y-6">
-                <button onClick={() => setPreviewAberto(!previewAberto)} className="w-full p-6 bg-surface border-2 border-border/50 rounded-3xl flex items-center justify-between group hover:border-primary/30 transition-all">
+                <button 
+                  onClick={() => setPreviewAberto(!previewAberto)} 
+                  disabled={!validarTelefone(formData.telefone) || !validarCPF(formData.cpf)}
+                  className="w-full p-6 bg-surface border-2 border-border/50 rounded-3xl flex items-center justify-between group hover:border-primary/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                >
                   <div className="flex items-center gap-4">
-                    <FileText className="text-primary" size={24} />
-                    <p className="text-xs font-black uppercase tracking-widest">Visualizar Cópia Digital</p>
+                    <FileText className={(!validarTelefone(formData.telefone) || !validarCPF(formData.cpf)) ? 'text-muted' : 'text-primary'} size={24} />
+                    <div className="text-left">
+                      <p className="text-xs font-black uppercase tracking-widest">Visualizar Cópia Digital</p>
+                      {(!validarTelefone(formData.telefone) || !validarCPF(formData.cpf)) && (
+                        <p className="text-[9px] text-red-500 font-bold uppercase italic mt-1">Insira um Telefone e CPF válidos para liberar a prévia</p>
+                      )}
+                    </div>
                   </div>
                   <ArrowRight size={20} className={`text-muted transition-transform ${previewAberto ? 'rotate-90' : ''}`} />
                 </button>
@@ -831,13 +975,17 @@ export function DenunciaFormWizard({
                     onClick={() => {
                       console.log('[wizard] Clique no botão Finalizar detectado.')
                       if (!formData.consentimento) { toast.error('Concorde com os termos primeiro.'); return }
+                      if (!validarTelefone(formData.telefone)) { toast.error('Telefone inválido.'); return }
+                      if (!validarCPF(formData.cpf)) { toast.error('CPF inválido.'); return }
                       handleSubmit()
                     }}
-                    disabled={loading || !formData.consentimento || !otpValidado || !isOnline}
+                    disabled={loading || !formData.consentimento || !otpValidado || !isOnline || !validarTelefone(formData.telefone) || !validarCPF(formData.cpf)}
                     className="btn-primary h-14 sm:h-20 px-8 sm:px-12 rounded-xl sm:rounded-[2rem] gap-4 w-full sm:w-auto bg-secondary hover:bg-secondary-600 disabled:opacity-30 shadow-glow-green"
                   >
                     {loading ? <Loader2 className="animate-spin" /> : <Send size={20} className="sm:w-6 sm:h-6" />}
-                    <span className="font-black uppercase tracking-[0.2em] text-[11px] sm:text-sm">{loading ? 'Protocolando...' : isOnline ? 'Finalizar Denúncia' : 'Aguardando Sinal...'}</span>
+                    <span className="font-black uppercase tracking-[0.2em] text-[11px] sm:text-sm">
+                      {loading ? 'Protocolando...' : isOnline ? 'Finalizar Denúncia' : 'Aguardando Sinal...'}
+                    </span>
                   </button>
                 </div>
               </div>
