@@ -1,4 +1,4 @@
-export type UserRole = 'superadmin' | 'admin' | 'moderador' | 'gestor_cupula'
+export type UserRole = 'superadmin' | 'admin' | 'moderador' | 'comunicador' | 'gestor_cupula'
 
 export interface Profile {
   id: string

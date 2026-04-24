@@ -63,6 +63,8 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
   }, [])
 
   const isAdmin = userProfile?.role === 'admin'
+  const isAnalista = userProfile?.role === 'moderador'
+  const isComunicador = userProfile?.role === 'comunicador'
 
   const handleLogout = async () => {
     if (isLoggingOut) return
@@ -131,27 +133,29 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
             </ul>
           </div>
 
-          {/* Operação */}
-          <div>
-            <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Operação</p>
-            <ul className="space-y-1">
-              {OPERACAO_ITEMS.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
-                      isActive(item.href)
-                        ? 'bg-white/10 text-white'
-                        : 'hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    <item.icon size={18} className="text-white/40 group-hover:text-electric" />
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Operação - Admin e Analista */}
+          {(isAdmin || isAnalista) && (
+            <div>
+              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Operação</p>
+              <ul className="space-y-1">
+                {OPERACAO_ITEMS.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                        isActive(item.href)
+                          ? 'bg-white/10 text-white'
+                          : 'hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <item.icon size={18} className="text-white/40 group-hover:text-electric" />
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Comunicação */}
           <div>

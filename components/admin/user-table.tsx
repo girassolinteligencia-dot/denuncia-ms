@@ -19,10 +19,16 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
   const [modalAberto, setModalAberto] = useState(false)
   
   const handleUpdateRole = async (id: string, currentRole: UserRole) => {
-    const roles: UserRole[] = ['admin', 'moderador']
+    const roles: UserRole[] = ['admin', 'moderador', 'comunicador']
     const nextRole = roles[(roles.indexOf(currentRole) + 1) % roles.length]
     
-    if (!confirm(`Deseja alterar o nível de acesso para ${nextRole}?`)) return
+    const roleLabels: Record<string, string> = {
+      admin: 'Administrador Master',
+      moderador: 'Analista de Ouvidoria',
+      comunicador: 'Gestor de Comunicação'
+    }
+
+    if (!confirm(`Deseja alterar o nível de acesso para ${roleLabels[nextRole]}?`)) return
     
     setLoading(id)
     const result = await updateUsuarioRole(id, nextRole)
@@ -80,7 +86,7 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
           className="btn-primary gap-2 bg-dark hover:bg-black text-white px-6 h-12 rounded-xl"
         >
           <UserPlus size={18} />
-          <span className="font-black uppercase text-[10px] tracking-widest">Novo Moderador</span>
+          <span className="font-black uppercase text-[10px] tracking-widest">Novo Usuário</span>
         </button>
       </div>
 
@@ -116,7 +122,9 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
                    >
                       <Shield size={14} className={user.role === 'admin' ? 'text-secondary' : 'text-primary'} />
                       <span className={`text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'text-secondary' : 'text-dark'}`}>
-                         {user.role}
+                         {user.role === 'admin' ? 'Administrador Master' : 
+                          user.role === 'moderador' ? 'Analista de Ouvidoria' : 
+                          user.role === 'comunicador' ? 'Gestor de Comunicação' : user.role}
                       </span>
                    </button>
                 </td>

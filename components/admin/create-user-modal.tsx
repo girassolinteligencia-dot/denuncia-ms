@@ -74,7 +74,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
             <div className="p-2 bg-primary/10 rounded-xl">
               <UserPlus size={20} />
             </div>
-            <h2 className="font-black uppercase italic tracking-tighter text-lg">Novo Moderador</h2>
+            <h2 className="font-black uppercase italic tracking-tighter text-lg">Novo Usuário</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white rounded-full transition-colors">
             <X size={20} className="text-muted" />
@@ -145,19 +145,21 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
 
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-muted pl-1">Nível de Acesso</label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['admin', 'moderador'] as UserRole[]).map((r) => (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {(['admin', 'moderador', 'comunicador'] as UserRole[]).map((r) => (
                 <button
                   key={r}
                   type="button"
                   onClick={() => setFormData({...formData, role: r})}
-                  className={`py-3 rounded-xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                  className={`py-3 rounded-xl border-2 text-[9px] font-black uppercase tracking-tight transition-all ${
                     formData.role === r 
                     ? 'bg-primary border-primary text-white shadow-md' 
                     : 'bg-white border-border text-muted hover:border-primary/30'
                   }`}
                 >
-                  {r}
+                  {r === 'admin' ? 'Administrador Master' : 
+                   r === 'moderador' ? 'Analista de Ouvidoria' : 
+                   r === 'comunicador' ? 'Gestor de Comunicação' : r}
                 </button>
               ))}
             </div>
