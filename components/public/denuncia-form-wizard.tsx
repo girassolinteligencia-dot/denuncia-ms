@@ -226,15 +226,36 @@ export function DenunciaFormWizard({
     if (files.length === 0) return
 
     if (formData.arquivos.length + files.length > MAX_ARQUIVOS) {
-      toast.error(`Limite máximo de ${MAX_ARQUIVOS} arquivos atingido.`)
+      toast.error('Limite de anexos atingido', {
+        description: `Você já selecionou o máximo de ${MAX_ARQUIVOS} arquivos permitidos para este protocolo.`
+      })
       return
     }
+
+    const ALLOWED_TYPES = [
+      'image/jpeg', 'image/png', 'image/webp', 
+      'application/pdf', 
+      'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/webm'
+    ]
 
     const { uploadArquivoDenuncia } = await import('@/lib/actions/denuncia')
 
     for (const file of files) {
+      // Validar Tipo
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        toast.warning('Formato não suportado', {
+          description: `O arquivo "${file.name}" não está em um formato aceito (Fotos, PDFs ou Áudios). Poderia converter para um formato padrão?`
+        })
+        continue
+      }
+
+      // Validar Tamanho
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(`Arquivo muito grande: ${file.name}`, { description: 'O limite é de 4MB por arquivo.' })
+        toast.warning('Arquivo muito grande', { 
+          description: `Ops! O arquivo "${file.name}" ultrapassa o limite de 4MB. Para garantir um envio rápido, pedimos arquivos menores. Consegue comprimi-lo?` 
+        })
         continue
       }
 
@@ -406,6 +427,15 @@ export function DenunciaFormWizard({
 
   const handleCepChange = async (v: string) => {
     const cleanCep = v.replace(/\D/g, '')
+
+    // Trava Mato Grosso do Sul (Faixa 79xxx-xxx)
+    if (cleanCep.length >= 2 && cleanCep.slice(0, 2) !== '79') {
+      toast.error('Localização Inválida', {
+        description: 'Esta plataforma é exclusiva para o Mato Grosso do Sul. O CEP informado pertence a outro estado.'
+      })
+      return
+    }
+
     const formatted = cleanCep.length <= 5 ? cleanCep : `${cleanCep.slice(0, 5)}-${cleanCep.slice(5, 8)}`
     handleInputChange('cep', formatted)
 
@@ -446,22 +476,51 @@ export function DenunciaFormWizard({
       async (position) => {
         const { latitude, longitude } = position.coords
         try {
+          // Bounding Box do Mato Grosso do Sul para restringir a busca
+          const MS_VIEWBOX = '-58.1,-24.1,-50.4,-17.4'
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
-            { headers: { 'Accept-Language': 'pt-BR' } }
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&viewbox=${MS_VIEWBOX}&bounded=1`,
+            { 
+              headers: { 
+                'Accept-Language': 'pt-BR',
+                'User-Agent': 'DenunciaMS-Platform-App'
+              } 
+            }
           )
           const data = await res.json()
           
           if (data && data.address) {
             const addr = data.address
+            console.log('[geolocation] Dados recebidos:', addr)
+
+            // Validar se o estado é MS
+            const estado = addr.state || ''
+            if (!estado.toLowerCase().includes('mato grosso do sul')) {
+              toast.warning('Fora de Área', {
+                description: 'Detectamos que você está fora do Mato Grosso do Sul. Esta plataforma é exclusiva para o estado de MS.'
+              })
+              setGeolocalizando(false)
+              return
+            }
+
+            const cidadeDetectada = addr.city || addr.town || addr.village || addr.municipality || addr.county || ''
+            const bairroDetectado = addr.neighbourhood || addr.suburb || addr.city_district || addr.hamlet || ''
+            const ruaDetectada = addr.road || addr.pedestrian || addr.square || addr.address29 || ''
+            const cepDetectado = addr.postcode ? (addr.postcode.includes('-') ? addr.postcode : `${addr.postcode.slice(0, 5)}-${addr.postcode.slice(5, 8)}`) : ''
+
             setFormData(prev => ({
               ...prev,
-              local: addr.road || addr.pedestrian || addr.suburb || prev.local,
-              bairro: addr.neighbourhood || addr.suburb || addr.city_district || prev.bairro,
-              cidade: addr.city || addr.town || addr.municipality || prev.cidade,
-              cep: addr.postcode ? (addr.postcode.includes('-') ? addr.postcode : `${addr.postcode.slice(0, 5)}-${addr.postcode.slice(5, 8)}`) : prev.cep
+              local: ruaDetectada || prev.local,
+              bairro: bairroDetectado || prev.bairro,
+              cidade: cidadeDetectada || prev.cidade,
+              cep: cepDetectado || prev.cep
             }))
-            toast.success('Endereço localizado com sucesso!')
+
+            if (!cidadeDetectada && !ruaDetectada) {
+              toast.error('Localização identificada, mas o endereço está incompleto. Por favor, ajuste manualmente.')
+            } else {
+              toast.success('Endereço localizado com sucesso!')
+            }
             handleFieldScroll()
           } else {
             toast.error('Não conseguimos identificar o endereço exato.')
@@ -695,10 +754,22 @@ export function DenunciaFormWizard({
                 </button>
               </div>
 
+              <div className="flex justify-center -mt-4">
+                <button 
+                  type="button"
+                  onClick={() => handleFieldScroll('field-cep')}
+                  className="text-[9px] font-black text-muted/60 uppercase tracking-widest hover:text-primary transition-colors flex items-center gap-2 group italic"
+                >
+                  <span className="w-4 h-[1px] bg-muted/30 group-hover:bg-primary/30 transition-all"></span>
+                  prefiro preencher manualmente meu endereço
+                  <span className="w-4 h-[1px] bg-muted/30 group-hover:bg-primary/30 transition-all"></span>
+                </button>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">CEP</label>
-                  <input className="input h-14 rounded-xl border-2 font-bold" inputMode="numeric" placeholder="00000-000" value={formData.cep} onChange={(e) => handleCepChange(e.target.value)} onBlur={() => handleFieldScroll('field-cidade')} />
+                  <input id="field-cep" className="input h-14 rounded-xl border-2 font-bold" inputMode="numeric" placeholder="00000-000" value={formData.cep} onChange={(e) => handleCepChange(e.target.value)} onBlur={() => handleFieldScroll('field-cidade')} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">Cidade</label>

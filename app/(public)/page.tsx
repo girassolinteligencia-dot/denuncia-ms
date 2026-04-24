@@ -52,24 +52,15 @@ export default async function PublicHomePage() {
         <div className="container-page relative z-10 pb-20 sm:pb-32">
           <div className="max-w-5xl mx-auto text-center space-y-12">
             
-            {/* MASCOTE HERO & SELO CENTRALIZADO */}
+            {/* MASCOTE HERO CENTRALIZADO */}
             <div className="flex flex-col items-center justify-center space-y-8 animate-fade-in">
               <div className="relative group">
                 <div className="absolute -inset-4 bg-primary/20 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
                 <img 
-                  src="/mascote-bruno-hd.webp" 
+                  src="/assets/mascote_bruno_ortiz_hd.webp" 
                   alt="Mascote Bruno Ortiz" 
                   className="w-48 h-48 sm:w-72 sm:h-72 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700 relative z-10"
                 />
-              </div>
-              
-              {/* Selo de Integridade Digital */}
-              <div className="flex items-center gap-4 bg-white/50 backdrop-blur-md px-6 py-3 rounded-full border border-primary/20 shadow-sm animate-bounce-subtle">
-                <img src="/selo-integridade.png" alt="Selo de Integridade" className="w-10 h-10 object-contain" />
-                <div className="text-left">
-                  <p className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">Plataforma Auditada</p>
-                  <p className="text-[9px] font-bold text-dark/60 uppercase italic">Integridade Digital Garantida</p>
-                </div>
               </div>
             </div>
             
