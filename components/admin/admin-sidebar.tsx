@@ -62,9 +62,13 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
     })
   }, [])
 
-  const isAdmin = userProfile?.role === 'admin'
-  const isAnalista = userProfile?.role === 'moderador'
-  const isComunicador = userProfile?.role === 'comunicador'
+  const isAdminMaster = userProfile?.role === 'admin'
+  const permissoes = userProfile?.permissoes || []
+
+  const temAcesso = (modulo: string) => {
+    if (isAdminMaster) return true
+    return permissoes.includes(modulo)
+  }
 
   const handleLogout = async () => {
     if (isLoggingOut) return
@@ -113,78 +117,63 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
 
         <nav className="flex-1 p-4 space-y-6 scrollbar-hide">
           {/* Dashboard */}
-          <div>
-            <ul className="space-y-1">
-              {MENU_ITEMS.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
-                      isActive(item.href)
-                        ? 'bg-secondary text-white shadow-glow-green border-r-4 border-accent'
-                        : 'hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    <item.icon size={18} className={isActive(item.href) ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Operação - Admin e Analista */}
-          {(isAdmin || isAnalista) && (
+          {temAcesso('dashboard') && (
             <div>
-              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Operação</p>
               <ul className="space-y-1">
-                {OPERACAO_ITEMS.map((item) => (
+                {MENU_ITEMS.map((item) => (
                   <li key={item.href}>
                     <Link
                       href={item.href}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
                         isActive(item.href)
-                          ? 'bg-white/10 text-white'
+                          ? 'bg-secondary text-white shadow-glow-green border-r-4 border-accent'
                           : 'hover:bg-white/5 hover:text-white'
                       }`}
                     >
-                      <item.icon size={18} className="text-white/40 group-hover:text-electric" />
+                      <item.icon size={18} className={isActive(item.href) ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
                       {item.label}
                     </Link>
                   </li>
                 ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Operação - Denúncias e Categorias */}
+          {(temAcesso('denuncias') || temAcesso('categorias')) && (
+            <div>
+              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Operação</p>
+              <ul className="space-y-1">
+                {OPERACAO_ITEMS.map((item) => {
+                  const moduleKey = item.href.includes('denuncias') ? 'denuncias' : 'categorias';
+                  if (!temAcesso(moduleKey)) return null;
+                  
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                          isActive(item.href)
+                            ? 'bg-white/10 text-white'
+                            : 'hover:bg-white/5 hover:text-white'
+                        }`}
+                      >
+                        <item.icon size={18} className="text-white/40 group-hover:text-electric" />
+                        {item.label}
+                      </Link>
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           )}
 
           {/* Comunicação */}
-          <div>
-            <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Público</p>
-            <ul className="space-y-1">
-              {CONTEUDO_ITEMS.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
-                      isActive(item.href)
-                        ? 'bg-white/10 text-white'
-                        : 'hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    <item.icon size={18} className="text-white/40 group-hover:text-electric" />
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Sistema - Apenas Admin */}
-          {isAdmin && (
+          {temAcesso('comunicacao') && (
             <div>
-              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Sistema</p>
+              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Público</p>
               <ul className="space-y-1">
-                {SISTEMA_ITEMS.map((item) => (
+                {CONTEUDO_ITEMS.map((item) => (
                   <li key={item.href}>
                     <Link
                       href={item.href}
@@ -203,8 +192,37 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
             </div>
           )}
 
-          {/* Segurança - Apenas Admin */}
-          {isAdmin && (
+          {/* Sistema - Usuários e Configurações */}
+          {(temAcesso('usuarios') || temAcesso('configuracoes')) && (
+            <div>
+              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Sistema</p>
+              <ul className="space-y-1">
+                {SISTEMA_ITEMS.map((item) => {
+                  const moduleKey = item.href.includes('usuarios') ? 'usuarios' : 'configuracoes';
+                  if (!temAcesso(moduleKey)) return null;
+
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                          isActive(item.href)
+                            ? 'bg-white/10 text-white'
+                            : 'hover:bg-white/5 hover:text-white'
+                        }`}
+                      >
+                        <item.icon size={18} className="text-white/40 group-hover:text-electric" />
+                        {item.label}
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          )}
+
+          {/* Segurança - Governança e Logs */}
+          {temAcesso('seguranca') && (
             <div>
               <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Governança</p>
               <ul className="space-y-1">

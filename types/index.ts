@@ -5,8 +5,10 @@ export interface Profile {
   nome: string
   email?: string
   role: UserRole
+  permissoes?: string[] // Chaves dos módulos permitidos
   ativo?: boolean
   criado_em: string
+  atualizado_em: string
 }
 
 export interface PlataformaConfig {

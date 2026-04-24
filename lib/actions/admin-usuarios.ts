@@ -55,6 +55,7 @@ export async function createUsuarioAdmin(data: {
   email: string
   password: string
   role: UserRole
+  permissoes: string[]
 }) {
   const supabase = createAdminClient()
 
@@ -77,6 +78,7 @@ export async function createUsuarioAdmin(data: {
       .update({ 
         nome: data.nome, 
         role: data.role,
+        permissoes: data.permissoes,
         ativo: true 
       })
       .eq('id', authUser.user.id)
