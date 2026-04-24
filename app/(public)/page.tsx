@@ -71,15 +71,15 @@ export default async function PublicHomePage() {
             <div className="space-y-6">
               <div className="flex items-center gap-3 justify-center">
                 <span className="text-white font-black text-xl sm:text-3xl tracking-tight uppercase italic text-center leading-tight">
-                  Olá, eu sou o Bruno Ortiz.<br /> Sua voz tem peso aqui.
+                  Eu sou Bruno Ortiz.<br /> Fiscalização Cidadã na palma da sua mão.
                 </span>
               </div>
               <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-white tracking-tighter leading-[1.1] italic uppercase mx-auto">
                 DENUNCIA MS<br />
-                <span className="text-secondary">Direto ao ponto.</span>
+                <span className="text-secondary">Sua voz tem peso aqui.</span>
               </h1>
               <p className="text-xl sm:text-2xl text-white/70 max-w-2xl mx-auto leading-relaxed font-medium">
-                Sem senhas. Sem demora. Relate o problema agora e nós levamos sua voz direto aos órgãos de controle para cobrar resultados.
+                Identificou algo irregular? Registre agora em poucos cliques. O resto é com a nossa tecnologia: levamos seu protocolo direto a quem decide, com sigilo e seriedade.
               </p>
             </div>
 

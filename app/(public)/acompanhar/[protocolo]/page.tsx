@@ -104,7 +104,7 @@ export default async function DetalhesProtocoloPage({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h1 className="text-4xl font-black text-dark tracking-tighter uppercase italic">Status da <span className="text-primary underline decoration-secondary decoration-4 underline-offset-8">Denuncia</span></h1>
-            <p className="text-muted text-sm mt-3">Protocolo: <span className="font-bold text-dark">{denuncia.protocolo}</span> • Registrado em {new Date((denuncia as any).criado_at).toLocaleDateString()}</p>
+            <p className="text-muted text-sm mt-3">Protocolo: <span className="font-bold text-dark">{denuncia.protocolo}</span> • Registrado em {new Date((denuncia as any).criado_em).toLocaleDateString()}</p>
           </div>
           <div className="flex items-center gap-3 p-4 bg-white rounded-xl shadow-card border border-border">
              <div className={`p-2 rounded-lg ${status.bgColor} ${status.color}`}>

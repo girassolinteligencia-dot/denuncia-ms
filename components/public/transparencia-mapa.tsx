@@ -54,34 +54,38 @@ export const MSMunicipalityMap = ({ data }: { data: CityData[] }) => {
           </radialGradient>
         </defs>
 
-        {/* Mesorregiões do MS */}
+        {/* Mesorregiões do MS - Contorno Realista Aproximado */}
+        {/* Centro-Norte */}
         <path 
-          d="M180 50 L250 80 L300 150 L250 250 L150 230 L130 150 Z" 
+          d="M160 30 L220 10 L280 40 L300 120 L230 200 L140 180 Z" 
           fill="#021691" 
           fillOpacity="0.05" 
           stroke="#021691" 
-          strokeWidth="2"
+          strokeWidth="1.5"
         />
+        {/* Leste */}
         <path 
-          d="M300 150 L380 200 L350 300 L250 250 Z" 
+          d="M300 120 L360 160 L380 250 L320 380 L250 280 L230 200 Z" 
           fill="#021691" 
           fillOpacity="0.03" 
           stroke="#021691" 
-          strokeWidth="2"
+          strokeWidth="1.5"
         />
+        {/* Sudoeste */}
         <path 
-          d="M150 230 L250 250 L230 420 L100 420 L80 320 Z" 
+          d="M140 180 L230 200 L250 280 L220 420 L130 430 L80 320 Z" 
           fill="#021691" 
           fillOpacity="0.08" 
           stroke="#021691" 
-          strokeWidth="2"
+          strokeWidth="1.5"
         />
+        {/* Pantanais */}
         <path 
-          d="M130 150 L150 230 L80 320 L20 200 L50 80 Z" 
+          d="M20 200 L80 80 L160 30 L140 180 L80 320 Z" 
           fill="#00843E" 
           fillOpacity="0.05" 
           stroke="#00843E" 
-          strokeWidth="2"
+          strokeWidth="1.5"
         />
 
         {heatPoints.map((point) => (
