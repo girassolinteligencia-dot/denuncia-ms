@@ -63,7 +63,7 @@ export default async function PublicHomePage() {
                 <div className="flex items-center gap-4 justify-center lg:justify-start">
                   <span className="h-0.5 w-12 bg-secondary shadow-glow-green"></span>
                   <span className="text-white font-black text-sm sm:text-lg tracking-[0.2em] uppercase italic">
-                    Sua voz tem peso. Nossa missão é o resultado.
+                    Olá, eu sou o Bruno Ortiz. Sua voz tem peso aqui.
                   </span>
                 </div>
                 <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tighter leading-[1.1] italic uppercase">
