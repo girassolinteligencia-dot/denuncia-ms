@@ -158,6 +158,61 @@ export async function deletarEnquete(id: string) {
 }
 
 /**
+ * Atualiza uma enquete existente e suas opções
+ */
+export async function atualizarEnquete(id: string, updates: { titulo?: string, local?: string, ativa?: boolean, opcoes?: { id?: string, texto: string, ordem: number }[] }) {
+  const supabase = createAdminClient()
+  
+  try {
+    // 1. Atualizar dados básicos da Enquete
+    if (updates.titulo || updates.local || updates.ativa !== undefined) {
+      const { error: eErr } = await supabase
+        .from('enquetes')
+        .update({ 
+          titulo: updates.titulo, 
+          local_exibicao: updates.local, 
+          ativa: updates.ativa 
+        })
+        .eq('id', id)
+
+      if (eErr) throw eErr
+    }
+
+    // 2. Atualizar Opções (se fornecidas)
+    if (updates.opcoes) {
+      // Para simplificar e garantir a ordem, removemos as antigas e inserimos as novas
+      // (Em um cenário real, poderíamos dar update individual, mas o delete/insert é mais seguro para reordenação total)
+      const { error: dErr } = await supabase
+        .from('enquete_opcoes')
+        .delete()
+        .eq('enquete_id', id)
+
+      if (dErr) throw dErr
+
+      const opcoesData = updates.opcoes.map((opt) => ({
+        enquete_id: id,
+        texto: opt.texto,
+        ordem: opt.ordem
+      }))
+
+      const { error: iErr } = await supabase
+        .from('enquete_opcoes')
+        .insert(opcoesData)
+
+      if (iErr) throw iErr
+    }
+
+    revalidatePath('/')
+    revalidatePath('/admin/enquetes')
+    
+    return { success: true }
+  } catch (err: unknown) {
+    console.error('[polls] Erro ao atualizar enquete:', err)
+    return { success: false, error: (err as Error).message }
+  }
+}
+
+/**
  * Gerencia o Toggle da Pesquisa de Satisfação Global
  */
 export async function setPesquisaSatisfacaoAtiva(ativa: boolean) {

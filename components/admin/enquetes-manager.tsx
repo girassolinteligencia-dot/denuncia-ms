@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Plus, Trash2, ToggleLeft, ToggleRight, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { setPesquisaSatisfacaoAtiva, criarEnquete, deletarEnquete } from '@/lib/actions/enquetes'
+import { setPesquisaSatisfacaoAtiva, criarEnquete, deletarEnquete, atualizarEnquete } from '@/lib/actions/enquetes'
 
 // Note: In a real app, I'd have server actions for CRUD. For now I'll implement the UI logic.
 // I'll assume we have a server action called `salvarEnquete` which I'll create next.
@@ -20,6 +20,7 @@ export function EnquetesManager({
   const [loading, setLoading] = useState(false)
   const [isSatisfacaoAtiva, setIsSatisfacaoAtiva] = useState(satisfacaoAtiva)
   const [showNovoForm, setShowNovoForm] = useState(false)
+  const [enqueteParaEditar, setEnqueteParaEditar] = useState<any>(null)
 
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir esta enquete?')) return
@@ -125,19 +126,44 @@ export function EnquetesManager({
 
             <div className="pt-4 border-t border-border flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted italic">
               <span>Total: {enquete.total_votos || 0} votos</span>
-              <button className="text-primary hover:underline">Ver Detalhes</button>
+              <button 
+                onClick={() => setEnqueteParaEditar(enquete)}
+                className="text-primary hover:underline flex items-center gap-1"
+              >
+                Editar Detalhes
+              </button>
             </div>
           </div>
         ))}
       </div>
+
+      {enqueteParaEditar && (
+        <NovoEnqueteForm 
+          enquete={enqueteParaEditar}
+          onClose={() => setEnqueteParaEditar(null)} 
+          onSuccess={() => {
+            setEnqueteParaEditar(null)
+            router.refresh()
+          }} 
+        />
+      )}
     </div>
   )
 }
 
-function NovoEnqueteForm({ onClose, onSuccess }: { onClose: () => void, onSuccess: () => void }) {
-  const [titulo, setTitulo] = useState('')
-  const [local, setLocal] = useState('landing')
-  const [opcoes, setOpcoes] = useState(['', ''])
+function NovoEnqueteForm({ 
+  onClose, 
+  onSuccess, 
+  enquete 
+}: { 
+  onClose: () => void, 
+  onSuccess: () => void, 
+  enquete?: any 
+}) {
+  const [titulo, setTitulo] = useState(enquete?.titulo || '')
+  const [local, setLocal] = useState(enquete?.local_exibicao || 'landing')
+  const [ativa, setAtiva] = useState(enquete?.ativa ?? true)
+  const [opcoes, setOpcoes] = useState<string[]>(enquete?.opcoes?.map((o: any) => o.texto) || ['', ''])
   const [loading, setLoading] = useState(false)
 
   const handleAddOpcao = () => {
@@ -148,29 +174,61 @@ function NovoEnqueteForm({ onClose, onSuccess }: { onClose: () => void, onSucces
     setOpcoes(opcoes.filter((_, i) => i !== idx))
   }
 
+  const moveOpcao = (idx: number, direction: 'up' | 'down') => {
+    const newOps = [...opcoes]
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1
+    if (targetIdx < 0 || targetIdx >= opcoes.length) return
+    [newOps[idx], newOps[targetIdx]] = [newOps[targetIdx], newOps[idx]]
+    setOpcoes(newOps)
+  }
+
   const handleSave = async () => {
     if (!titulo || opcoes.some(o => !o)) {
       toast.error('Preencha o título e todas as opções.')
       return
     }
     setLoading(true)
-    const res = await criarEnquete(titulo, local, opcoes)
+    
+    const payload = {
+      titulo,
+      local,
+      ativa,
+      opcoes: opcoes.map((texto, i) => ({ texto, ordem: i }))
+    }
+
+    const res = enquete 
+      ? await atualizarEnquete(enquete.id, payload)
+      : await criarEnquete(titulo, local, opcoes)
+
     setLoading(false)
     
     if (res.success) {
-      toast.success('Enquete criada com sucesso!')
+      toast.success(enquete ? 'Enquete atualizada!' : 'Enquete criada!')
       onSuccess()
     } else {
-      toast.error('Erro ao criar: ' + res.error)
+      toast.error('Erro ao salvar: ' + res.error)
     }
   }
 
   return (
-    <div className="bg-surface rounded-[2rem] border-2 border-primary/20 p-8 sm:p-10 space-y-8 animate-slide-up">
+    <div className="bg-surface rounded-[2rem] border-2 border-primary/20 p-8 sm:p-10 space-y-8 animate-slide-up shadow-2xl relative">
+      <div className="flex items-center justify-between border-b border-border pb-4">
+        <h3 className="text-xl font-black text-dark uppercase italic">{enquete ? 'Editar Enquete' : 'Nova Enquete'}</h3>
+        <div className="flex items-center gap-2">
+          <label className="text-[10px] font-black uppercase text-muted">Status:</label>
+          <button 
+            onClick={() => setAtiva(!ativa)}
+            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${ativa ? 'bg-success/10 text-success border-success/20' : 'bg-red-50 text-red-500 border-red-100'}`}
+          >
+            {ativa ? 'Ativa (Publicada)' : 'Pausada (Oculta)'}
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-primary">Título da Enquete</label>
+            <label className="text-[10px] font-black uppercase tracking-widest text-primary">Título / Pergunta</label>
             <input 
               value={titulo} 
               onChange={e => setTitulo(e.target.value)}
@@ -185,17 +243,22 @@ function NovoEnqueteForm({ onClose, onSuccess }: { onClose: () => void, onSucces
               onChange={e => setLocal(e.target.value)}
               className="input h-14 rounded-xl border-2 font-bold"
             >
-              <option value="landing">Landing Page</option>
+              <option value="landing">Landing Page (Home)</option>
               <option value="noticias">Seção de Notícias</option>
             </select>
           </div>
         </div>
 
         <div className="space-y-4">
-          <label className="text-[10px] font-black uppercase tracking-widest text-primary">Opções (Máximo 10)</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-primary">Opções e Ordem</label>
           <div className="space-y-2">
             {opcoes.map((opt, i) => (
-              <div key={i} className="flex gap-2">
+              <div key={i} className="flex gap-2 items-center">
+                <div className="flex flex-col gap-0.5">
+                   <button onClick={() => moveOpcao(i, 'up')} className="text-muted hover:text-primary disabled:opacity-20" disabled={i === 0} title="Subir">
+                      <Plus size={12} className="rotate-45" />
+                   </button>
+                </div>
                 <input 
                   value={opt} 
                   onChange={e => {
@@ -203,21 +266,21 @@ function NovoEnqueteForm({ onClose, onSuccess }: { onClose: () => void, onSucces
                     newOps[i] = e.target.value
                     setOpcoes(newOps)
                   }}
-                  className="input h-10 rounded-lg border text-xs font-bold" 
+                  className="input h-10 rounded-lg border text-xs font-bold flex-1" 
                   placeholder={`Opção ${i+1}`} 
                 />
-                <button onClick={() => handleRemoveOpcao(i)} className="text-red-400 hover:text-red-600"><Trash2 size={14} /></button>
+                <button onClick={() => handleRemoveOpcao(i)} className="text-red-400 hover:text-red-600 px-2"><Trash2 size={16} /></button>
               </div>
             ))}
           </div>
-          <button onClick={handleAddOpcao} className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">+ Adicionar Opção</button>
+          <button onClick={handleAddOpcao} className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">+ Adicionar Resposta</button>
         </div>
       </div>
 
       <div className="flex justify-end gap-4 pt-6 border-t border-border">
-        <button onClick={onClose} className="text-xs font-black uppercase text-muted hover:text-dark">Cancelar</button>
+        <button onClick={onClose} className="text-xs font-black uppercase text-muted hover:text-dark">Descartar</button>
         <button onClick={handleSave} disabled={loading} className="btn-primary h-12 px-10 rounded-xl bg-primary text-white font-black text-xs uppercase shadow-glow-cyan">
-          {loading ? <Loader2 className="animate-spin" /> : 'Criar Enquete'}
+          {loading ? <Loader2 className="animate-spin" /> : enquete ? 'Salvar Alterações' : 'Publicar Enquete'}
         </button>
       </div>
     </div>
