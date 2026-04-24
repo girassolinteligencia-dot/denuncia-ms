@@ -42,9 +42,9 @@ export function PainelImpacto() {
              <div className="absolute top-0 right-0 p-4 text-white/5 group-hover:text-white/10 transition-colors">
                 <CheckCircle2 size={80} />
              </div>
-             <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-2">Resolvidas (24h)</p>
-             <div className="text-5xl font-black text-secondary italic">15</div>
-             <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold">Feedback positivo da comunidade</p>
+             <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-2">Feedback Positivo</p>
+             <div className="text-5xl font-black text-secondary italic">98%</div>
+             <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold">Da comunidade sul-mato-grossense</p>
           </div>
 
           <div className="p-8 bg-dark text-white rounded-3xl relative overflow-hidden group border-none shadow-glow-cyan">
