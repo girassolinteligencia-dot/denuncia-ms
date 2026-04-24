@@ -166,9 +166,9 @@ export function gerarEmailOrgao(d: EmailTemplateData): string {
         <tr>
           <td>
             <p style="margin:0;color:#9ca3af;font-size:11px;line-height:1.6">
-              Esta mensagem foi gerada automaticamente pela plataforma <strong style="color:#021691">DenunciaMS</strong>.<br>
-              Canal independente de ouvidoria — Mato Grosso do Sul.<br>
-              Protocolo: <strong>${d.protocolo}</strong> | Hash de integridade disponível no painel administrativo.
+              Documento oficial gerado pela plataforma <strong style="color:#021691">DENUNCIA MS</strong>.<br>
+              Canal Independente de Ouvidoria — Mato Grosso do Sul.<br>
+              Protocolo: <strong>${d.protocolo}</strong> | Verificação de integridade via hash criptográfico.
             </p>
           </td>
           <td align="right" style="vertical-align:bottom">
@@ -204,7 +204,7 @@ export function gerarEmailDenunciante(protocolo: string, chaveAcesso: string, no
     <td style="padding:32px">
       <p style="margin:0;color:#374151;font-size:15px">Olá, <strong>${nome.split(' ')[0]}</strong>!</p>
       <p style="margin:12px 0;color:#374151;font-size:14px;line-height:1.6">
-        Sua denúncia foi registrada formalmente na plataforma DenunciaMS e encaminhada ao órgão competente.
+        Sua denúncia foi registrada formalmente na plataforma <strong>DENUNCIA MS</strong> e encaminhada ao órgão competente.
         Guarde os dados abaixo para acompanhar o andamento.
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0">
@@ -226,7 +226,7 @@ export function gerarEmailDenunciante(protocolo: string, chaveAcesso: string, no
         </p>
       </div>
       <p style="margin:20px 0 0;color:#9ca3af;font-size:11px;text-align:center">
-        DenunciaMS — Canal independente de ouvidoria — Mato Grosso do Sul
+        <strong>DENUNCIA MS</strong> — Canal Independente de Ouvidoria — Mato Grosso do Sul
       </p>
     </td>
   </tr>
