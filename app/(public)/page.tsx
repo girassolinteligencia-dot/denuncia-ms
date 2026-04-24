@@ -50,17 +50,17 @@ export default async function PublicHomePage() {
         )}
 
         <div className="container-page relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-end">
+          <div className="max-w-4xl mx-auto lg:mx-0">
             
-            {/* Coluna Esquerda: Texto e CTA */}
-            <div className="space-y-8 text-center lg:text-left animate-fade-in">
+            {/* Coluna Única: Conteúdo com Mascote no Topo */}
+            <div className="space-y-8 text-center lg:text-left animate-fade-in pb-16 lg:pb-32">
                 
-                {/* Mascote Completo no Topo - Tamanho Dobrado */}
-                <div className="flex justify-center lg:justify-start -mb-8">
+                {/* Mascote Completo no Topo - Tamanho Dobrado (Estático para evitar sobreposição) */}
+                <div className="flex justify-center lg:justify-start -mb-4">
                   <img 
                     src={configMap['identidade.mascote'] || '/assets/mascote_sem_fundo.png'} 
                     alt="Bruno Ortiz" 
-                    className="h-80 sm:h-[450px] lg:h-[550px] w-auto object-contain drop-shadow-[0_20px_50px_rgba(255,255,255,0.15)] hover:scale-105 transition-transform duration-500"
+                    className="h-80 sm:h-[450px] lg:h-[550px] w-auto object-contain drop-shadow-[0_20px_50px_rgba(255,255,255,0.15)]"
                   />
                 </div>
 
@@ -92,17 +92,6 @@ export default async function PublicHomePage() {
                 </Link>
               </div>
             </div>
-
-            {/* Coluna Direita: Mascote (Estático, sem sobreposição) */}
-            <div className="relative flex justify-center lg:justify-end overflow-visible min-h-[350px] sm:min-h-[500px] lg:min-h-[650px]">
-               <div className="absolute inset-0 bg-secondary/10 rounded-full blur-[120px] scale-150 z-0 animate-pulse"></div>
-               <img 
-                 src={configMap['identidade.mascote'] || '/assets/mascote_sem_fundo.png'} 
-                 alt="Mascote Oficial da plataforma DENUNCIA MS" 
-                 className="relative z-10 w-auto h-[350px] sm:h-[500px] lg:h-[650px] object-contain object-bottom drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-700 hover:scale-[1.02]"
-               />
-            </div>
-
           </div>
         </div>
       </section>
