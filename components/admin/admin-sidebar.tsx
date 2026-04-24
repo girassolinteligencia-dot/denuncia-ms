@@ -73,11 +73,6 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
     }
   }
 
-  // Wrapper para renderização segura de ícones caso o Lucide falhe por versão
-  const Icon = ({ icon: IconComponent, ...props }: { icon: React.ElementType | undefined, size?: number, className?: string }) => {
-    if (!IconComponent) return <ShieldAlert size={props.size || 18} className="text-red-500" />
-    return <IconComponent {...props} />
-  }
 
   return (
     <>
@@ -126,7 +121,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                       : 'hover:bg-white/5 hover:text-white'
                   }`}
                 >
-                  <Icon icon={LayoutDashboard} size={18} className={isActive('/admin/dashboard') ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
+                  <LayoutDashboard size={18} className={isActive('/admin/dashboard') ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
                   Painel de Impacto
                 </Link>
               </li>
@@ -139,7 +134,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                       : 'hover:bg-white/5 hover:text-white'
                   }`}
                 >
-                  <Icon icon={Globe} size={18} className={isActive('/admin/dashboard?tab=geo') ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
+                  <Globe size={18} className={isActive('/admin/dashboard?tab=geo') ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
                   Inteligência Geográfica
                 </Link>
               </li>
@@ -152,7 +147,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                       : 'hover:bg-white/5 hover:text-white'
                   }`}
                 >
-                  <Icon icon={ShieldCheck} size={18} className={isActive('/admin/dashboard?tab=system') ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
+                  <ShieldCheck size={18} className={isActive('/admin/dashboard?tab=system') ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
                   Centro de Governança
                 </Link>
               </li>
@@ -162,7 +157,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                   target="_blank"
                   className="flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group hover:bg-white/5 hover:text-white"
                 >
-                  <Icon icon={Activity} size={18} className="text-white/40 group-hover:text-electric" />
+                  <Activity size={18} className="text-white/40 group-hover:text-electric" />
                   Sala de Situação (Pública)
                 </Link>
               </li>
@@ -182,7 +177,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                         isActive('/admin/denuncias') ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
                       }`}
                     >
-                      <Icon icon={FileText} size={18} className="text-white/40 group-hover:text-electric" />
+                      <FileText size={18} className="text-white/40 group-hover:text-electric" />
                       Denúncias
                     </Link>
                   </li>
@@ -195,7 +190,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                         isActive('/admin/categorias') ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
                       }`}
                     >
-                      <Icon icon={Tags} size={18} className="text-white/40 group-hover:text-electric" />
+                      <Tags size={18} className="text-white/40 group-hover:text-electric" />
                       Categorias
                     </Link>
                   </li>
@@ -216,7 +211,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                       isActive('/admin/conteudo') ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
                     }`}
                   >
-                    <Icon icon={Newspaper} size={18} className="text-white/40 group-hover:text-electric" />
+                    <Newspaper size={18} className="text-white/40 group-hover:text-electric" />
                     Conteúdo & Notícias
                   </Link>
                 </li>
@@ -237,7 +232,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                         isActive('/admin/configuracoes') ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
                       }`}
                     >
-                      <Icon icon={Settings} size={18} className="text-white/40 group-hover:text-electric" />
+                      <Settings size={18} className="text-white/40 group-hover:text-electric" />
                       Configurações Gerais
                     </Link>
                   </li>
@@ -250,7 +245,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                         isActive('/admin/usuarios') ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
                       }`}
                     >
-                      <Icon icon={Users} size={18} className="text-white/40 group-hover:text-electric" />
+                      <Users size={18} className="text-white/40 group-hover:text-electric" />
                       Gestão de Usuários
                     </Link>
                   </li>
@@ -263,7 +258,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                         isActive('/admin/seguranca') ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
                       }`}
                     >
-                      <Icon icon={ShieldAlert} size={18} className="text-white/40 group-hover:text-electric" />
+                      <ShieldAlert size={18} className="text-white/40 group-hover:text-electric" />
                       Auditoria & Logs
                     </Link>
                   </li>
@@ -279,7 +274,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
           disabled={isLoggingOut}
           className="w-full h-11 flex items-center justify-center gap-3 px-3 rounded-btn text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
         >
-          {isLoggingOut ? <Icon icon={RefreshCw} size={16} className="animate-spin" /> : <Icon icon={LogOut} size={16} />}
+          {isLoggingOut ? <RefreshCw size={16} className="animate-spin" /> : <LogOut size={16} />}
           {isLoggingOut ? 'Saindo...' : 'Encerrar Sessão'}
         </button>
       </div>
