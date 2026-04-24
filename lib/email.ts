@@ -39,8 +39,12 @@ export async function sendEmail(params: EmailParams) {
     const resend = getResend()
     if (!resend) throw new Error('Serviço de e-mail indisponível no cliente.')
 
+    const fromEmail = process.env.EMAIL_FROM || 'Denuncia MS <onboarding@resend.dev>'
+    
+    console.log(`[Email] Tentando enviar para: ${to} via ${fromEmail}`)
+
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'Denuncia MS <onboarding@resend.dev>',
+      from: fromEmail,
       to: Array.isArray(to) ? to : [to],
       subject,
       text,

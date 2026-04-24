@@ -70,7 +70,7 @@ export async function createUsuarioAdmin(data: {
       })
     }
 
-    // 3. Enviar e-mail de boas-vindas via Resend
+    let emailEnviado = true
     try {
       await sendEmail({
         to: data.email,
@@ -97,13 +97,16 @@ export async function createUsuarioAdmin(data: {
         `,
         text: `Bem-vindo ao DenunciaMS. Seu acesso como ${data.role} foi criado. Acesse o painel com seu e-mail.`
       })
-    } catch (emailErr) {
+    } catch (emailErr: any) {
       console.error('Erro ao enviar e-mail de boas-vindas:', emailErr)
-      // Não falhamos a criação se apenas o e-mail falhou, mas logamos.
+      emailEnviado = false
     }
 
     revalidatePath('/admin/usuarios')
-    return { success: true }
+    return { 
+      success: true, 
+      warning: !emailEnviado ? 'Usuário criado, mas o e-mail de boas-vindas falhou (Verifique se o domínio do remetente está autorizado no Resend).' : null 
+    }
   } catch (err: unknown) {
     console.error('Erro na criação de usuário:', err)
     return { success: false, error: (err as Error).message }

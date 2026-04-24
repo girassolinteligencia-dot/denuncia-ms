@@ -47,7 +47,11 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
       })
 
       if (result.success) {
-        toast.success('Usuário criado com sucesso!')
+        if (result.warning) {
+          toast.warning(result.warning, { duration: 10000 })
+        } else {
+          toast.success('Usuário criado e e-mail de boas-vindas enviado!')
+        }
         onSuccess()
         onClose()
         setFormData({ nome: '', email: '', password: '', confirmPassword: '', role: 'moderador' })
