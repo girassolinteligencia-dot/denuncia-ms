@@ -36,7 +36,7 @@ export default async function PublicHomePage() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section Refatorada (Clean Column Layout) */}
+      {/* Hero Section Refatorada (Centralized Layout) */}
       <section className="bg-[#021691] border-b border-white/5 pt-16 sm:pt-24 lg:pt-32 overflow-hidden relative">
         {tickerText && (
           <div className="absolute top-0 w-full bg-secondary/90 backdrop-blur-sm z-50 h-8 flex items-center overflow-hidden">
@@ -49,55 +49,62 @@ export default async function PublicHomePage() {
           </div>
         )}
 
-        <div className="container-page relative z-10">
-          <div className="max-w-5xl mx-auto">
+        <div className="container-page relative z-10 pb-20 sm:pb-32">
+          <div className="max-w-5xl mx-auto text-center space-y-12">
             
-            {/* Coluna Única: Conteúdo Totalmente Centralizado */}
-            <div className="space-y-12 text-center animate-fade-in pb-20 lg:pb-40">
-                
-                {/* Mascote Gigante Centralizado */}
-                <div className="flex justify-center -mb-8 sm:-mb-12 lg:-mb-16">
-                  <img 
-                    src={configMap['identidade.mascote'] || '/assets/mascote_bruno_ortiz_hd.webp'} 
-                    alt="Bruno Ortiz" 
-                    className="h-96 sm:h-[600px] lg:h-[750px] w-auto object-contain drop-shadow-[0_30px_60px_rgba(255,255,255,0.2)] hover:scale-105 transition-transform duration-700"
-                    style={{ imageRendering: 'high-quality' }}
-                  />
-                </div>
-
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 justify-center">
-                    <span className="text-white font-black text-xl sm:text-3xl tracking-tight uppercase italic text-center leading-tight">
-                      Olá, eu sou o Bruno Ortiz.<br /> Sua voz tem peso aqui.
-                    </span>
-                  </div>
-                  <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-white tracking-tighter leading-[1.1] italic uppercase mx-auto">
-                    DENUNCIA MS<br />
-                    <span className="text-secondary">Direto ao ponto.</span>
-                  </h1>
-                  <p className="text-xl sm:text-2xl text-white/70 max-w-2xl mx-auto leading-relaxed font-medium">
-                    Sem senhas. Sem demora. Relate o problema agora e nós levamos sua voz direto aos órgãos de controle para cobrar resultados.
-                  </p>
-                </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-10">
-                <Link
-                  href="/denunciar"
-                  className="btn-primary w-full sm:w-auto gap-4 text-xl py-8 px-10 bg-secondary hover:bg-secondary-600 border-none text-dark shadow-[0_0_40px_rgba(255,215,0,0.3)] hover:shadow-[0_0_60px_rgba(255,215,0,0.5)] group h-[70px] uppercase font-black italic transition-all duration-300 animate-pulse-slow"
-                >
-                  <Zap size={24} className="fill-current" />
-                  DENUNCIAR AGORA
-                  <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
-                </Link>
-                
-                <Link 
-                  href="/acompanhar" 
-                  className="btn-primary w-full sm:w-auto gap-3 bg-white/10 hover:bg-white/20 border-2 border-white/20 text-white h-[70px] px-8 text-sm uppercase font-black italic tracking-widest backdrop-blur-sm transition-all"
-                >
-                  <Search size={20} className="text-secondary" />
-                  Consultar Protocolo
-                </Link>
+            {/* MASCOTE HERO & SELO CENTRALIZADO */}
+            <div className="flex flex-col items-center justify-center space-y-8 animate-fade-in">
+              <div className="relative group">
+                <div className="absolute -inset-4 bg-primary/20 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                <img 
+                  src="/mascote-bruno-hd.webp" 
+                  alt="Mascote Bruno Ortiz" 
+                  className="w-48 h-48 sm:w-72 sm:h-72 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700 relative z-10"
+                />
               </div>
+              
+              {/* Selo de Integridade Digital */}
+              <div className="flex items-center gap-4 bg-white/50 backdrop-blur-md px-6 py-3 rounded-full border border-primary/20 shadow-sm animate-bounce-subtle">
+                <img src="/selo-integridade.png" alt="Selo de Integridade" className="w-10 h-10 object-contain" />
+                <div className="text-left">
+                  <p className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">Plataforma Auditada</p>
+                  <p className="text-[9px] font-bold text-dark/60 uppercase italic">Integridade Digital Garantida</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 justify-center">
+                <span className="text-white font-black text-xl sm:text-3xl tracking-tight uppercase italic text-center leading-tight">
+                  Olá, eu sou o Bruno Ortiz.<br /> Sua voz tem peso aqui.
+                </span>
+              </div>
+              <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-white tracking-tighter leading-[1.1] italic uppercase mx-auto">
+                DENUNCIA MS<br />
+                <span className="text-secondary">Direto ao ponto.</span>
+              </h1>
+              <p className="text-xl sm:text-2xl text-white/70 max-w-2xl mx-auto leading-relaxed font-medium">
+                Sem senhas. Sem demora. Relate o problema agora e nós levamos sua voz direto aos órgãos de controle para cobrar resultados.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-10">
+              <Link
+                href="/denunciar"
+                className="btn-primary w-full sm:w-auto gap-4 text-xl py-8 px-10 bg-secondary hover:bg-secondary-600 border-none text-dark shadow-[0_0_40px_rgba(255,215,0,0.3)] hover:shadow-[0_0_60px_rgba(255,215,0,0.5)] group h-[70px] uppercase font-black italic transition-all duration-300 animate-pulse-slow"
+              >
+                <Zap size={24} className="fill-current" />
+                DENUNCIAR AGORA
+                <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
+              </Link>
+              
+              <Link 
+                href="/acompanhar" 
+                className="btn-primary w-full sm:w-auto gap-3 bg-white/10 hover:bg-white/20 border-2 border-white/20 text-white h-[70px] px-8 text-sm uppercase font-black italic tracking-widest backdrop-blur-sm transition-all"
+              >
+                <Search size={20} className="text-secondary" />
+                Consultar Protocolo
+              </Link>
             </div>
           </div>
         </div>
