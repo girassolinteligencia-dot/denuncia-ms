@@ -79,15 +79,21 @@ export default async function PublicHomePage() {
                   </p>
                 </div>
 
-              <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-4 pt-6">
                 <Link
                   href="/denunciar"
-                  className="btn-primary w-full sm:w-auto gap-3 text-lg py-5 bg-secondary hover:bg-secondary-600 border-none text-dark shadow-glow-green group h-[60px]"
+                  className="btn-primary w-full sm:w-auto gap-4 text-xl py-8 px-10 bg-secondary hover:bg-secondary-600 border-none text-dark shadow-[0_0_40px_rgba(255,215,0,0.3)] hover:shadow-[0_0_60px_rgba(255,215,0,0.5)] group h-[70px] uppercase font-black italic transition-all duration-300 animate-pulse-slow"
                 >
+                  <Zap size={24} className="fill-current" />
                   DENUNCIAR AGORA
-                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
                 </Link>
-                <Link href="/acompanhar" className="btn-outline w-full sm:w-auto gap-3 text-white border-white/20 hover:bg-white/10 h-[60px] px-8">
+                
+                <Link 
+                  href="/acompanhar" 
+                  className="btn-primary w-full sm:w-auto gap-3 bg-white/10 hover:bg-white/20 border-2 border-white/20 text-white h-[70px] px-8 text-sm uppercase font-black italic tracking-widest backdrop-blur-sm transition-all"
+                >
+                  <Search size={20} className="text-secondary" />
                   Consultar Protocolo
                 </Link>
               </div>
