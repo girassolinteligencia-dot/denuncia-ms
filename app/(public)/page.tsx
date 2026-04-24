@@ -52,7 +52,7 @@ export default async function PublicHomePage() {
           </div>
         )}
 
-        <div className="container-page relative z-10 pb-20 sm:pb-32">
+        <div className="container-page relative z-10 pb-10 sm:pb-16">
           <div className="max-w-5xl mx-auto text-center space-y-12">
             
             {/* MASCOTE HERO CENTRALIZADO */}
