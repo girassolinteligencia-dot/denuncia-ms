@@ -26,6 +26,28 @@ export async function getUsuarios() {
 }
 
 /**
+ * Busca o perfil do usuário atualmente logado
+ */
+export async function getMe() {
+  const supabase = createAdminClient()
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Não autenticado' }
+
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+
+    if (error) throw error
+    return { success: true, data: profile as Profile }
+  } catch (err: unknown) {
+    return { success: false, error: (err as Error).message }
+  }
+}
+
+/**
  * Cria um novo usuário administrativo (Auth + Profile)
  */
 export async function createUsuarioAdmin(data: {

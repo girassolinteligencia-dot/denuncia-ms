@@ -1,10 +1,17 @@
-import React from 'react'
-import { getUsuarios } from '@/lib/actions/admin-usuarios'
+import { getMe } from '@/lib/actions/admin-usuarios'
 import { UserTable } from '@/components/admin/user-table'
+import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
 export default async function UsuariosPage() {
+  const me = await getMe()
+  
+  // Tranca de Segurança: Apenas Admin Master
+  if (!me.success || me.data?.role !== 'admin') {
+    return redirect('/admin/dashboard')
+  }
+
   const result = await getUsuarios()
   const usuarios = result.success ? result.data : []
 

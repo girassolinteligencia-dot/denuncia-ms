@@ -45,11 +45,24 @@ const SEGURANCA_ITEMS = [
 ]
 
 import { logout } from '@/lib/actions/auth'
+import { getMe } from '@/lib/actions/admin-usuarios'
+import type { Profile } from '@/types'
 
 export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> = ({ isOpen, onClose }) => {
   const pathname = usePathname()
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
   const [isLoggingOut, setIsLoggingOut] = React.useState(false)
+  const [userProfile, setUserProfile] = React.useState<Profile | null>(null)
+
+  React.useEffect(() => {
+    getMe().then(res => {
+      if (res.success && res.data) {
+        setUserProfile(res.data)
+      }
+    })
+  }, [])
+
+  const isAdmin = userProfile?.role === 'admin'
 
   const handleLogout = async () => {
     if (isLoggingOut) return
@@ -162,49 +175,53 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
             </ul>
           </div>
 
-          {/* Sistema */}
-          <div>
-            <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Sistema</p>
-            <ul className="space-y-1">
-              {SISTEMA_ITEMS.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
-                      isActive(item.href)
-                        ? 'bg-white/10 text-white'
-                        : 'hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    <item.icon size={18} className="text-white/40 group-hover:text-electric" />
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Sistema - Apenas Admin */}
+          {isAdmin && (
+            <div>
+              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Sistema</p>
+              <ul className="space-y-1">
+                {SISTEMA_ITEMS.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                        isActive(item.href)
+                          ? 'bg-white/10 text-white'
+                          : 'hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <item.icon size={18} className="text-white/40 group-hover:text-electric" />
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-          {/* Segurança */}
-          <div>
-            <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Governança</p>
-            <ul className="space-y-1">
-              {SEGURANCA_ITEMS.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
-                      isActive(item.href)
-                        ? 'bg-white/10 text-white'
-                        : 'hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    <item.icon size={18} className="text-white/40 group-hover:text-electric" />
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Segurança - Apenas Admin */}
+          {isAdmin && (
+            <div>
+              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Governança</p>
+              <ul className="space-y-1">
+                {SEGURANCA_ITEMS.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                        isActive(item.href)
+                          ? 'bg-white/10 text-white'
+                          : 'hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <item.icon size={18} className="text-white/40 group-hover:text-electric" />
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </nav>
 
       <div className="p-4 border-t border-white/5 mt-auto">
