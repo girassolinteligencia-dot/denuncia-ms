@@ -397,10 +397,9 @@ export function DenunciaFormWizard({
             <CloudOff size={32} className="animate-pulse" />
           </div>
           <div className="space-y-1 text-center sm:text-left">
-            <h3 className="font-black uppercase tracking-tight italic text-lg">Modo de Segurança Local Ativado</h3>
+            <h3 className="font-black uppercase tracking-tight italic text-lg">Modo Offline Ativado</h3>
             <p className="text-xs font-medium text-white/80 leading-relaxed italic">
-              Conexão instável detectada. Não se preocupe! Você pode continuar preenchendo sua denúncia normalmente. 
-              Seus dados estão salvos com segurança neste aparelho e serão enviados automaticamente assim que você recuperar o sinal para a <strong>DENUNCIA MS</strong>.
+              Continue preenchendo normalmente. Seus dados estão seguros e serão enviados automaticamente para a <strong>DENUNCIA MS</strong> assim que você recuperar o sinal.
             </p>
           </div>
         </div>
@@ -489,7 +488,7 @@ export function DenunciaFormWizard({
 
               <div ref={bottomRef} className="flex justify-end pt-6">
                 <button onClick={handleNext} disabled={!formData.categoria_id} className="btn-primary h-12 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-30 disabled:grayscale">
-                  <span className="font-black uppercase tracking-widest text-[9px] sm:text-xs">Avançar para o Relato</span>
+                  <span className="font-black uppercase tracking-widest text-[9px] sm:text-xs">Próximo: O que houve?</span>
                   <ArrowRight size={18} className="sm:w-5 sm:h-5" />
                 </button>
               </div>
@@ -542,7 +541,7 @@ export function DenunciaFormWizard({
                 </button>
                 <button onClick={() => { if (!formData.titulo || !formData.descricao_original) { toast.error('Preencha o título e a descrição'); return }; handleNext() }} 
                   className="btn-primary h-12 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all">
-                  <span className="font-black uppercase tracking-widest text-[9px] sm:text-xs">Confirmar Localização</span>
+                  <span className="font-black uppercase tracking-widest text-[9px] sm:text-xs">Próximo: Onde foi?</span>
                   <ArrowRight size={18} className="sm:w-5 sm:h-5" />
                 </button>
               </div>
@@ -667,9 +666,9 @@ export function DenunciaFormWizard({
                       <ShieldCheck size={24} className="text-secondary shrink-0" />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="text-sm font-black text-white uppercase tracking-widest italic">Protocolo de Validação Bi-Fatorial</h4>
+                      <h4 className="text-sm font-black text-white uppercase tracking-widest italic">Protocolo de Validação</h4>
                       <p className="text-[11px] text-white/70 leading-relaxed font-medium italic">
-                        Para garantir a integridade da <strong>DENUNCIA MS</strong> e evitar envios automatizados, validamos sua identidade via e-mail. Este processo é criptografado e segue as diretrizes internacionais de segurança cibernética.
+                        Validamos sua identidade via e-mail para garantir a integridade da <strong>DENUNCIA MS</strong> e proteger o sistema contra robôs.
                       </p>
                     </div>
                   </div>
@@ -732,10 +731,10 @@ export function DenunciaFormWizard({
                     <div className="bg-primary/5 border border-primary/10 p-6 rounded-[2rem] space-y-4">
                       <div className="flex items-center gap-2 text-primary">
                         <Lock size={20} className="animate-pulse" />
-                        <h4 className="text-[10px] font-black uppercase tracking-widest">Garantia de Sigilo e Proteção de Dados</h4>
+                        <h4 className="text-[10px] font-black uppercase tracking-widest">Sua Identidade Protegida</h4>
                       </div>
                       <p className="text-xs text-dark/70 leading-relaxed font-medium italic text-justify">
-                        A identificação via <strong>Telefone</strong> e <strong>CPF</strong> é processada sob rigorosa camada de segurança. Em total conformidade com a <strong>LGPD (Lei Geral de Proteção de Dados)</strong> e a <strong>LAI (Lei de Acesso à Informação)</strong>, seus dados são anonimizados no banco de dados e utilizados estritamente para a validação jurídica do protocolo. A <strong>DENUNCIA MS</strong> assegura o sigilo absoluto da fonte, garantindo que sua participação seja segura e protegida contra represálias.
+                        Seus dados são criptografados por lei e sua denúncia é enviada sob sigilo absoluto. A <strong>DENUNCIA MS</strong> garante que sua identidade seja preservada durante todo o processo oficial, conforme a LGPD e LAI.
                       </p>
                     </div>
 
@@ -778,9 +777,9 @@ export function DenunciaFormWizard({
                         <Check size={16} strokeWidth={4} />
                       </div>
                       <div className="space-y-2 text-left">
-                        <p className="text-[10px] font-black text-dark uppercase tracking-widest italic">Termo de Responsabilidade e Fé Pública</p>
+                        <p className="text-[10px] font-black text-dark uppercase tracking-widest italic">Confirmo que meu relato é verdadeiro</p>
                         <p className="text-[11px] text-muted font-medium leading-relaxed italic">
-                          Declaro, sob as penas da lei e em observância ao <strong>Art. 299 do Código Penal (Falsidade Ideológica)</strong> e ao <strong>Art. 340 (Comunicação Falsa)</strong>, que as informações e evidências anexadas são fidedignas e representam a verdade dos fatos. Estou ciente de que a má-fé sujeitará o declarante às sanções civis e penais cabíveis.
+                          Estou ciente de que a má-fé ou denúncias comprovadamente falsas sujeitarão o declarante às sanções civis e penais cabíveis, conforme o Código Penal Brasileiro.
                         </p>
                       </div>
                     </label>

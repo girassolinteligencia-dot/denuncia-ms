@@ -6,13 +6,10 @@ import {
   Search,
   Zap,
   ArrowRight,
-  CheckCircle2,
-  Lock,
   ArrowUpRight,
   Fingerprint,
   Radio
 } from 'lucide-react'
-import { MascoteParallax } from '@/components/public/mascote-parallax'
 import { FeedbackNewsletter } from '@/components/public/feedback-newsletter'
 import { EnqueteDinamica } from '@/components/public/enquete-dinamica'
 import { getEnqueteAtiva } from '@/lib/actions/enquetes'
@@ -27,7 +24,6 @@ export default async function PublicHomePage() {
     return acc
   }, {})
 
-  const appName = configMap['identidade.nome'] || 'DENUNCIA MS'
   const tickerText = configMap['identidade.ticker'] || ''
 
   const { data: categorias } = await supabase
@@ -40,9 +36,8 @@ export default async function PublicHomePage() {
 
   return (
     <div className="flex flex-col">
-
-      {/* Hero Section */}
-      <section className="relative bg-[#021691] overflow-hidden min-h-[500px] sm:min-h-[700px] flex items-center border-b border-white/5 transition-all">
+      {/* Hero Section Refatorada (Clean Column Layout) */}
+      <section className="bg-[#021691] border-b border-white/5 pt-16 sm:pt-24 lg:pt-32 overflow-hidden relative">
         {tickerText && (
           <div className="absolute top-0 w-full bg-secondary/90 backdrop-blur-sm z-50 h-8 flex items-center overflow-hidden">
             <div className="whitespace-nowrap animate-marquee flex items-center gap-10 text-[10px] font-black text-dark uppercase tracking-widest">
@@ -54,65 +49,59 @@ export default async function PublicHomePage() {
           </div>
         )}
 
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 z-0 animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/5 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 z-0"></div>
-
-        <MascoteParallax imageUrl={(configMap['identidade.mascote'] || '/assets/mascote_sem_fundo.png') + '?v=2'} />
-
-        <div className="container-page relative z-20 py-20 sm:py-20 lg:py-32">
-          <div className="max-w-2xl text-center lg:text-left space-y-6 sm:space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] animate-fade-in mx-auto lg:mx-0">
-               <Zap size={14} className="text-secondary fill-secondary" />
-               Canal Independente de Ouvidoria — Mato Grosso do Sul
-            </div>
-
-            <div className="space-y-2 sm:space-y-4">
-              <div className="flex items-center gap-4 animate-slide-up">
-                <span className="h-0.5 w-12 bg-secondary shadow-glow-green"></span>
-                <span className="text-white font-black text-sm sm:text-lg tracking-[0.2em] uppercase italic">
-                  Oi, aqui é o Bruno Ortiz. E aqui, sua voz tem peso.
-                </span>
+        <div className="container-page relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-end">
+            
+            {/* Coluna Esquerda: Texto e CTA */}
+            <div className="pb-16 lg:pb-32 space-y-8 text-center lg:text-left animate-fade-in">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] mx-auto lg:mx-0">
+                 <Zap size={14} className="text-secondary fill-secondary" />
+                 Canal Independente de Ouvidoria — Mato Grosso do Sul
               </div>
-              <span className="text-[#FFD700] font-black text-base sm:text-2xl tracking-tighter block animate-slide-up italic uppercase">
-                Transformando indignação em resultado real.
-              </span>
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[1.1] sm:leading-[1.05] animate-slide-up italic">
-                Chega de burocracia. <br />
-                Direto ao <span className="text-secondary underline decoration-2 sm:decoration-4 decoration-secondary/30 underline-offset-4 sm:underline-offset-8">resultado.</span>
-              </h1>
-            </div>
 
-            <p className="text-base sm:text-lg text-white/70 max-w-xl lg:mx-0 mx-auto leading-relaxed animate-fade-in font-medium px-2 sm:px-0">
-              Viu algo errado na sua cidade? Esqueça senhas e cadastros lentos. No{' '}
-              <span className="text-white font-black uppercase tracking-tighter">{appName}</span>,{' '}
-              você relata em segundos e nós conectamos sua voz diretamente aos órgãos de controle.{' '}
-              <span className="text-secondary font-black">Sua fiscalização move a mudança!</span>
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-3 sm:gap-4 pt-4">
-              <Link
-                href="/denunciar"
-                className="btn-primary w-full sm:w-auto gap-3 text-lg py-5 bg-secondary hover:bg-secondary-600 border-none text-dark shadow-glow-green group h-[60px]"
-              >
-                DENUNCIAR AGORA
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link href="/acompanhar" className="btn-outline w-full sm:w-auto gap-3 text-white border-white/20 hover:bg-white/10 bg-white/5 backdrop-blur-sm h-[60px] px-8">
-                Consultar Protocolo
-              </Link>
-            </div>
-
-            <div className="flex items-center lg:justify-start justify-center gap-8 pt-8 text-xs font-black text-white/40 uppercase tracking-[0.3em]">
-              <div className="flex items-center gap-2">
-                <Lock size={14} className="text-secondary" />
-                Sem Cadastro. Validação Rápida
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 justify-center lg:justify-start">
+                  <span className="h-0.5 w-12 bg-secondary shadow-glow-green"></span>
+                  <span className="text-white font-black text-sm sm:text-lg tracking-[0.2em] uppercase italic">
+                    Sua voz tem peso. Nossa missão é o resultado.
+                  </span>
+                </div>
+                <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tighter leading-[1.1] italic uppercase">
+                  DENUNCIA MS<br />
+                  <span className="text-secondary">Direto ao ponto.</span>
+                </h1>
+                <p className="text-lg sm:text-xl text-white/70 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+                  Sem senhas. Sem demora. Relate o problema agora e nós levamos sua voz direto aos órgãos de controle para cobrar resultados.
+                </p>
               </div>
-              <div className="w-1.5 h-1.5 rounded-full bg-white/10"></div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={14} className="text-secondary" />
-                Dentro da Lei (LGPD)
+
+              <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-4 pt-4">
+                <Link
+                  href="/denunciar"
+                  className="btn-primary w-full sm:w-auto gap-3 text-lg py-5 bg-secondary hover:bg-secondary-600 border-none text-dark shadow-glow-green group h-[60px]"
+                >
+                  DENUNCIAR AGORA
+                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link href="/acompanhar" className="btn-outline w-full sm:w-auto gap-3 text-white border-white/20 hover:bg-white/10 h-[60px] px-8">
+                  Consultar Protocolo
+                </Link>
               </div>
             </div>
+
+            {/* Coluna Direita: Mascote (Estático, sem sobreposição) */}
+            <div className="relative flex justify-center lg:justify-end overflow-visible">
+               <div className="absolute inset-0 bg-secondary/10 rounded-full blur-[120px] scale-150 z-0 animate-pulse"></div>
+               <picture className="relative z-10">
+                  <source srcSet="/assets/mascote_sem_fundo.webp" type="image/webp" />
+                  <img 
+                    src={configMap['identidade.mascote'] || '/assets/mascote_sem_fundo.png'} 
+                    alt="Mascote Oficial da plataforma DENUNCIA MS" 
+                    className="w-auto h-[350px] sm:h-[500px] lg:h-[650px] object-contain object-bottom drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-700 hover:scale-[1.02]"
+                  />
+               </picture>
+            </div>
+
           </div>
         </div>
       </section>
@@ -122,11 +111,10 @@ export default async function PublicHomePage() {
         <div className="container-page space-y-12">
           <div className="text-center space-y-4 max-w-2xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-black tracking-tighter italic uppercase">
-              Aqui não tem <span className="text-secondary">enrolação</span>
+              Rápido. Oficial. <span className="text-secondary">Seguro.</span>
             </h2>
             <p className="text-white/60 text-sm leading-relaxed">
-              Sabe aquela denúncia que você já costumava mandar para o Bruno Ortiz pelas redes sociais?
-              Agora ela tem um lugar oficial para ser resolvida, sem complicação.
+              Sua fiscalização vira ação oficial. O canal direto para oficializar seu relato e cobrar resultados reais da gestão pública.
             </p>
           </div>
 
@@ -246,12 +234,10 @@ export default async function PublicHomePage() {
       <section className="section bg-white border-b border-border">
         <div className="container-page max-w-3xl mx-auto text-center space-y-6">
           <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tighter italic uppercase">
-            Por que pedimos <span className="text-primary">identificação?</span>
+            Identificação <span className="text-primary">Obrigatória por Lei</span>
           </h2>
           <p className="text-muted text-sm leading-relaxed max-w-2xl mx-auto">
-            Assim como você já se identificava ao mandar uma mensagem nas redes sociais do Bruno,
-            aqui pedimos o mesmo. Isso é uma exigência dos próprios órgãos de controle para que a
-            denúncia seja levada a sério e não seja descartada por falta de responsabilidade.
+            Pedimos seus dados apenas para validar o protocolo oficial e garantir a segurança jurídica da sua denúncia, protegendo o seu sigilo de fonte.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left pt-4">
             <div className="bg-surface rounded-2xl p-5 border border-border space-y-2">
