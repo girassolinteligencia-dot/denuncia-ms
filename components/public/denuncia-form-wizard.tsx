@@ -17,7 +17,9 @@ import {
   Zap,
   AlertTriangle,
   CloudOff,
-  Wifi
+  Wifi,
+  Trash2,
+  X
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -612,10 +614,15 @@ export function DenunciaFormWizard({
                     id="file-upload" 
                     accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,audio/*"
                   />
-                  <label htmlFor="file-upload" className="flex flex-col items-center justify-center p-12 border-4 border-dashed border-border/60 rounded-[3rem] bg-surface cursor-pointer">
+                  <label htmlFor="file-upload" className="flex flex-col items-center justify-center p-12 border-4 border-dashed border-border/60 rounded-[3rem] bg-surface cursor-pointer hover:bg-surface/80 transition-all">
                     <Paperclip size={40} className="mb-4 text-primary" />
                     <span className="text-lg font-black text-dark uppercase tracking-tight">Anexar Arquivos</span>
-                    <span className="text-xs text-muted font-bold">Máximo 5 arquivos</span>
+                    <div className="mt-4 space-y-1 text-center">
+                      <p className="text-[10px] text-muted font-bold uppercase tracking-widest">Máximo 5 arquivos</p>
+                      <p className="text-[9px] text-muted/60 font-medium italic">
+                        Formatos: Fotos, PDF, Word ou Áudios (Máx 4MB/cada)
+                      </p>
+                    </div>
                   </label>
                 </div>
 
@@ -626,7 +633,9 @@ export function DenunciaFormWizard({
                         <FileText size={14} className="text-primary" />
                         <p className="text-[10px] font-black text-dark truncate">{f.name}</p>
                       </div>
-                      <button onClick={() => removeFile(i)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg"><Check size={14} className="rotate-45" /></button>
+                      <button onClick={() => removeFile(i)} className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-xl transition-all" title="Remover arquivo">
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   ))}
                 </div>
