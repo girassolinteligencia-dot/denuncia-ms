@@ -400,7 +400,7 @@ export function DenunciaFormWizard({
             <h3 className="font-black uppercase tracking-tight italic text-lg">Modo de Segurança Local Ativado</h3>
             <p className="text-xs font-medium text-white/80 leading-relaxed italic">
               Conexão instável detectada. Não se preocupe! Você pode continuar preenchendo sua denúncia normalmente. 
-              Seus dados estão salvos com segurança neste aparelho e serão enviados automaticamente assim que você recuperar o sinal.
+              Seus dados estão salvos com segurança neste aparelho e serão enviados automaticamente assim que você recuperar o sinal para a <strong>DENUNCIA MS</strong>.
             </p>
           </div>
         </div>
@@ -439,7 +439,7 @@ export function DenunciaFormWizard({
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-border/40 pb-8">
                 <div className="space-y-2">
                   <h2 className="text-3xl sm:text-4xl font-black text-dark tracking-tighter italic uppercase">Escolha a <span className="text-primary italic">Categoria</span></h2>
-                  <p className="text-muted text-sm font-medium">Selecione o tipo de ocorrência que deseja relatar.</p>
+                  <p className="text-muted text-sm font-medium">Selecione o tipo de ocorrência que deseja relatar na <strong>DENUNCIA MS</strong>.</p>
                 </div>
                 <div className="flex -space-x-4">
                   {categorias.slice(0, 4).map((c, i) => (
@@ -562,7 +562,7 @@ export function DenunciaFormWizard({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">CEP</label>
-                  <input className="input h-14 rounded-xl border-2 font-bold" placeholder="00000-000" value={formData.cep} onChange={(e) => handleCepChange(e.target.value)} onBlur={() => handleFieldScroll('field-cidade')} />
+                  <input className="input h-14 rounded-xl border-2 font-bold" inputMode="numeric" placeholder="00000-000" value={formData.cep} onChange={(e) => handleCepChange(e.target.value)} onBlur={() => handleFieldScroll('field-cidade')} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">Cidade</label>
@@ -662,12 +662,14 @@ export function DenunciaFormWizard({
                 
                 {/* EXPLICAÇÃO INICIAL */}
                 {!otpValidado && (
-                  <div className="bg-white/10 border border-white/20 p-6 rounded-3xl flex gap-4 relative z-10 backdrop-blur-md">
-                    <ShieldCheck size={24} className="text-secondary shrink-0" />
+                  <div className="bg-white/10 border border-white/20 p-6 rounded-3xl flex gap-4 relative z-10 backdrop-blur-md shadow-inner">
+                    <div className="p-2 bg-secondary/20 rounded-lg">
+                      <ShieldCheck size={24} className="text-secondary shrink-0" />
+                    </div>
                     <div className="space-y-1">
-                      <h4 className="text-sm font-black text-white uppercase tracking-widest italic">Por que validar o e-mail?</h4>
+                      <h4 className="text-sm font-black text-white uppercase tracking-widest italic">Protocolo de Validação Bi-Fatorial</h4>
                       <p className="text-[11px] text-white/70 leading-relaxed font-medium italic">
-                        Iniciamos a validação pelo seu e-mail para garantir que você é uma pessoa real. Isso protege a plataforma contra envios automatizados.
+                        Para garantir a integridade da <strong>DENUNCIA MS</strong> e evitar envios automatizados, validamos sua identidade via e-mail. Este processo é criptografado e segue as diretrizes internacionais de segurança cibernética.
                       </p>
                     </div>
                   </div>
@@ -702,7 +704,7 @@ export function DenunciaFormWizard({
                       <div className="bg-white/5 border border-secondary/30 p-8 rounded-[2rem] space-y-6 text-center animate-slide-up">
                         <p className="text-xs font-black uppercase tracking-[0.3em] text-secondary">Código Enviado</p>
                         <input ref={otpInputRef} className="bg-black/40 border-2 border-secondary/40 rounded-2xl h-20 text-center text-4xl font-black text-white w-full max-w-[320px] mx-auto block"
-                          placeholder="000000" maxLength={6} value={formData.otpToken} onChange={(e) => {
+                          placeholder="000000" maxLength={6} inputMode="numeric" value={formData.otpToken} onChange={(e) => {
                             const val = e.target.value.replace(/\D/g, '')
                             handleInputChange('otpToken', val)
                             if (val.length === 6) {
@@ -729,11 +731,11 @@ export function DenunciaFormWizard({
                   <div className="space-y-8 animate-slide-up">
                     <div className="bg-primary/5 border border-primary/10 p-6 rounded-[2rem] space-y-4">
                       <div className="flex items-center gap-2 text-primary">
-                        <ShieldCheck size={20} />
-                        <h4 className="text-[10px] font-black uppercase tracking-widest">Segurança Jurídica e Sigilo</h4>
+                        <Lock size={20} className="animate-pulse" />
+                        <h4 className="text-[10px] font-black uppercase tracking-widest">Garantia de Sigilo e Proteção de Dados</h4>
                       </div>
-                      <p className="text-xs text-dark/70 leading-relaxed font-medium italic">
-                        A identificação via <strong>Telefone</strong> e <strong>CPF</strong> é uma exigência dos órgãos de controle para garantir a segurança jurídica e a viabilidade das investigações. Ressaltamos que, em conformidade com a <strong>LGPD</strong> e a <strong>LAI</strong>, seus dados são criptografados e anonimizados em nosso banco de dados, sendo acessíveis apenas por técnicos autorizados sob sigilo de fonte. Esta etapa é fundamental para que sua voz tenha o peso necessário perante o Estado.
+                      <p className="text-xs text-dark/70 leading-relaxed font-medium italic text-justify">
+                        A identificação via <strong>Telefone</strong> e <strong>CPF</strong> é processada sob rigorosa camada de segurança. Em total conformidade com a <strong>LGPD (Lei Geral de Proteção de Dados)</strong> e a <strong>LAI (Lei de Acesso à Informação)</strong>, seus dados são anonimizados no banco de dados e utilizados estritamente para a validação jurídica do protocolo. A <strong>DENUNCIA MS</strong> assegura o sigilo absoluto da fonte, garantindo que sua participação seja segura e protegida contra represálias.
                       </p>
                     </div>
 
@@ -744,6 +746,7 @@ export function DenunciaFormWizard({
                           id="field-telefone"
                           className="bg-white border-2 border-primary/10 rounded-2xl h-16 p-4 text-lg font-bold w-full text-dark shadow-sm focus:border-primary transition-all"
                           placeholder="(67) 99999-9999" 
+                          inputMode="tel"
                           value={formData.telefone} 
                           onChange={(e) => handleTelefoneChange(e.target.value)} 
                           onBlur={() => { if(formData.telefone) handleFieldScroll('field-cpf') }}
@@ -756,6 +759,7 @@ export function DenunciaFormWizard({
                           id="field-cpf"
                           className="bg-white border-2 border-primary/10 rounded-2xl h-16 p-4 text-lg font-bold w-full text-dark shadow-sm focus:border-primary transition-all"
                           placeholder="000.000.000-00" 
+                          inputMode="numeric"
                           value={formData.cpf} 
                           onChange={(e) => handleCpfChange(e.target.value)} 
                           onBlur={() => { if(formData.cpf) handleFieldScroll('field-consentimento') }}

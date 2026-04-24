@@ -35,12 +35,18 @@ export const metadata: Metadata = {
 }
 
 import { Analytics } from "@vercel/analytics/react"
-import { Outfit } from 'next/font/google'
+import { Outfit, Inter } from 'next/font/google'
 
 const outfit = Outfit({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-outfit',
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
 })
 
 export default function RootLayout({
@@ -49,7 +55,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR" className={`scroll-smooth ${outfit.variable}`}>
+    <html lang="pt-BR" className={`scroll-smooth ${outfit.variable} ${inter.variable}`}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

@@ -32,7 +32,8 @@
   --dark: 210 17% 24%;
   --electric: 180 50% 50%;
 
-  --font-sans: var(--font-outfit), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-outfit), system-ui, sans-serif;
 
   --radius-card: 12px;
   --radius-btn:  8px;

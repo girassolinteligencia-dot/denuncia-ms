@@ -22,10 +22,10 @@ export default async function PublicLayout({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="h-20 sm:h-32 bg-white border-b border-border sticky top-0 z-50 shadow-sm transition-all">
+      <header className="h-16 sm:h-24 bg-white border-b border-border sticky top-0 z-50 shadow-sm transition-all">
         <div className="container-page flex items-center justify-between h-full gap-2 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <img src={appLogo} alt={appName} className="h-12 sm:h-24 w-auto transition-transform group-hover:scale-105" />
+            <img src={appLogo} alt={appName} className="h-10 sm:h-16 w-auto transition-transform group-hover:scale-105" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
