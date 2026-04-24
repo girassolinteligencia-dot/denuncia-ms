@@ -35,7 +35,7 @@ export default async function CategoryIntegracaoPage({ params }: { params: { id:
           Configurar Destinos: <span className="text-secondary">{categoria?.label || 'Categoria'}</span>
         </h1>
         <p className="text-muted text-sm">
-          Defina para onde os dados serão enviados (E-mail, Webhook ou ambos) quando uma denúncia desta categoria for recebida.
+          Defina para onde os dados serão enviados (E-mail, Webhook ou ambos) quando uma denuncia desta categoria for recebida.
         </p>
       </div>
 

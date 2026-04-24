@@ -26,7 +26,7 @@ export default async function TiposArquivoPage() {
         </div>
         <h1 className="text-2xl font-bold text-dark">Tipos de Arquivo Permitidos</h1>
         <p className="text-muted text-sm text-balance max-w-2xl">
-          Configure quais tipos de mídia o cidadão pode anexar à denúncia. 
+          Configure quais tipos de mídia o cidadão pode anexar à denuncia. 
           As limitações de tamanho e quantidade ajudam a controlar os custos de armazenamento no Supabase Storage.
         </p>
       </div>

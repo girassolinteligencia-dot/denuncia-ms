@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS pdf_assinaturas (
 CREATE INDEX IF NOT EXISTS idx_pdf_denuncia ON pdf_assinaturas(denuncia_id);
 CREATE INDEX IF NOT EXISTS idx_pdf_protocolo ON pdf_assinaturas(protocolo);
 
--- 3. Logs de Acesso a Denúncias (rate limiting de consulta pública)
+-- 3. Logs de Acesso a Denuncias (rate limiting de consulta pública)
 CREATE TABLE IF NOT EXISTS logs_acesso_denuncia (
   id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   ip_origem           text NOT NULL,

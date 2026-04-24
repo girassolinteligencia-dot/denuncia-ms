@@ -146,7 +146,7 @@ export const NewsManager: React.FC<{ initialNoticias: Noticia[] }> = ({ initialN
                </div>
                <h2 className="text-3xl font-black italic tracking-tighter">ROBÔ DE <span className="text-primary italic">NOTÍCIAS</span></h2>
                <p className="text-white/60 text-sm leading-relaxed font-medium transition-opacity">
-                  Ative o motor de IA para analisar as denúncias das últimas 24 horas e gerar boletins resumidos. 
+                  Ative o motor de IA para analisar as denuncias das últimas 24 horas e gerar boletins resumidos. 
                   O sistema anonimiza os dados e cria rascunhos jornalísticos prontos para serem revisados e publicados.
                </p>
             </div>

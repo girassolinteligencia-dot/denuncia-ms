@@ -4,14 +4,14 @@ import { createAdminClient } from '@/lib/supabase-admin'
 import { revalidatePath } from 'next/cache'
 
 /**
- * Gera sugestões de notícias baseadas em tendências reais de denúncias.
+ * Gera sugestões de notícias baseadas em tendências reais de denuncias.
  * Anonimiza os dados e usa IA para criar relatos genéricos úteis à população.
  */
 export async function gerarSugestoesDeNoticias() {
   const supabase = createAdminClient()
 
   try {
-    // 1. Buscar denúncias recentes (últimos 7 dias)
+    // 1. Buscar denuncias recentes (últimos 7 dias)
     const seteDiasAtras = new Date()
     seteDiasAtras.setDate(seteDiasAtras.getDate() - 7)
 
@@ -22,7 +22,7 @@ export async function gerarSugestoesDeNoticias() {
 
     if (dError) throw dError
     if (!denuncias || denuncias.length === 0) {
-      return { success: false, error: 'Nenhuma denúncia recente para análise.' }
+      return { success: false, error: 'Nenhuma denuncia recente para análise.' }
     }
 
     // 2. Agrupar tendências (Simulação de Análise de IA)
@@ -39,7 +39,7 @@ export async function gerarSugestoesDeNoticias() {
 
     // 3. Criar a Notícia Sugerida (Pendende de Moderação)
     const tituloSugerido = `Aumento nas fiscalizações de ${categoriaTop[0]} em Mato Grosso do Sul`
-    const conteudoSugerido = `A plataforma Denúncia MS registrou um aumento de ${categoriaTop[1]} novos protocolos relacionados a ${categoriaTop[0]} na última semana. Esta tendência reflete o engajamento direto da população no monitoramento e melhoria da região. Lembramos que todos os dados são tratados com sigilo e consolidados em relatórios de transparência para as devidas providências.`
+    const conteudoSugerido = `A plataforma Denuncia MS registrou um aumento de ${categoriaTop[1]} novos protocolos relacionados a ${categoriaTop[0]} na última semana. Esta tendência reflete o engajamento direto da população no monitoramento e melhoria da região. Lembramos que todos os dados são tratados com sigilo e consolidados em relatórios de transparência para as devidas providências.`
 
     const novaNoticia = {
       titulo: tituloSugerido,

@@ -28,7 +28,7 @@ export default async function LogsPage() {
     {
       id: 1,
       evento: 'CREATE_DENUNCIA',
-      descricao: 'Nova denúncia protocolada: DNS-2026-000042',
+      descricao: 'Nova denuncia protocolada: DNS-2026-000042',
       ip: '187.121.45.10',
       usuario: { nome: 'Sistema (Cidadão)' },
       criado_em: new Date().toISOString()

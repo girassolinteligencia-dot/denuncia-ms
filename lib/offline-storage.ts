@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Utilitário para gerenciar denúncias offline usando IndexedDB.
+ * Utilitário para gerenciar denuncias offline usando IndexedDB.
  * Permite salvar rascunhos e anexos localmente quando não há internet.
  */
 

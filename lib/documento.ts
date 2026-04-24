@@ -1,5 +1,5 @@
 /**
- * Monta o documento final de uma denúncia substituindo variáveis dinâmicas
+ * Monta o documento final de uma denuncia substituindo variáveis dinâmicas
  * nos templates de cabeçalho e rodapé configurados no Módulo 0.
  *
  * Variáveis suportadas: {{protocolo}}, {{categoria}}, {{data_envio}},
@@ -83,7 +83,7 @@ export function montarDocumentoFinal(params: {
 }
 
 /**
- * Constrói as variáveis de documento a partir dos dados da denúncia.
+ * Constrói as variáveis de documento a partir dos dados da denuncia.
  */
 export function construirVariaveis(params: {
   protocolo: string

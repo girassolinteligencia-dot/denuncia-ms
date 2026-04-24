@@ -152,7 +152,7 @@ export const SystemSettings = () => {
            
            <h3 className="text-lg font-black text-dark uppercase italic tracking-tighter mb-2">Modo Manutenção</h3>
            <p className="text-sm text-muted font-medium mb-6 leading-relaxed">
-              Bloqueia o envio de novas denúncias e o acesso às enquetes em toda a plataforma. 
+              Bloqueia o envio de novas denuncias e o acesso às enquetes em toda a plataforma. 
               Use apenas para atualizações críticas de banco de dados.
            </p>
            
@@ -185,7 +185,7 @@ export const SystemSettings = () => {
                   </div>
                </div>
                <p className={`text-sm font-medium leading-relaxed max-w-2xl ${configs.status_emergencia ? 'text-white/60' : 'text-muted'}`}>
-                  Este comando suspende instantaneamente TODA a plataforma pública do Denúncia MS. 
+                  Este comando suspende instantaneamente TODA a plataforma pública do Denuncia MS. 
                   Deve ser utilizado apenas em casos de comprometimento de dados, ataques cibernéticos ou ordens institucionais de urgência.
                </p>
             </div>

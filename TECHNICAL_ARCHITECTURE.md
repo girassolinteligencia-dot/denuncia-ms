@@ -25,7 +25,7 @@ O banco de dados utiliza PostgreSQL no Supabase com **Row Level Security (RLS)**
 ### Tabelas Principais:
 - **`profiles`**: Extensão do `auth.users`, define roles (`superadmin`, `admin`, `moderador`).
 - **`denuncias`**: Coração do sistema. Armazena protocolos, títulos, descrições, dados geográficos e status.
-- **`categorias`**: Define o tipo da denúncia, slug, emoji e instruções específicas.
+- **`categorias`**: Define o tipo da denuncia, slug, emoji e instruções específicas.
 - **`localidades_cep`**: (Adicionado em 21/04/2026) Base local de CEPs do MS (11.941 registros) para auto-preenchimento e validação territorial sem dependência de APIs externas lentas.
 - **`arquivos_denuncia`**: Metadados de evidências enviadas (fotos/documentos) vinculados ao Storage.
 - **`integracoes_destino`**: Configurações de webhooks e e-mails de destino por categoria.
@@ -34,7 +34,7 @@ O banco de dados utiliza PostgreSQL no Supabase com **Row Level Security (RLS)**
 
 ### Segurança e RLS:
 - **Público**: Pode disparar `INSERT` em `denuncias` e `SELECT` em `categorias`, `noticias`, `banners` e `localidades_cep`.
-- **Moderador**: Acesso de leitura e atualização de status em denúncias.
+- **Moderador**: Acesso de leitura e atualização de status em denuncias.
 - **Admin**: Gestão completa de categorias e integrações.
 - **Superadmin**: Controle total sobre configurações do sistema e templates.
 
@@ -42,14 +42,14 @@ O banco de dados utiliza PostgreSQL no Supabase com **Row Level Security (RLS)**
 
 ## 3. Fluxos de Trabalho (Core Flows)
 
-### A. Fluxo de Registro de Denúncia (`registrarDenuncia`)
+### A. Fluxo de Registro de Denuncia (`registrarDenuncia`)
 1. **Captura**: Usuário preenche o `DenunciaFormWizard`.
 2. **Geolocalização**: O sistema usa a base local `localidades_cep` para auto-preencher logradouro/bairro ao digitar o CEP.
 3. **Action (Server-Side)**:
    - Gera Protocolo Atômico (ex: `DNS-2026-000421`).
    - Sobe arquivos para o Supabase Storage.
    - **Geração de PDF**: Cria um documento oficial assinado digitalmente (via jsPDF) usando os templates de cabeçalho/rodapé configurados.
-   - **Persistência**: Salva a denúncia e vincula os metadados dos arquivos.
+   - **Persistência**: Salva a denuncia e vincula os metadados dos arquivos.
    - **Despacho**: Dispara assincronamente webhooks e e-mails para as entidades responsáveis.
 
 ### B. Ingestão e Inteligência Territorial
@@ -65,10 +65,10 @@ O banco de dados utiliza PostgreSQL no Supabase com **Row Level Security (RLS)**
 ├── app/                  # Rotas Next.js (Admin, Público, Auth)
 ├── components/           # UI Components (Radix/Tailwind)
 │   ├── admin/            # Dashboard e Gestão
-│   ├── public/           # Wizard de Denúncia e Landing Page
+│   ├── public/           # Wizard de Denuncia e Landing Page
 │   └── ui/               # Componentes atômicos (Design System)
 ├── lib/                  # Lógica de Negócio (Server-side)
-│   ├── actions/          # Server Actions (Denúncia, CEP, Admin)
+│   ├── actions/          # Server Actions (Denuncia, CEP, Admin)
 │   ├── supabase/         # Clientes admin e browser
 │   ├── pdf.ts            # Motor de geração de documentos
 │   └── protocolo.ts      # Lógica de sequenciamento atômico
@@ -89,7 +89,7 @@ O banco de dados utiliza PostgreSQL no Supabase com **Row Level Security (RLS)**
 
 ## 6. Filosofia de Design (Aesthetics)
 - **Interatividade**: Transições suaves, animações micro-interativas (Lottie/CSS), glassmorphism em cards administrativos.
-- **Responsividade**: Mobile-first para que denúncias possam ser feitas em campo com captura direta de câmera.
+- **Responsividade**: Mobile-first para que denuncias possam ser feitas em campo com captura direta de câmera.
 - **Identidade**: Uso de cores institucionais do MS (Azul Royal e Amarelo Canário) com tipografia limpa (Inter/Outfit).
 
 ---

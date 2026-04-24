@@ -27,7 +27,7 @@ export default function RecuperarSenhaPage() {
           
           <div className="space-y-4">
             <p className="text-sm text-dark/70 leading-relaxed font-medium">
-              Por questões de segurança e integridade da plataforma **Denúncia MS**, a redefinição de senhas administrativas deve ser solicitada diretamente ao **Super Administrador** ou ao setor de TI responsável.
+              Por questões de segurança e integridade da plataforma **Denuncia MS**, a redefinição de senhas administrativas deve ser solicitada diretamente ao **Super Administrador** ou ao setor de TI responsável.
             </p>
             
             <div className="bg-surface p-6 rounded-2xl border border-border/50 space-y-4">
@@ -44,7 +44,7 @@ export default function RecuperarSenhaPage() {
 
           <div className="pt-4">
             <Link 
-              href="mailto:suporte@denunciams.com.br?subject=Recuperação de Senha Administrativa - Denúncia MS"
+              href="mailto:suporte@denunciams.com.br?subject=Recuperação de Senha Administrativa - Denuncia MS"
               className="btn-primary w-full h-14 rounded-2xl bg-dark hover:bg-black text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3"
             >
               <Mail size={18} />
@@ -54,7 +54,7 @@ export default function RecuperarSenhaPage() {
         </div>
 
         <p className="text-center mt-8 text-[9px] text-muted font-black uppercase tracking-[0.3em] italic">
-          Sistema de Gestão de Denúncias - MS
+          Sistema de Gestão de Denuncias - MS
         </p>
       </div>
     </div>

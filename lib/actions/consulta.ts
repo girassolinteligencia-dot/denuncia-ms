@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase-admin'
 import { headers } from 'next/headers'
 
 /**
- * Consulta o status de uma denúncia de forma segura
+ * Consulta o status de uma denuncia de forma segura
  * Implementa Rate Limiting por IP para evitar ataques de força bruta
  */
 export async function consultarStatusDenuncia(protocolo: string, chaveAcesso: string) {
@@ -30,7 +30,7 @@ export async function consultarStatusDenuncia(protocolo: string, chaveAcesso: st
       }
     }
 
-    // 2. Buscar a denúncia validando Ambas as Credenciais
+    // 2. Buscar a denuncia validando Ambas as Credenciais
     const { data: denuncia, error } = await supabase
       .from('denuncias')
       .select('id, protocolo, status, criado_at, titulo, local, cep, numero, bairro, cidade, categoria_id, categorias(label)')

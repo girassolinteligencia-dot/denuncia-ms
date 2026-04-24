@@ -5,20 +5,20 @@ import { DenunciasListTable } from '@/components/admin/denuncias-list-table'
 import { Filter, Search as SearchIcon } from 'lucide-react'
 
 export const metadata = {
-  title: 'Gestão de Denúncias | Painel Admin',
+  title: 'Gestão de Denuncias | Painel Admin',
 }
 
 export default async function DenunciasAdminPage() {
   const supabase = createAdminClient()
   
-  // Busca denúncias com categoria
+  // Busca denuncias com categoria
   const { data: denuncias, error } = await supabase
     .from('denuncias')
     .select('id, protocolo, titulo, status, criado_em, categoria_id, cat_info:categorias(label, icon_name)')
     .order('criado_em', { ascending: false })
 
   if (error) {
-    return <div className="p-8 text-error">Erro ao carregar denúncias: {error.message}</div>
+    return <div className="p-8 text-error">Erro ao carregar denuncias: {error.message}</div>
   }
 
   return (
@@ -26,7 +26,7 @@ export default async function DenunciasAdminPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-dark tracking-tighter uppercase italic">Central de <span className="text-primary underline decoration-secondary decoration-4 underline-offset-4">Ocorrências</span></h1>
-          <p className="text-muted text-sm font-medium">Visualize e processe as denúncias enviadas pelos cidadãos.</p>
+          <p className="text-muted text-sm font-medium">Visualize e processe as denuncias enviadas pelos cidadãos.</p>
         </div>
         
         <div className="flex items-center gap-3">

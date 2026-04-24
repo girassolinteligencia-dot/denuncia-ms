@@ -6,7 +6,7 @@ import type { StatusDenuncia } from '@/types'
 import { decryptData } from '@/lib/encrypt'
 
 /**
- * Atualiza o status de uma denúncia e registra no log de auditoria
+ * Atualiza o status de uma denuncia e registra no log de auditoria
  */
 export async function updateDenunciaStatus(id: string, novoStatus: StatusDenuncia, observacaoAdmin?: string) {
   const supabase = createAdminClient()
@@ -19,7 +19,7 @@ export async function updateDenunciaStatus(id: string, novoStatus: StatusDenunci
       .eq('id', id)
       .single()
 
-    if (!atual) throw new Error('Denúncia não encontrada')
+    if (!atual) throw new Error('Denuncia não encontrada')
 
     // 2. Atualizar o status
     const { error } = await supabase
@@ -56,7 +56,7 @@ export async function updateDenunciaStatus(id: string, novoStatus: StatusDenunci
 }
 
 /**
- * Busca detalhes completos da denúncia incluindo arquivos, categoria e identidade descriptografada.
+ * Busca detalhes completos da denuncia incluindo arquivos, categoria e identidade descriptografada.
  */
 export async function getDenunciaDetalhes(id: string) {
   const supabase = createAdminClient()
@@ -87,7 +87,7 @@ export async function getDenunciaDetalhes(id: string) {
       .single()
 
     if (error) throw error
-    if (!data) return { success: false, error: 'Denúncia não encontrada.' }
+    if (!data) return { success: false, error: 'Denuncia não encontrada.' }
 
     // Busca dados de identidade criptografados (tabela separada por LGPD)
     const { data: identidade } = await supabase
@@ -208,7 +208,7 @@ export async function limparArquivosAntigos() {
   dataLimite.setDate(dataLimite.getDate() - 30)
 
   try {
-    // 1. Buscar arquivos de denúncias criadas há mais de 30 dias
+    // 1. Buscar arquivos de denuncias criadas há mais de 30 dias
     // e que ainda não foram marcados como removidos
     const { data: arquivos } = await supabase
       .from('arquivos_denuncia')
@@ -329,7 +329,7 @@ export async function banirUsuario(emailHash: string, motivo: string) {
 }
 
 /**
- * Busca dados históricos de denúncias para o gráfico de evolução (últimos 30 dias)
+ * Busca dados históricos de denuncias para o gráfico de evolução (últimos 30 dias)
  */
 export async function getProtocolEvolutionData() {
   const supabase = createAdminClient()
@@ -373,7 +373,7 @@ export async function getProtocolEvolutionData() {
 }
 
 /**
- * Busca todas as denúncias com coordenadas para o mapa de inteligência
+ * Busca todas as denuncias com coordenadas para o mapa de inteligência
  */
 export async function getGeographicIntelligence() {
   const supabase = createAdminClient()

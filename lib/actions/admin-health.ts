@@ -29,7 +29,7 @@ export async function getSystemHealthStats() {
       .select('*', { count: 'exact', head: true })
       .gte('acessado_em', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
 
-    // 4. Denúncias por Status
+    // 4. Denuncias por Status
     const { data: denunciasStatus } = await supabase
       .from('denuncias')
       .select('status')

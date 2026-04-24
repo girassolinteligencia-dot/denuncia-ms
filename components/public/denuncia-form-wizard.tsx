@@ -391,14 +391,14 @@ export function DenunciaFormWizard({
       if (res.success) {
         console.log('[wizard] Registro bem-sucedido:', res.protocolo)
         await removerRascunho('rascunho_atual')
-        toast.success('Denúncia protocolada com sucesso!')
+        toast.success('Denuncia protocolada com sucesso!')
         router.push(`/sucesso?protocolo=${res.protocolo}&chave=${res.chaveAcesso}`)
       } else {
         console.error('[wizard] Erro retornado pela action:', res.error)
         setLoading(false)
         
         const isOtpError = res.error?.toLowerCase().includes('código') || res.error?.toLowerCase().includes('otp')
-        toast.error(res.error || 'Erro ao processar denúncia.', {
+        toast.error(res.error || 'Erro ao processar denuncia.', {
           description: isOtpError ? 'Por favor, solicite um novo código de verificação.' : 'Verifique os dados e tente novamente.',
           duration: 10000
         })
@@ -960,7 +960,7 @@ export function DenunciaFormWizard({
                         <h4 className="text-[10px] font-black uppercase tracking-widest">Sua Identidade Protegida</h4>
                       </div>
                       <p className="text-xs text-dark/70 leading-relaxed font-medium italic text-justify">
-                        Seus dados são criptografados por lei e sua denúncia é enviada sob sigilo absoluto. A <strong>DENUNCIA MS</strong> garante que sua identidade seja preservada durante todo o processo oficial, conforme a LGPD e LAI.
+                        Seus dados são criptografados por lei e sua denuncia é enviada sob sigilo absoluto. A <strong>DENUNCIA MS</strong> garante que sua identidade seja preservada durante todo o processo oficial, conforme a LGPD e LAI.
                       </p>
                     </div>
 
@@ -1005,7 +1005,7 @@ export function DenunciaFormWizard({
                       <div className="space-y-2 text-left">
                         <p className="text-[10px] font-black text-dark uppercase tracking-widest italic">Confirmo que meu relato é verdadeiro</p>
                         <p className="text-[11px] text-muted font-medium leading-relaxed italic">
-                          Estou ciente de que a má-fé ou denúncias comprovadamente falsas sujeitarão o declarante às sanções civis e penais cabíveis, conforme o Código Penal Brasileiro.
+                          Estou ciente de que a má-fé ou denuncias comprovadamente falsas sujeitarão o declarante às sanções civis e penais cabíveis, conforme o Código Penal Brasileiro.
                         </p>
                       </div>
                     </label>
@@ -1066,7 +1066,7 @@ export function DenunciaFormWizard({
                   >
                     {loading ? <Loader2 className="animate-spin" /> : <Send size={20} className="sm:w-6 sm:h-6" />}
                     <span className="font-black uppercase tracking-[0.2em] text-[11px] sm:text-sm">
-                      {loading ? 'Protocolando...' : isOnline ? 'Finalizar Denúncia' : 'Aguardando Sinal...'}
+                      {loading ? 'Protocolando...' : isOnline ? 'Finalizar Denuncia' : 'Aguardando Sinal...'}
                     </span>
                   </button>
                 </div>

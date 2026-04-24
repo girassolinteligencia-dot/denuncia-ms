@@ -44,7 +44,7 @@ export default async function IntegracoesPage() {
       <div>
         <h1 className="text-2xl font-bold text-dark">Monitor de Integrações</h1>
         <p className="text-muted text-sm">
-          Acompanhe o status de entrega das denúncias para os órgãos responsáveis por E-mail e Webhook.
+          Acompanhe o status de entrega das denuncias para os órgãos responsáveis por E-mail e Webhook.
         </p>
       </div>
 

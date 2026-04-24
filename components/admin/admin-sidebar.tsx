@@ -96,7 +96,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                 className="w-10 h-10 object-contain drop-shadow-md"
               />
               <div>
-                <h1 className="font-black text-white text-base leading-none tracking-tighter">DENÚNCIA MS</h1>
+                <h1 className="font-black text-white text-base leading-none tracking-tighter">DENUNCIA MS</h1>
                 <p className="text-[9px] text-electric font-black uppercase tracking-[0.2em] mt-1 drop-shadow-sm">Admin Engine</p>
               </div>
             </Link>
@@ -164,7 +164,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
             </ul>
           </div>
 
-          {/* Operação - Denúncias e Categorias */}
+          {/* Operação - Denuncias e Categorias */}
           {(temAcesso('denuncias') || temAcesso('categorias')) && (
             <div>
               <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Operação Operacional</p>
@@ -178,7 +178,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                       }`}
                     >
                       <FileText size={18} className="text-white/40 group-hover:text-electric" />
-                      Denúncias
+                      Denuncias
                     </Link>
                   </li>
                 )}

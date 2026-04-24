@@ -56,7 +56,7 @@ export default async function TransparenciaPage() {
           <div className="max-w-2xl mx-auto space-y-4">
             <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tighter uppercase italic">Inteligência Territorial</h2>
             <p className="text-muted text-sm sm:text-base font-medium leading-relaxed">
-              Visualize a distribuição geográfica das denúncias no Estado. 
+              Visualize a distribuição geográfica das denuncias no Estado. 
               As áreas com maior intensidade indicam onde a cidadania está mais ativa.
             </p>
           </div>
@@ -73,7 +73,7 @@ export default async function TransparenciaPage() {
           <div className="p-4 bg-surface rounded-3xl space-y-4 border border-border">
             <h2 className="text-xl font-black text-dark tracking-tighter uppercase italic">Nosso Compromisso Ético</h2>
             <p className="text-muted text-sm leading-relaxed font-medium">
-              A <strong>Denúncia MS</strong> não manipula dados. Nosso feed reflete a realidade das interações cidadãs, 
+              A <strong>Denuncia MS</strong> não manipula dados. Nosso feed reflete a realidade das interações cidadãs, 
               utilizando algoritmos de anonimização para proteger identidades enquanto expõe problemas estruturais 
               que necessitam de atenção imediata das entidades responsáveis.
             </p>

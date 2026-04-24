@@ -116,7 +116,7 @@ export const MSMunicipalityMap = ({ data }: { data: CityData[] }) => {
       </svg>
 
       <div className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-md p-3 rounded-2xl border border-border shadow-lg">
-         <p className="text-[8px] font-black uppercase tracking-widest text-muted mb-2 text-center">Volume de Denúncias</p>
+         <p className="text-[8px] font-black uppercase tracking-widest text-muted mb-2 text-center">Volume de Denuncias</p>
          <div className="flex items-center gap-2">
             <span className="text-[9px] font-bold text-muted">Mín</span>
             <div className="h-1.5 w-24 bg-gradient-to-r from-primary/10 to-primary rounded-full"></div>

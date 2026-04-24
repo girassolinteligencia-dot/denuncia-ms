@@ -48,8 +48,8 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
 
   const MODULOS = [
     { id: 'dashboard', label: 'Dashboard', desc: 'Visão geral e métricas' },
-    { id: 'denuncias', label: 'Denúncias', desc: 'Gestão de casos e triagem' },
-    { id: 'categorias', label: 'Categorias', desc: 'Configuração de tipos de denúncia' },
+    { id: 'denuncias', label: 'Denuncias', desc: 'Gestão de casos e triagem' },
+    { id: 'categorias', label: 'Categorias', desc: 'Configuração de tipos de denuncia' },
     { id: 'comunicacao', label: 'Comunicação', desc: 'Notícias, Banners e Enquetes' },
     { id: 'usuarios', label: 'Usuários', desc: 'Gestão de acessos (Admin Master)' },
     { id: 'configuracoes', label: 'Sistema', desc: 'Ajustes técnicos e campos' },

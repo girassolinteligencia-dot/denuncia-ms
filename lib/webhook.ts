@@ -155,11 +155,11 @@ export async function processarFilaDespacho(limite = 10) {
         <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:#f4f7f9;padding:40px;margin:0">
           <div style="max-width:600px;background:white;margin:0 auto;border-radius:16px;overflow:hidden;border:1px solid #e1e8ed">
             <div style="background:#021691;padding:32px;text-align:center;color:white">
-              <h1 style="margin:0;font-size:20px;text-transform:uppercase;font-style:italic;font-weight:900">Denúncia MS</h1>
+              <h1 style="margin:0;font-size:20px;text-transform:uppercase;font-style:italic;font-weight:900">Denuncia MS</h1>
               <p style="margin:8px 0 0;font-size:12px;opacity:0.8">Portal Independente de Ouvidoria</p>
             </div>
             <div style="padding:40px">
-              <h2 style="font-weight:900;color:#111;margin-top:0">Nova Denúncia Recebida</h2>
+              <h2 style="font-weight:900;color:#111;margin-top:0">Nova Denuncia Recebida</h2>
               <p style="color:#666;font-size:14px;line-height:1.6">Uma nova irregularidade foi reportada através da plataforma e requer sua análise técnica.</p>
               
               <div style="background:#f0f4ff;border:2px dashed #021691;border-radius:12px;padding:20px;text-align:center;margin-bottom:30px">
@@ -192,7 +192,7 @@ export async function processarFilaDespacho(limite = 10) {
               </div>
             </div>
             <div style="background:#f9fafb;padding:24px;text-align:center;border-top:1px solid #f0f0f0">
-              <p style="font-size:10px;color:#999;margin:0">Este é um e-mail automático enviado pela plataforma Denúncia MS.<br>Por favor, não responda a este endereço.</p>
+              <p style="font-size:10px;color:#999;margin:0">Este é um e-mail automático enviado pela plataforma Denuncia MS.<br>Por favor, não responda a este endereço.</p>
             </div>
           </div>
         </div>
@@ -221,9 +221,9 @@ export async function processarFilaDespacho(limite = 10) {
 
       await sendEmail({
         to:      destinoFinal,
-        subject: `[Nova Denúncia] ${den.protocolo} — ${catInfo?.label || den.categoria_id}`,
+        subject: `[Nova Denuncia] ${den.protocolo} — ${catInfo?.label || den.categoria_id}`,
         html:    htmlBody,
-        text:    `Nova denúncia. Protocolo: ${den.protocolo}. Categoria: ${catInfo?.label || den.categoria_id}.`,
+        text:    `Nova denuncia. Protocolo: ${den.protocolo}. Categoria: ${catInfo?.label || den.categoria_id}.`,
         attachments: emailAttachments
       })
 

@@ -15,7 +15,7 @@ import Link from 'next/link'
 const STATUS_MAP: any = {
   recebida: {
     label: 'Protocolada',
-    desc: 'Sua denúncia foi registrada formalmente na plataforma DENUNCIA MS e o documento oficial foi gerado com sucesso.',
+    desc: 'Sua denuncia foi registrada formalmente na plataforma DENUNCIA MS e o documento oficial foi gerado com sucesso.',
     icon: ShieldCheck,
     color: 'text-primary',
     bgColor: 'bg-primary-50',
@@ -23,7 +23,7 @@ const STATUS_MAP: any = {
   },
   em_analise: {
     label: 'Protocolada',
-    desc: 'Sua denúncia foi registrada formalmente na plataforma DENUNCIA MS e o documento oficial foi gerado com sucesso.',
+    desc: 'Sua denuncia foi registrada formalmente na plataforma DENUNCIA MS e o documento oficial foi gerado com sucesso.',
     icon: ShieldCheck,
     color: 'text-primary',
     bgColor: 'bg-primary-50',
@@ -70,7 +70,7 @@ export default async function DetalhesProtocoloPage({
     return (
       <div className="container-page py-20 text-center space-y-6">
         <h1 className="text-4xl font-black text-dark tracking-tighter uppercase italic text-red-600">Acesso Negado</h1>
-        <p className="text-muted">É necessário informar a Chave de Acesso para visualizar os detalhes desta denúncia.</p>
+        <p className="text-muted">É necessário informar a Chave de Acesso para visualizar os detalhes desta denuncia.</p>
         <Link href="/acompanhar" className="btn-primary inline-flex gap-2 bg-dark border-none">Voltar para Consulta</Link>
       </div>
     )
@@ -103,7 +103,7 @@ export default async function DetalhesProtocoloPage({
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="text-4xl font-black text-dark tracking-tighter uppercase italic">Status da <span className="text-primary underline decoration-secondary decoration-4 underline-offset-8">Denúncia</span></h1>
+            <h1 className="text-4xl font-black text-dark tracking-tighter uppercase italic">Status da <span className="text-primary underline decoration-secondary decoration-4 underline-offset-8">Denuncia</span></h1>
             <p className="text-muted text-sm mt-3">Protocolo: <span className="font-bold text-dark">{denuncia.protocolo}</span> • Registrado em {new Date((denuncia as any).criado_at).toLocaleDateString()}</p>
           </div>
           <div className="flex items-center gap-3 p-4 bg-white rounded-xl shadow-card border border-border">
@@ -130,7 +130,7 @@ export default async function DetalhesProtocoloPage({
            </div>
            <p className="text-[10px] text-muted font-medium mt-6 italic text-center">
              A plataforma DENUNCIA MS atua como canal de oficialização e entrega. 
-             O andamento interno da denúncia após o envio é de responsabilidade exclusiva do órgão destinatário.
+             O andamento interno da denuncia após o envio é de responsabilidade exclusiva do órgão destinatário.
            </p>
         </div>
 

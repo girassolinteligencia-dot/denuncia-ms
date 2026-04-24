@@ -15,7 +15,7 @@ import Link from 'next/link'
 
 export const metadata = {
   title: 'Como Funciona | DENUNCIA MS',
-  description: 'Saiba como registrar sua denúncia de forma segura e eficaz no Mato Grosso do Sul.',
+  description: 'Saiba como registrar sua denuncia de forma segura e eficaz no Mato Grosso do Sul.',
 }
 
 export default function ComoFuncionaPage() {
@@ -34,7 +34,7 @@ export default function ComoFuncionaPage() {
                Inteligência Cívica
             </div>
             <h1 className="text-3xl sm:text-7xl font-black text-white tracking-tighter leading-[1] sm:leading-[0.9] italic">
-               Sua denúncia num <span className="text-secondary">caminho seguro.</span>
+               Sua denuncia num <span className="text-secondary">caminho seguro.</span>
             </h1>
             <p className="text-sm sm:text-lg text-white/70 max-w-xl font-medium leading-relaxed mx-auto lg:mx-0">
               Entenda como a <span className="text-white font-black">DENUNCIA MS</span> usa tecnologia para garantir sua segurança e a entrega rápida aos órgãos.
@@ -51,7 +51,7 @@ export default function ComoFuncionaPage() {
              <div className="absolute inset-0 bg-secondary/5 rounded-full blur-3xl animate-pulse"></div>
              <img 
                src="/assets/mascote_sem_fundo.png" 
-               alt="Representante Denúncia MS" 
+               alt="Representante Denuncia MS" 
                className="w-full max-w-md h-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-float"
              />
           </div>
@@ -84,14 +84,14 @@ export default function ComoFuncionaPage() {
                <ProcessStep 
                  num="03"
                  title="Identificação Segura"
-                 desc="A validação por e-mail (OTP) garante que sua denúncia seja legítima e oficial, protegendo o sistema contra falsos relatos."
+                 desc="A validação por e-mail (OTP) garante que sua denuncia seja legítima e oficial, protegendo o sistema contra falsos relatos."
                  icon={Lock}
                  color="bg-dark text-white shadow-lg"
                />
                <ProcessStep 
                  num="04"
                  title="Triagem & Ação"
-                 desc="A denúncia é enviada automaticamente aos órgãos responsáveis, que iniciam os procedimentos de apuração e fiscalização."
+                 desc="A denuncia é enviada automaticamente aos órgãos responsáveis, que iniciam os procedimentos de apuração e fiscalização."
                  icon={CheckCircle2}
                  color="bg-electric/10 text-electric"
                />
@@ -121,7 +121,7 @@ export default function ComoFuncionaPage() {
                         />
                         <FeatureItem 
                           title="Validação por Código Único" 
-                          desc="O sistema OTP garante que o e-mail informado pertence ao autor, elevando a confiança jurídica da denúncia."
+                          desc="O sistema OTP garante que o e-mail informado pertence ao autor, elevando a confiança jurídica da denuncia."
                         />
                         <FeatureItem 
                           title="Protocolo Independente" 
@@ -151,7 +151,7 @@ export default function ComoFuncionaPage() {
                         <div className="bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 flex flex-col gap-3">
                            <Search className="text-secondary" />
                            <h4 className="font-bold text-sm">Auditoria Interna</h4>
-                           <p className="text-[10px] text-white/50 leading-relaxed font-medium">Rigoroso controle de quem acessa cada denúncia.</p>
+                           <p className="text-[10px] text-white/50 leading-relaxed font-medium">Rigoroso controle de quem acessa cada denuncia.</p>
                         </div>
                      </div>
                      <div className="space-y-4">
@@ -186,19 +186,19 @@ export default function ComoFuncionaPage() {
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
                <FaqItem 
                  q="A identificação é obrigatória?" 
-                 a="Sim. Para elevar a qualidade das denúncias e garantir a segurança jurídica, exigimos a validação por e-mail e CPF em todos os registros." 
+                 a="Sim. Para elevar a qualidade das denuncias e garantir a segurança jurídica, exigimos a validação por e-mail e CPF em todos os registros." 
                />
                <FaqItem 
                  q="Perdi meu protocolo, e agora?" 
                  a="Por segurança, protocolos perdidos não podem ser recuperados. É fundamental anotar a chave de acesso gerada ao final do processo." 
                />
                 <FaqItem 
-                  q="Como sei que minha denúncia foi entregue?" 
+                  q="Como sei que minha denuncia foi entregue?" 
                   a="O número de protocolo é o seu comprovante legal de que o documento foi gerado e enviado ao órgão competente. Você pode consultar a validade do registro na área 'Consultar Protocolo'." 
                 />
                 <FaqItem 
                   q="Quanto tempo leva para o órgão responder?" 
-                  a="A DENUNCIA MS garante a entrega imediata. O tempo de resposta e as providências tomadas são de responsabilidade exclusiva da instituição que recebeu a denúncia." 
+                  a="A DENUNCIA MS garante a entrega imediata. O tempo de resposta e as providências tomadas são de responsabilidade exclusiva da instituição que recebeu a denuncia." 
                 />
             </div>
          </div>
@@ -210,7 +210,7 @@ export default function ComoFuncionaPage() {
             <div className="bg-primary rounded-[30px] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-glow-cyan">
                <div className="space-y-2 text-center md:text-left">
                   <h3 className="text-2xl md:text-3xl font-black text-white italic uppercase tracking-tighter leading-none">Pronto para colaborar?</h3>
-                  <p className="text-white/60 text-sm font-bold uppercase tracking-widest">Inicie sua denúncia em menos de 2 minutos.</p>
+                  <p className="text-white/60 text-sm font-bold uppercase tracking-widest">Inicie sua denuncia em menos de 2 minutos.</p>
                </div>
                <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                   <Link href="/" className="btn-outline border-white/20 text-white hover:bg-white/10 font-black h-14 px-8 uppercase tracking-widest text-xs">

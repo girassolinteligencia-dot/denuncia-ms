@@ -41,7 +41,7 @@ export function MascoteParallax({ imageUrl = '/assets/mascote_sem_fundo.png' }: 
       >
         <img 
           src={imageUrl} 
-          alt="Representante Denúncia MS" 
+          alt="Representante Denuncia MS" 
           className={imgClasses}
         />
       </div>

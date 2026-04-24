@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export const metadata = {
   title: 'Política de Privacidade | DENUNCIA MS',
-  description: 'Saiba como registrar sua denúncia de forma segura e eficaz no Mato Grosso do Sul.',
+  description: 'Saiba como registrar sua denuncia de forma segura e eficaz no Mato Grosso do Sul.',
 }
 
 export default function PrivacidadePage() {
@@ -22,7 +22,7 @@ export default function PrivacidadePage() {
               Como garantimos seu <span className="text-secondary underline decoration-2 sm:decoration-4 underline-offset-4 sm:underline-offset-8">Sigilo?</span>
            </h2>
            <p className="text-xs sm:text-md text-muted font-medium max-w-2xl mx-auto">
-              Sua segurança e a integridade da sua denúncia são as bases da nossa plataforma.
+              Sua segurança e a integridade da sua denuncia são as bases da nossa plataforma.
            </p>
         </div>
 
@@ -47,7 +47,7 @@ export default function PrivacidadePage() {
                  2. Coleta de Dados Sob a LGPD
               </h2>
               <p className="text-muted text-sm text-justify font-medium">
-                Para validar a denúncia, coletamos: nome, e-mail, telefone e CPF. Esses dados são tratados conforme a <strong>Lei nº 13.709/2018 (LGPD)</strong>, com as seguintes finalidades:
+                Para validar a denuncia, coletamos: nome, e-mail, telefone e CPF. Esses dados são tratados conforme a <strong>Lei nº 13.709/2018 (LGPD)</strong>, com as seguintes finalidades:
               </p>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <li className="p-4 bg-surface rounded-xl flex items-center gap-3 text-xs font-bold text-muted">
@@ -56,7 +56,7 @@ export default function PrivacidadePage() {
                  </li>
                  <li className="p-4 bg-surface rounded-xl flex items-center gap-3 text-xs font-bold text-muted">
                     <div className="w-2 h-2 rounded-full bg-secondary"></div>
-                    Validação de autenticidade da denúncia
+                    Validação de autenticidade da denuncia
                  </li>
               </ul>
               
@@ -67,7 +67,7 @@ export default function PrivacidadePage() {
                     </div>
                     <div>
                        <h3 className="text-sm font-black text-dark uppercase">Identificação Segura</h3>
-                       <p className="text-xs text-muted mt-1">A validação por e-mail (OTP) garante que sua denúncia seja legítima e oficial, protegendo o sistema contra falsos relatos.</p>
+                       <p className="text-xs text-muted mt-1">A validação por e-mail (OTP) garante que sua denuncia seja legítima e oficial, protegendo o sistema contra falsos relatos.</p>
                     </div>
                  </div>
               </div>
@@ -93,7 +93,7 @@ export default function PrivacidadePage() {
                  4. Seus Direitos
               </h2>
               <p className="text-muted text-sm text-justify font-medium">
-                Você pode solicitar a exclusão de seus dados pessoais identificáveis a qualquer momento através do e-mail de suporte, desde que a denúncia já tenha sido processada pelos órgãos competentes, respeitando os prazos de guarda legal do <strong>Marco Civil da Internet</strong>.
+                Você pode solicitar a exclusão de seus dados pessoais identificáveis a qualquer momento através do e-mail de suporte, desde que a denuncia já tenha sido processada pelos órgãos competentes, respeitando os prazos de guarda legal do <strong>Marco Civil da Internet</strong>.
               </p>
            </section>
 

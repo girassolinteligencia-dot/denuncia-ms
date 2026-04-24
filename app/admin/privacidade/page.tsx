@@ -35,7 +35,7 @@ export default function AdminPrivacidadePage() {
   const [loading, setLoading] = useState<string | null>(null)
 
   const handleAnonimizar = async (id: string, protocolo: string) => {
-    if (!confirm(`Confirmar anonimização irreversível dos dados pessoais da denúncia ${protocolo}? Esta ação cumpre a LGPD e não pode ser desfeita.`)) {
+    if (!confirm(`Confirmar anonimização irreversível dos dados pessoais da denuncia ${protocolo}? Esta ação cumpre a LGPD e não pode ser desfeita.`)) {
       return
     }
 

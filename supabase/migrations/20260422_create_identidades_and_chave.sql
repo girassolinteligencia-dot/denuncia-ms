@@ -9,7 +9,7 @@
 ALTER TABLE IF EXISTS public.denuncias
   ADD COLUMN IF NOT EXISTS chave_acesso text;
 
-COMMENT ON COLUMN public.denuncias.chave_acesso IS 'Chave de acesso aleatória entregue ao cidadão para consultar sua denúncia.';
+COMMENT ON COLUMN public.denuncias.chave_acesso IS 'Chave de acesso aleatória entregue ao cidadão para consultar sua denuncia.';
 
 -- Índice para acelerar consultas de acompanhamento
 CREATE INDEX IF NOT EXISTS idx_denuncias_chave ON public.denuncias(chave_acesso);

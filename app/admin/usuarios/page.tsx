@@ -21,7 +21,7 @@ export default async function UsuariosPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-dark tracking-tighter italic uppercase">Controle de Acesso</h1>
-          <p className="text-muted text-sm font-medium">Gerencie quem pode acessar e moderar as denúncias da plataforma.</p>
+          <p className="text-muted text-sm font-medium">Gerencie quem pode acessar e moderar as denuncias da plataforma.</p>
         </div>
         <div className="flex items-center gap-3">
           <p className="bg-primary/5 text-primary px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-primary/10">
@@ -40,7 +40,7 @@ export default async function UsuariosPage() {
             <h3 className="text-lg font-black uppercase italic tracking-tighter mb-2">Segurança da Ouvidoria</h3>
             <p className="text-white/60 text-xs leading-relaxed max-w-2xl font-medium">
                Apenas usuários com perfil configurado nesta tabela podem acessar o painel administrativo. 
-               As permissões de **Admin** permitem alterar configurações globais, enquanto **Moderador** foca na triagem de denúncias.
+               As permissões de **Admin** permitem alterar configurações globais, enquanto **Moderador** foca na triagem de denuncias.
                Qualquer alteração gera um log de auditoria irreversível.
             </p>
          </div>

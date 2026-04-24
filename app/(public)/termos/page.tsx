@@ -54,7 +54,7 @@ export default function TermosPage() {
               <p className="text-muted text-sm text-justify">
                 O <strong>DENUNCIA MS</strong> atua exclusivamente como um canal mediador de inteligência cívica, fundamentado na <strong>Lei nº 12.527/2011 (Lei de Acesso à Informação)</strong>. 
                 Sua finalidade é viabilizar o exercício do direito fundamental de petição e obtenção de informações de interesse público. 
-                A plataforma não possui competência investigativa direta, sendo sua responsabilidade limitada à recepção, processamento técnico e encaminhamento protocolar das denúncias aos órgãos de controle e execução competentes no Estado de Mato Grosso do Sul.
+                A plataforma não possui competência investigativa direta, sendo sua responsabilidade limitada à recepção, processamento técnico e encaminhamento protocolar das denuncias aos órgãos de controle e execução competentes no Estado de Mato Grosso do Sul.
               </p>
            </section>
 
@@ -71,7 +71,7 @@ export default function TermosPage() {
               </p>
               <ul className="space-y-3 text-sm text-muted list-disc pl-5 font-medium">
                  <li><strong>Proteção de Dados Sensíveis:</strong> Todos os dados de identificação são criptografados com AES-256-GCM e armazenados em tabelas segregadas, acessíveis apenas por autoridades competentes mediante autorização judicial.</li>
-                 <li><strong>Finalidade Estrita:</strong> Os dados coletados são utilizados exclusivamente para o processamento da denúncia e fins estatísticos de impacto social.</li>
+                 <li><strong>Finalidade Estrita:</strong> Os dados coletados são utilizados exclusivamente para o processamento da denuncia e fins estatísticos de impacto social.</li>
                  <li><strong>Segurança:</strong> Armazenamento em servidores criptografados com controle de acesso rigoroso por parte dos moderadores.</li>
               </ul>
            </section>
@@ -91,7 +91,7 @@ export default function TermosPage() {
                  </div>
                  <p className="text-error text-sm font-bold leading-relaxed">
                    De acordo com o Código Penal Brasileiro, o usuário é o único e exclusivo responsável pela veracidade dos fatos narrados. 
-                   A plataforma adverte que: &quot;Denúncia caluniosa é crime (Art. 339 do Código Penal)&quot; e &quot;Falsa denúncia é crime (Art. 340 do Código Penal)&quot;. 
+                   A plataforma adverte que: &quot;Denuncia caluniosa é crime (Art. 339 do Código Penal)&quot; e &quot;Falsa denuncia é crime (Art. 340 do Código Penal)&quot;. 
                    A utilização indevida sujeita o infrator a sanções civis e criminais imediatas.
                  </p>
               </div>

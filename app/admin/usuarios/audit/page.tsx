@@ -37,7 +37,7 @@ export default function UserAuditPage() {
 
     const res = await banirUsuario(hash, motivo)
     if (res.success) {
-      toast.success('Usuário banido com sucesso. Ele não poderá mais enviar denúncias identificadas.')
+      toast.success('Usuário banido com sucesso. Ele não poderá mais enviar denuncias identificadas.')
       loadRanking()
     } else {
       toast.error('Erro ao banir usuário.')
@@ -54,7 +54,7 @@ export default function UserAuditPage() {
             <ShieldAlert className="text-primary" />
             Auditoria de Incidência
           </h1>
-          <p className="text-sm text-muted font-medium">Ranking de credibilidade e análise de denúncias recorrentes.</p>
+          <p className="text-sm text-muted font-medium">Ranking de credibilidade e análise de denuncias recorrentes.</p>
         </div>
         
         <div className="relative">
@@ -75,7 +75,7 @@ export default function UserAuditPage() {
           <h4 className="text-xs font-black text-red-900 uppercase tracking-widest">Alerta de Integridade</h4>
           <p className="text-sm text-red-800/80 font-medium leading-relaxed">
             Usuários com baixa credibilidade (abaixo de 30%) e alta recorrência devem ser auditados individualmente. 
-            O arquivamento sistemático de denúncias de um mesmo originador é um forte indício de denúncias falsas ou má-fé.
+            O arquivamento sistemático de denuncias de um mesmo originador é um forte indício de denuncias falsas ou má-fé.
           </p>
         </div>
       </div>

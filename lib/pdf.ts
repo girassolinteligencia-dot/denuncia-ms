@@ -17,7 +17,7 @@ interface PDFData {
 }
 
 /**
- * Gera o documento PDF da denúncia baseado nos templates do Módulo 0.
+ * Gera o documento PDF da denuncia baseado nos templates do Módulo 0.
  */
 export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
   const doc = new jsPDF()
@@ -80,7 +80,7 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
   doc.setDrawColor(200, 200, 200)
   doc.line(15, y, 195, y)
 
-  // Corpo da Denúncia
+  // Corpo da Denuncia
   y += 15
   doc.setFont('helvetica', 'bold')
   doc.text('RELATO DO CIDADÃO:', 15, y)

@@ -5,7 +5,7 @@
 -- Executar no SQL Editor do Supabase.
 -- =====================================================
 
--- 1. LIMPEZA PREVENTIVA (Opcional - remova se quiser manter denúncias/logs antigos)
+-- 1. LIMPEZA PREVENTIVA (Opcional - remova se quiser manter denuncias/logs antigos)
 -- DELETE FROM integracoes_destino;
 -- DELETE FROM categorias;
 

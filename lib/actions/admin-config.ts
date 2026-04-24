@@ -54,7 +54,7 @@ export async function updateSystemConfig(chave: string, valor: boolean | string)
 }
 
 /**
- * Atualiza um campo do formulário de denúncia
+ * Atualiza um campo do formulário de denuncia
  */
 export async function updateConfigCampos(id: string, data: Record<string, any>) {
   const supabase = createAdminClient()

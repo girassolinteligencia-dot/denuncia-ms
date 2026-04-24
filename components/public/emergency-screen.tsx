@@ -75,7 +75,7 @@ export const EmergencyScreen = ({ mensagem }: { mensagem: string }) => {
         {/* Rodapé Institucional */}
         <div className="pt-12 space-y-4 opacity-30">
            <p className="text-[9px] font-black text-white uppercase tracking-[0.5em]">
-              Denúncia MS — Mato Grosso do Sul
+              Denuncia MS — Mato Grosso do Sul
            </p>
            <div className="flex justify-center gap-2">
               <div className="w-12 h-1 bg-red-600 rounded-full"></div>

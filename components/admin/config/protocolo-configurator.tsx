@@ -103,7 +103,7 @@ export const ProtocoloConfigurator: React.FC<{ initialConfig: ConfigProtocolo }>
                Zona de Perigo
             </h3>
             <p className="text-[11px] text-red-700 leading-relaxed mb-4">
-              Resetar a sequência fará com que a próxima denúncia comece a partir do número 1. Isso pode causar duplicidade de protocolos se o prefixo ou ano não forem alterados.
+              Resetar a sequência fará com que a próxima denuncia comece a partir do número 1. Isso pode causar duplicidade de protocolos se o prefixo ou ano não forem alterados.
             </p>
             {!showResetConfirm ? (
               <button 
@@ -128,7 +128,7 @@ export const ProtocoloConfigurator: React.FC<{ initialConfig: ConfigProtocolo }>
                {formatarPreview()}
              </div>
              <p className="text-[10px] text-primary-200/60 mt-4 max-w-[200px]">
-               Este será o formato exato gerado para a próxima denúncia registrada.
+               Este será o formato exato gerado para a próxima denuncia registrada.
              </p>
           </section>
 
@@ -148,7 +148,7 @@ export const ProtocoloConfigurator: React.FC<{ initialConfig: ConfigProtocolo }>
               </div>
               <div className="flex justify-between text-xs border-t border-border pt-3">
                 <span className="text-muted">Capacidade máx:</span>
-                <span className="font-bold text-dark">{Math.pow(10, config.digitos_seq) - 1} denúncias</span>
+                <span className="font-bold text-dark">{Math.pow(10, config.digitos_seq) - 1} denuncias</span>
               </div>
             </div>
           </div>

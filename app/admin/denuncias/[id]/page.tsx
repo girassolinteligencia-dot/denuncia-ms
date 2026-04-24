@@ -18,7 +18,7 @@ import { StatusActions } from '@/components/admin/status-actions'
 import { ExportButton } from '@/components/admin/export-button'
 
 export const metadata = {
-  title: 'Detalhes da Denúncia | Painel Admin',
+  title: 'Detalhes da Denuncia | Painel Admin',
 }
 
 export default async function DetalheDenunciaPage({ params }: { params: { id: string } }) {
@@ -39,13 +39,13 @@ export default async function DetalheDenunciaPage({ params }: { params: { id: st
         <div className="flex items-center gap-4">
            <ExportButton denuncia={denuncia} />
            <span className="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border bg-amber-50 text-amber-700 border-amber-200">
-              Denúncia Identificada
+              Denuncia Identificada
            </span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Coluna Principal: Conteúdo da Denúncia */}
+        {/* Coluna Principal: Conteúdo da Denuncia */}
         <div className="lg:col-span-2 space-y-6">
            <div className="bg-white rounded-card shadow-card border border-border overflow-hidden">
               <div className="p-8 space-y-8">
@@ -188,7 +188,7 @@ export default async function DetalheDenunciaPage({ params }: { params: { id: st
               <div className="space-y-4 relative before:absolute before:left-2.5 before:top-2 before:h-[calc(100%-16px)] before:w-0.5 before:bg-surface">
                  <div className="relative pl-8">
                     <div className="absolute left-0 top-1 w-5 h-5 rounded-full bg-primary border-4 border-primary-100"></div>
-                    <p className="text-[10px] font-black text-dark uppercase">Denúncia Recebida</p>
+                    <p className="text-[10px] font-black text-dark uppercase">Denuncia Recebida</p>
                     <p className="text-[9px] text-muted font-bold">{new Date(denuncia.criado_em).toLocaleString()}</p>
                  </div>
                  <div className="relative pl-8 opacity-40">

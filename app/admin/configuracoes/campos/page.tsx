@@ -28,7 +28,7 @@ export default async function CamposFormularioPage() {
           </div>
           <h1 className="text-2xl font-bold text-dark">Campos do Formulário</h1>
           <p className="text-muted text-sm">
-            Defina quais informações o cidadão deve preencher no formulário de denúncia.
+            Defina quais informações o cidadão deve preencher no formulário de denuncia.
           </p>
         </div>
       </div>

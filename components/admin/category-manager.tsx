@@ -347,7 +347,7 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
                       onSelect={(icon) => setEditingCat({...editingCat, icon_name: icon})}
                    />
                    <p className="text-[9px] text-muted mt-2 font-medium italic">
-                      Este ícone aparecerá no portal público para identificação visual da denúncia.
+                      Este ícone aparecerá no portal público para identificação visual da denuncia.
                    </p>
                 </div>
 
@@ -394,7 +394,7 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
                       />
                    </div>
                    <p className="text-[9px] text-muted mt-2 font-medium italic">
-                      Se vazio, as denúncias desta categoria irão para o e-mail principal da plataforma.
+                      Se vazio, as denuncias desta categoria irão para o e-mail principal da plataforma.
                    </p>
                 </div>
 

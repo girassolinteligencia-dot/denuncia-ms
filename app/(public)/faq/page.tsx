@@ -13,11 +13,11 @@ const FAQ_ITEMS = [
     items: [
       {
         q: 'A identificação é obrigatória?',
-        a: 'Sim. Para garantir a legitimidade das informações e evitar denúncias falsas, o DENUNCIA MS exige a validação de identidade via código de segurança (OTP) enviado ao seu e-mail.'
+        a: 'Sim. Para garantir a legitimidade das informações e evitar denuncias falsas, o DENUNCIA MS exige a validação de identidade via código de segurança (OTP) enviado ao seu e-mail.'
       },
       {
         q: 'Meus dados estão protegidos?',
-        a: 'Sim. Seus dados são criptografados e protegidos conforme a LGPD. Eles são usados exclusivamente para validar a denúncia e permitir que os órgãos competentes deem retornos sobre o caso.'
+        a: 'Sim. Seus dados são criptografados e protegidos conforme a LGPD. Eles são usados exclusivamente para validar a denuncia e permitir que os órgãos competentes deem retornos sobre o caso.'
       },
       {
         q: 'A plataforma é segura?',
@@ -26,14 +26,14 @@ const FAQ_ITEMS = [
     ]
   },
   {
-    category: 'Processo de Denúncia',
+    category: 'Processo de Denuncia',
     items: [
       {
         q: 'Quais tipos de irregularidades posso denunciar?',
         a: 'Qualquer fato que se enquadre em nossas categorias, como Saúde, Segurança, Meio Ambiente, Infraestrutura, entre outras, desde que ocorridas em Mato Grosso do Sul.'
       },
       {
-        q: 'Posso anexar provas à minha denúncia?',
+        q: 'Posso anexar provas à minha denuncia?',
         a: 'Sim. Você pode enviar fotos, vídeos e documentos que ajudem a comprovar os fatos. Recomendamos anexos claros e objetivos.'
       },
       {

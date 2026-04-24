@@ -30,7 +30,7 @@ export default function AcompanharPage() {
     <div className="bg-surface min-h-[70vh] flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-6 animate-fade-in">
         <div className="text-center space-y-2">
-           <h1 className="text-3xl font-black text-dark tracking-tighter uppercase italic">Consultar Denúncia</h1>
+           <h1 className="text-3xl font-black text-dark tracking-tighter uppercase italic">Consultar Denuncia</h1>
            <p className="text-muted text-sm font-medium">Insira suas credenciais geradas no momento do registro.</p>
         </div>
 

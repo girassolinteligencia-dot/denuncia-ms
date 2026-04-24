@@ -16,7 +16,7 @@ export async function GET(
 
   const supabase = createAdminClient()
 
-  // 1. Validar e buscar denúncia com dados sensíveis
+  // 1. Validar e buscar denuncia com dados sensíveis
   const { data: denuncia, error } = await supabase
     .from('denuncias')
     .select(`
@@ -29,7 +29,7 @@ export async function GET(
     .single()
 
   if (error || !denuncia) {
-    return NextResponse.json({ error: 'Denúncia não encontrada ou chave inválida' }, { status: 404 })
+    return NextResponse.json({ error: 'Denuncia não encontrada ou chave inválida' }, { status: 404 })
   }
 
   // 2. Descriptografar dados do denunciante se houver identidade vinculada

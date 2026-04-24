@@ -61,7 +61,7 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
                   </div>
                   <div>
                      <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Fonte</p>
-                     <p className="text-[10px] font-bold text-white/80">Denúncia MS — Oficial</p>
+                     <p className="text-[10px] font-bold text-white/80">Denuncia MS — Oficial</p>
                   </div>
                </div>
                
@@ -91,7 +91,7 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
                     href="/denunciar" 
                     className="btn-primary px-8 py-4 bg-primary text-white rounded-2xl font-black italic uppercase text-xs shadow-glow-cyan"
                   >
-                    Fazer Denúncia
+                    Fazer Denuncia
                   </Link>
                </div>
             </div>

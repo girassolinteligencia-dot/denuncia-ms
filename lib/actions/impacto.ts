@@ -7,7 +7,7 @@ export async function getImpactoStats() {
   const supabase = createAdminClient()
 
   try {
-    // 1. Denúncias Hoje (desde 00:00 do dia atual)
+    // 1. Denuncias Hoje (desde 00:00 do dia atual)
     const hoje = new Date()
     hoje.setHours(0, 0, 0, 0)
     
@@ -16,7 +16,7 @@ export async function getImpactoStats() {
       .select('*', { count: 'exact', head: true })
       .gte('criado_em', hoje.toISOString())
 
-    // 2. Foco Geográfico (Município com mais denúncias)
+    // 2. Foco Geográfico (Município com mais denuncias)
     const { data: cidadesData } = await supabase
       .from('denuncias')
       .select('municipio')

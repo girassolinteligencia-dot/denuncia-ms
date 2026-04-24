@@ -49,13 +49,13 @@ export async function inscreverNewsletter(email: string) {
             <div style="padding:40px">
               <h2 style="color:#1a1a1a;margin-bottom:20px;font-size:20px">Seu apoio fortalece Mato Grosso do Sul.</h2>
               <p style="color:#444;line-height:1.7;font-size:15px">
-                Olá! É um prazer ter você em nossa rede. A partir de agora, você receberá atualizações exclusivas sobre o impacto das denúncias cívicas e os resultados das nossas pesquisas de opinião pública.
+                Olá! É um prazer ter você em nossa rede. A partir de agora, você receberá atualizações exclusivas sobre o impacto das denuncias cívicas e os resultados das nossas pesquisas de opinião pública.
               </p>
               
               <div style="background:#fff;border:2px border-style:dashed;border-color:#eee;padding:25px;border-radius:16px;margin:30px 0">
                 <h3 style="color:#021691;margin-top:0;font-size:16px;text-transform:uppercase">O que fazemos?</h3>
                 <p style="color:#666;font-size:14px;margin-bottom:0">
-                  Somos uma plataforma <strong>independente</strong>. Nosso objetivo é dar voz ao cidadão, transformando denúncias em dados de inteligência que são encaminhados diretamente aos órgãos de controle competentes.
+                  Somos uma plataforma <strong>independente</strong>. Nosso objetivo é dar voz ao cidadão, transformando denuncias em dados de inteligência que são encaminhados diretamente aos órgãos de controle competentes.
                 </p>
               </div>
 

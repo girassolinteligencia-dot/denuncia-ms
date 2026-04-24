@@ -107,7 +107,7 @@ export async function registrarDenuncia(
     await validarOTP(emailNorm, formData.otpToken || '')
 
     // 6. Processamento em Segundo Plano (Non-blocking para o usuário)
-    // Usamos um try/catch interno para que falhas no PDF ou E-mail não cancelem o sucesso da denúncia
+    // Usamos um try/catch interno para que falhas no PDF ou E-mail não cancelem o sucesso da denuncia
     try {
       // Arquivos
       if (arquivosVinculados.length > 0) {
@@ -149,7 +149,7 @@ export async function registrarDenuncia(
         local:         localCompleto,
         data_ocorrido: formData.data_ocorrido || '',
         criado_em:     denuncia.criado_em,
-        orgao_nome:    'Denúncia MS'
+        orgao_nome:    'Denuncia MS'
       })
 
       const pdfPath = `oficial_${protocolo}.pdf`
@@ -176,7 +176,7 @@ export async function registrarDenuncia(
       // E-mail final
       sendEmail({
         to:      emailNorm,
-        subject: `[DenunciaMS] Protocolo ${protocolo} — Denúncia registrada`,
+        subject: `[DenunciaMS] Protocolo ${protocolo} — Denuncia registrada`,
         html:    gerarEmailDenunciante(protocolo, chaveAcesso, formData.nome || 'Cidadão'),
         text:    `Protocolo: ${protocolo} | Chave: ${chaveAcesso}`,
       }).catch(e => console.error('[email] Erro:', e))
@@ -189,6 +189,6 @@ export async function registrarDenuncia(
 
   } catch (err: any) {
     console.error('[denuncia] ERRO CRÍTICO:', err)
-    return { success: false, error: err.message || 'Falha técnica ao processar denúncia.' }
+    return { success: false, error: err.message || 'Falha técnica ao processar denuncia.' }
   }
 }

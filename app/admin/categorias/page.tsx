@@ -23,7 +23,7 @@ export default async function CategoriasPage() {
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-dark">Categorias de Denúncia</h1>
+          <h1 className="text-2xl font-bold text-dark">Categorias de Denuncia</h1>
           <p className="text-muted text-sm">
             Gerencie os tipos de ocorrências disponíveis para o cidadão e seus destinos de encaminhamento.
           </p>

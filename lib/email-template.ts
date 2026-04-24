@@ -37,7 +37,7 @@ export function gerarEmailOrgao(d: EmailTemplateData): string {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Denúncia ${d.protocolo} — DenunciaMS</title>
+<title>Denuncia ${d.protocolo} — DenunciaMS</title>
 </head>
 <body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Arial,sans-serif">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:32px 0">
@@ -66,7 +66,7 @@ export function gerarEmailOrgao(d: EmailTemplateData): string {
   <tr>
     <td style="background:#fef3c7;padding:14px 32px;border-bottom:1px solid #fde68a">
       <p style="margin:0;color:#92400e;font-size:12px;font-weight:700">
-        ⚖️ DOCUMENTO OFICIAL — Esta denúncia foi registrada formalmente e requer resposta do órgão competente no prazo legal estabelecido pela LAI (Lei nº 12.527/2011).
+        ⚖️ DOCUMENTO OFICIAL — Esta denuncia foi registrada formalmente e requer resposta do órgão competente no prazo legal estabelecido pela LAI (Lei nº 12.527/2011).
       </p>
     </td>
   </tr>
@@ -105,7 +105,7 @@ export function gerarEmailOrgao(d: EmailTemplateData): string {
   <!-- TÍTULO -->
   <tr>
     <td style="padding:16px 32px 0">
-      <p style="margin:0;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px">Título da Denúncia</p>
+      <p style="margin:0;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px">Título da Denuncia</p>
       <p style="margin:6px 0 0;color:#111827;font-size:18px;font-weight:900;line-height:1.3">${d.titulo}</p>
     </td>
   </tr>
@@ -197,14 +197,14 @@ export function gerarEmailDenunciante(protocolo: string, chaveAcesso: string, no
   <tr>
     <td style="background:#021691;padding:28px 32px">
       <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:900">DENUNCIA MS</h1>
-      <p style="margin:4px 0 0;color:#ffffff;opacity:0.7;font-size:12px">Sua denúncia foi registrada com sucesso</p>
+      <p style="margin:4px 0 0;color:#ffffff;opacity:0.7;font-size:12px">Sua denuncia foi registrada com sucesso</p>
     </td>
   </tr>
   <tr>
     <td style="padding:32px">
       <p style="margin:0;color:#374151;font-size:15px">Olá, <strong>${nome.split(' ')[0]}</strong>!</p>
       <p style="margin:12px 0;color:#374151;font-size:14px;line-height:1.6">
-        Sua denúncia foi registrada formalmente na plataforma <strong>DENUNCIA MS</strong> e encaminhada ao órgão competente.
+        Sua denuncia foi registrada formalmente na plataforma <strong>DENUNCIA MS</strong> e encaminhada ao órgão competente.
         Guarde os dados abaixo para acompanhar o andamento.
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0">
@@ -222,7 +222,7 @@ export function gerarEmailDenunciante(protocolo: string, chaveAcesso: string, no
       </table>
       <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:14px">
         <p style="margin:0;color:#92400e;font-size:12px;font-weight:700">
-          ⚠️ Atenção: Guarde estas credenciais. Elas são a única forma de consultar o status da sua denúncia e não podem ser recuperadas.
+          ⚠️ Atenção: Guarde estas credenciais. Elas são a única forma de consultar o status da sua denuncia e não podem ser recuperadas.
         </p>
       </div>
       <p style="margin:20px 0 0;color:#9ca3af;font-size:11px;text-align:center">

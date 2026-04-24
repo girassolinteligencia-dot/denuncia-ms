@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import type { Categoria } from '@/types'
 
 /**
- * Atualiza uma categoria de denúncia
+ * Atualiza uma categoria de denuncia
  */
 export async function updateCategoria(id: string, updates: Partial<Categoria>) {
   const supabase = createAdminClient()
@@ -92,14 +92,14 @@ export async function deleteCategoria(id: string) {
   const supabase = createAdminClient()
 
   try {
-    // Verificar se existem denúncias vinculadas
+    // Verificar se existem denuncias vinculadas
     const { count } = await supabase
       .from('denuncias')
       .select('*', { count: 'exact', head: true })
       .eq('categoria_id', id)
 
     if (count && count > 0) {
-      return { success: false, error: 'Não é possível excluir uma categoria que já possui denúncias vinculadas. Desative-a em vez de excluir.' }
+      return { success: false, error: 'Não é possível excluir uma categoria que já possui denuncias vinculadas. Desative-a em vez de excluir.' }
     }
 
     const { error } = await supabase

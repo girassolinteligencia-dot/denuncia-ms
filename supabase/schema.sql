@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS config_campos_formulario (
   atualizado_em    timestamptz DEFAULT now()
 );
 
--- Categorias de denúncia
+-- Categorias de denuncia
 CREATE TABLE IF NOT EXISTS categorias (
   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   slug               text UNIQUE NOT NULL,
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS integracoes_destino (
   atualizado_em          timestamptz DEFAULT now()
 );
 
--- Denúncias
+-- Denuncias
 CREATE TABLE IF NOT EXISTS denuncias (
   id                        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   protocolo                 text UNIQUE NOT NULL,
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS denuncias (
   atualizado_em             timestamptz DEFAULT now()
 );
 
--- Arquivos das denúncias
+-- Arquivos das denuncias
 CREATE TABLE IF NOT EXISTS arquivos_denuncia (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   denuncia_id    uuid NOT NULL REFERENCES denuncias(id) ON DELETE CASCADE,
@@ -326,7 +326,7 @@ ON CONFLICT DO NOTHING;
 
 -- Config: campos do formulário
 INSERT INTO config_campos_formulario (campo, label, placeholder, obrigatorio, visivel, ordem) VALUES
-  ('titulo',         'Título da Denúncia',          'Descreva resumidamente o ocorrido',   true,  true,  1),
+  ('titulo',         'Título da Denuncia',          'Descreva resumidamente o ocorrido',   true,  true,  1),
   ('local',          'Local do Ocorrido',            'Município, bairro ou endereço',        true,  true,  2),
   ('data_ocorrido',  'Data do Ocorrido',             'Quando aconteceu?',                    false, true,  3),
   ('nome',           'Nome Completo',                'Seu nome completo',                    false, true,  4),
@@ -338,14 +338,14 @@ ON CONFLICT (campo) DO NOTHING;
 -- Config: templates padrão
 INSERT INTO config_templates (tipo, conteudo, variaveis_disponiveis) VALUES
   ('cabecalho',
-   'REGISTRO TÉCNICO DE DENÚNCIA — {{categoria}}
+   'REGISTRO TÉCNICO DE DENUNCIA — {{categoria}}
 Protocolo: {{protocolo}}
 Data/Hora do Envio: {{data_envio}} às {{hora_envio}} (Horário de Brasília)
 
 Este documento formaliza o relato do cidadão e o encaminha ao destinatário competente para as providências administrativas e legais cabíveis.',
    '[
      {"chave":"{{protocolo}}","descricao":"Número do protocolo"},
-     {"chave":"{{categoria}}","descricao":"Categoria da denúncia"},
+     {"chave":"{{categoria}}","descricao":"Categoria da denuncia"},
      {"chave":"{{data_envio}}","descricao":"Data de envio (DD/MM/YYYY)"},
      {"chave":"{{hora_envio}}","descricao":"Hora de envio (HH:mm)"},
      {"chave":"{{orgao_nome}}","descricao":"Nome do órgão destinatário"},
@@ -354,7 +354,7 @@ Este documento formaliza o relato do cidadão e o encaminha ao destinatário com
    ]'
   ),
   ('rodape',
-   'NATUREZA DO SERVIÇO: O DENUNCIA MS opera como uma plataforma cívica estritamente independente e neutra, sem vínculo com entes públicos, políticos ou estatais. Atuamos exclusivamente como um elo tecnológico facilitador que conecta o cidadão de Mato Grosso do Sul aos órgãos competentes. A responsabilidade pela análise técnica, investigação e adoção de medidas cabe integralmente ao destinatário desta denúncia conforme a legislação vigente.
+   'NATUREZA DO SERVIÇO: O DENUNCIA MS opera como uma plataforma cívica estritamente independente e neutra, sem vínculo com entes públicos, políticos ou estatais. Atuamos exclusivamente como um elo tecnológico facilitador que conecta o cidadão de Mato Grosso do Sul aos órgãos competentes. A responsabilidade pela análise técnica, investigação e adoção de medidas cabe integralmente ao destinatário desta denuncia conforme a legislação vigente.
 
 Registro efetuado em {{data_envio}} às {{hora_envio}}.
 Autenticidade disponível em: {{app_url}}/acompanhar/{{protocolo}}',
@@ -369,7 +369,7 @@ Autenticidade disponível em: {{app_url}}/acompanhar/{{protocolo}}',
    ]'
   ),
   ('email_orgao',
-   'Nova denúncia recebida — Protocolo {{protocolo}}
+   'Nova denuncia recebida — Protocolo {{protocolo}}
 
 Categoria: {{categoria}}
 Data: {{data_envio}}
@@ -381,7 +381,7 @@ Acesse o painel administrativo para visualizar o documento completo.',
   ('email_denunciante',
    'Olá, {{nome}}!
 
-Recebemos sua denúncia e ela já está sendo processada.
+Recebemos sua denuncia e ela já está sendo processada.
 
 Protocolo: {{protocolo}}
 Categoria: {{categoria}}
@@ -411,7 +411,7 @@ INSERT INTO categorias (bloco, slug, label, emoji, instrucao_publica, ordem) VAL
 ('Infraestrutura e Urbanismo', 'transporte-publico', 'Transporte Público', '🚌', 'Encaminhado para AGETRAN e AGEMS (Fiscalização Estadual).', 23),
 
 -- Meio Ambiente (Bloco: 300)
-('Meio Ambiente', 'desmatamento', 'Desmatamento', '🌿', 'Denúncia enviada ao IMAM e IMASUL.', 30),
+('Meio Ambiente', 'desmatamento', 'Desmatamento', '🌿', 'Denuncia enviada ao IMAM e IMASUL.', 30),
 ('Meio Ambiente', 'maus-tratos-animais', 'Maus-tratos a Animais', '🐾', 'Acionamento do IMAM, Guarda Municipal e Polícia Civil MS.', 31),
 ('Meio Ambiente', 'descarte-lixo', 'Descarte Irregular de Lixo', '♻️', 'Encaminhado ao IMAM / SISEP e IMASUL.', 7),
 ('Meio Ambiente', 'poluicao-geral', 'Poluição (ar, água, solo)', '🏭', 'Encaminhado ao IMAM e IMASUL.', 32),
@@ -419,7 +419,7 @@ INSERT INTO categorias (bloco, slug, label, emoji, instrucao_publica, ordem) VAL
 
 -- Educação (Bloco: 400)
 ('Educação', 'escola-precaria', 'Escola em Situação Precária', '🎓', 'Encaminhado à SEMED e SED-MS.', 8),
-('Educação', 'merenda-irregular', 'Irregularidade na Merenda', '🍽️', 'Denúncia enviada à SEMED, SED-MS e FNDE.', 40),
+('Educação', 'merenda-irregular', 'Irregularidade na Merenda', '🍽️', 'Denuncia enviada à SEMED, SED-MS e FNDE.', 40),
 ('Educação', 'falta-professor', 'Falta de Professor / Aula', '📚', 'Encaminhado à SEMED e SED-MS.', 41),
 
 -- Corrupção e Gestão Pública (Bloco: 500)
@@ -533,7 +533,7 @@ CREATE POLICY "categorias_admin_all"   ON categorias FOR ALL    USING (tem_role(
 DROP POLICY IF EXISTS "integracoes_admin" ON integracoes_destino;
 CREATE POLICY "integracoes_admin" ON integracoes_destino FOR ALL USING (tem_role('admin'));
 
--- Policies: denúncias — inserção pública, leitura/escrita admin/moderador
+-- Policies: denuncias — inserção pública, leitura/escrita admin/moderador
 DROP POLICY IF EXISTS "denuncias_insert_public" ON denuncias;
 DROP POLICY IF EXISTS "denuncias_admin_read" ON denuncias;
 DROP POLICY IF EXISTS "denuncias_admin_update" ON denuncias;

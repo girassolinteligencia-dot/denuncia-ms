@@ -31,7 +31,7 @@ export const CategoryIntegrationForm: React.FC<Props> = ({ categoriaId, initialI
     email_para: [],
     email_cc: [],
     email_bcc: [],
-    email_assunto_template: 'Nova Denúncia: {{titulo}}',
+    email_assunto_template: 'Nova Denuncia: {{titulo}}',
     prioridade: 'normal',
     webhook_metodo: 'POST',
     webhook_auth_tipo: 'none',
@@ -119,7 +119,7 @@ export const CategoryIntegrationForm: React.FC<Props> = ({ categoriaId, initialI
               </div>
 
               <div>
-                <label className="label">Prioridade da Denúncia</label>
+                <label className="label">Prioridade da Denuncia</label>
                 <div className="grid grid-cols-3 gap-2">
                    {['normal', 'urgente', 'confidencial'].map(p => (
                      <button 
@@ -150,7 +150,7 @@ export const CategoryIntegrationForm: React.FC<Props> = ({ categoriaId, initialI
                 <Zap size={24} className="shrink-0" />
                 <div>
                   <p className="font-black uppercase mb-1">Integração em Tempo Real</p>
-                  <p>Ao selecionar Webhook, o sistema disparará um POST JSON para a URL configurada assim que a denúncia for confirmada.</p>
+                  <p>Ao selecionar Webhook, o sistema disparará um POST JSON para a URL configurada assim que a denuncia for confirmada.</p>
                 </div>
              </div>
 

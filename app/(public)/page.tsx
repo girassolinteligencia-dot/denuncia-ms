@@ -144,7 +144,7 @@ export default async function PublicHomePage() {
               </div>
               <h3 className="text-lg font-black uppercase tracking-tight">Dentro da Lei</h3>
               <p className="text-white/50 text-sm leading-relaxed font-medium">
-                Seguimos a LGPD e a Lei de Acesso à Informação. Guardamos apenas o registro oficial da denúncia. Seus dados pessoais são criptografados e protegidos.
+                Seguimos a LGPD e a Lei de Acesso à Informação. Guardamos apenas o registro oficial da denuncia. Seus dados pessoais são criptografados e protegidos.
               </p>
             </div>
           </div>
@@ -160,7 +160,7 @@ export default async function PublicHomePage() {
               href="/denunciar"
               className="inline-flex items-center gap-3 bg-secondary text-dark font-black uppercase text-sm py-4 px-8 rounded-2xl hover:bg-secondary/90 transition-all shadow-glow-green"
             >
-              Fazer minha denúncia agora
+              Fazer minha denuncia agora
               <ArrowRight size={18} />
             </Link>
           </div>
@@ -236,7 +236,7 @@ export default async function PublicHomePage() {
             Identificação <span className="text-primary">Obrigatória por Lei</span>
           </h2>
           <p className="text-muted text-sm leading-relaxed max-w-2xl mx-auto">
-            Pedimos seus dados apenas para validar o protocolo oficial e garantir a segurança jurídica da sua denúncia, protegendo o seu sigilo de fonte.
+            Pedimos seus dados apenas para validar o protocolo oficial e garantir a segurança jurídica da sua denuncia, protegendo o seu sigilo de fonte.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left pt-4">
             <div className="bg-surface rounded-2xl p-5 border border-border space-y-2">
@@ -249,7 +249,7 @@ export default async function PublicHomePage() {
             </div>
             <div className="bg-surface rounded-2xl p-5 border border-border space-y-2">
               <div className="text-primary font-black text-xs uppercase tracking-widest">Código Penal</div>
-              <p className="text-sm text-dark font-bold">Denúncias falsas são crimes. A identificação protege você e o sistema.</p>
+              <p className="text-sm text-dark font-bold">Denuncias falsas são crimes. A identificação protege você e o sistema.</p>
             </div>
           </div>
         </div>

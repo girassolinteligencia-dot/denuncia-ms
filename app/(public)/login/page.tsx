@@ -50,7 +50,7 @@ function LoginForm() {
           <Link href="/" className="inline-flex flex-col items-center gap-4 mb-8 group">
             <img 
               src="/favicon.ico" 
-              alt="Logo Denúncia MS" 
+              alt="Logo Denuncia MS" 
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform"
             />
             <div className="text-center">

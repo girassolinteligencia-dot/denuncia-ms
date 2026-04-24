@@ -19,7 +19,7 @@ export default async function SalaDeSituacaoPage() {
         </div>
         <h1 className="text-3xl font-black text-white tracking-tighter uppercase italic mb-4">Acesso Restrito</h1>
         <p className="text-white/50 max-w-md font-medium leading-relaxed">
-          A Sala de Situação técnica está temporariamente em manutenção ou o acesso público foi desabilitado pela governança do Denúncia MS.
+          A Sala de Situação técnica está temporariamente em manutenção ou o acesso público foi desabilitado pela governança do Denuncia MS.
         </p>
         <Link href="/" className="mt-12 text-[10px] font-black text-primary uppercase tracking-[0.3em] hover:opacity-70 transition-opacity">
           Voltar para Início
@@ -128,7 +128,7 @@ export default async function SalaDeSituacaoPage() {
               </div>
            </div>
            <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.5em]">
-              Denúncia MS — Sala de Situação Técnica v2.0
+              Denuncia MS — Sala de Situação Técnica v2.0
            </p>
         </footer>
       </main>

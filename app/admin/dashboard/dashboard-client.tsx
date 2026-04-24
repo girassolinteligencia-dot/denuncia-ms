@@ -83,7 +83,7 @@ function DashboardContent() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-dark tracking-tighter uppercase italic">Painel de <span className="text-primary italic">Impacto</span></h1>
-          <p className="text-muted text-[11px] font-black uppercase tracking-widest mt-1">Centro de Comando Denúncia MS — Monitoramento Cidadão</p>
+          <p className="text-muted text-[11px] font-black uppercase tracking-widest mt-1">Centro de Comando Denuncia MS — Monitoramento Cidadão</p>
         </div>
 
         <div className="flex p-1.5 bg-surface rounded-2xl border border-border self-start shadow-inner">
@@ -121,7 +121,7 @@ function DashboardContent() {
         <>
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            <KPIItem title="Denúncias" value={stats.total} change="Volume Total" icon={FileText} color="text-primary" bgColor="bg-primary/10" />
+            <KPIItem title="Denuncias" value={stats.total} change="Volume Total" icon={FileText} color="text-primary" bgColor="bg-primary/10" />
             <KPIItem title="Novas" value={stats.recebida} change="Pendentes" icon={Clock} color="text-warning" bgColor="bg-yellow-50" />
             <KPIItem title="Resolvidas" value={stats.resolvida} change="Taxa: 85%" icon={CheckCircle2} color="text-success" bgColor="bg-green-50" />
             <KPIItem title="Inscritos" value={stats.newsletter} change="News" icon={Activity} color="text-secondary" bgColor="bg-secondary/10" />

@@ -138,7 +138,7 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-surface rounded-full flex items-center justify-center mx-auto text-muted">
               <Search size={24} className="sm:size-32" />
            </div>
-           <p className="text-muted font-medium text-sm">Nenhuma denúncia encontrada.</p>
+           <p className="text-muted font-medium text-sm">Nenhuma denuncia encontrada.</p>
         </div>
       )}
       

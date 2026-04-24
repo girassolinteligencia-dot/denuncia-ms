@@ -167,10 +167,10 @@ export default async function AdminHealthPage() {
           </div>
         </div>
 
-        {/* COLUNA 3: ESTATÍSTICAS DE DENÚNCIAS */}
+        {/* COLUNA 3: ESTATÍSTICAS DE DENUNCIAS */}
         <div className="space-y-8">
            <div className="bg-dark-soft border border-white/10 rounded-[2.5rem] p-8 space-y-8">
-              <h2 className="text-lg font-black text-white uppercase italic tracking-tight">Status das Denúncias</h2>
+              <h2 className="text-lg font-black text-white uppercase italic tracking-tight">Status das Denuncias</h2>
               <div className="space-y-6">
                 {Object.entries(stats.denunciasStats || {}).map(([status, count]) => (
                   <div key={status} className="space-y-2">

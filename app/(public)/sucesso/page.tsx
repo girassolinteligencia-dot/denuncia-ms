@@ -33,7 +33,7 @@ function SucessoContent() {
         </div>
         <div className="space-y-4">
           <h1 className="text-4xl font-black text-dark tracking-tighter uppercase italic">Dados não localizados</h1>
-          <p className="text-muted max-w-md mx-auto font-medium">Houve um problema ao recuperar as credenciais da sua denúncia. Por favor, verifique seu e-mail para encontrar os dados oficiais.</p>
+          <p className="text-muted max-w-md mx-auto font-medium">Houve um problema ao recuperar as credenciais da sua denuncia. Por favor, verifique seu e-mail para encontrar os dados oficiais.</p>
         </div>
         <Link href="/" className="btn-primary inline-flex gap-3 px-12 h-16 rounded-2xl bg-dark border-none shadow-xl">
           Voltar ao Início
@@ -50,7 +50,7 @@ function SucessoContent() {
         </div>
         <div className="space-y-2">
           <h1 className="text-4xl sm:text-6xl font-black text-dark tracking-tighter uppercase italic">
-            Denúncia <span className="text-primary underline decoration-secondary decoration-8 underline-offset-4">Protocolada</span>
+            Denuncia <span className="text-primary underline decoration-secondary decoration-8 underline-offset-4">Protocolada</span>
           </h1>
           <p className="text-muted font-bold uppercase tracking-[0.2em] text-sm">Registro concluído com sucesso</p>
         </div>
@@ -88,7 +88,7 @@ function SucessoContent() {
               </button>
             </div>
             <p className="text-[9px] sm:text-[10px] text-muted font-medium italic">
-              * Importante: Guarde esta chave em local seguro. Você precisará dela para acompanhar o andamento da sua denúncia.
+              * Importante: Guarde esta chave em local seguro. Você precisará dela para acompanhar o andamento da sua denuncia.
             </p>
           </div>
         </div>

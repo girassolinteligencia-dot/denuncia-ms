@@ -114,7 +114,7 @@ export const generateDenunciaPDF = (denuncia: DenunciaExportData) => {
   if (denuncia.anonima) {
     doc.setFontSize(9)
     doc.setTextColor(MUTED[0], MUTED[1], MUTED[2])
-    doc.text('DENÚNCIA REALIZADA SOB ANONIMATO (IDENTIDADE PROTEGIDA)', 20, currentY + 15)
+    doc.text('DENUNCIA REALIZADA SOB ANONIMATO (IDENTIDADE PROTEGIDA)', 20, currentY + 15)
   } else {
     doc.setFontSize(9)
     doc.setTextColor(DARK[0], DARK[1], DARK[2])

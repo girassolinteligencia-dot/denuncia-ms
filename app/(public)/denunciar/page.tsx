@@ -5,8 +5,8 @@ import { Loader2 } from 'lucide-react'
 import { Suspense } from 'react'
 
 export const metadata = {
-  title: 'Realizar Denúncia',
-  description: 'Canal seguro para registro de denúncias e irregularidades no Mato Grosso do Sul.',
+  title: 'Realizar Denuncia',
+  description: 'Canal seguro para registro de denuncias e irregularidades no Mato Grosso do Sul.',
 }
 
 export default async function DenunciarPage() {
@@ -59,7 +59,7 @@ export default async function DenunciarPage() {
         
         <div className="text-center mb-12 space-y-2">
           <h1 className="text-3xl sm:text-5xl font-black text-dark tracking-tighter uppercase italic">
-             Canal de <span className="text-primary">Denúncia</span>
+             Canal de <span className="text-primary">Denuncia</span>
           </h1>
           <p className="text-muted max-w-xl mx-auto text-sm">
              Suas informações serão analisadas com critério e sigilo. 
