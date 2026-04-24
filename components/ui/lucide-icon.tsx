@@ -11,9 +11,27 @@ export const LucideIcon = ({ name, ...props }: LucideIconProps) => {
   const IconComponent = LucideIcons[name]
 
   if (!IconComponent) {
-    // Fallback caso o ícone não exista ou o nome esteja errado
-    return <LucideIcons.HelpCircle {...props} />
+    // Se não for um ícone do Lucide, renderiza como texto (provavelmente emoji)
+    // Mantemos a classe e o tamanho para consistência visual
+    // Adicionamos famílias de fontes específicas para emojis para evitar o '?'
+    return (
+      <span 
+        className={props.className} 
+        style={{ 
+          fontSize: props.size || 24, 
+          lineHeight: 1,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif',
+          WebkitFontSmoothing: 'antialiased'
+        }}
+      >
+        {name}
+      </span>
+    )
   }
 
   return <IconComponent {...props} />
 }
+

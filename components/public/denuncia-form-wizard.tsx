@@ -69,6 +69,9 @@ interface DenunciaFormData {
   bairro: string
   cidade: string
   data_ocorrido: string
+  latitude: number | null
+  longitude: number | null
+  municipio: string
   nome: string
   email: string
   telefone: string
@@ -514,7 +517,10 @@ export function DenunciaFormWizard({
               local: ruaDetectada || prev.local,
               bairro: bairroDetectado || prev.bairro,
               cidade: cidadeDetectada || prev.cidade,
-              cep: cepDetectado || prev.cep
+              cep: cepDetectado || prev.cep,
+              latitude: latitude,
+              longitude: longitude,
+              municipio: cidadeDetectada || prev.municipio,
             }))
 
             if (!cidadeDetectada && !ruaDetectada) {
@@ -1072,3 +1078,6 @@ export function DenunciaFormWizard({
     </div>
   )
 }
+
+
+

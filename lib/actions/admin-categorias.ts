@@ -118,3 +118,32 @@ export async function deleteCategoria(id: string) {
     return { success: false, error: error.message }
   }
 }
+
+/**
+ * Reordena múltiplas categorias de uma vez
+ */
+export async function reorderCategorias(items: { id: string, ordem: number }[]) {
+  const supabase = createAdminClient()
+
+  try {
+    const promises = items.map(item => 
+      supabase
+        .from('categorias')
+        .update({ ordem: item.ordem })
+        .eq('id', item.id)
+    )
+
+    const results = await Promise.all(promises)
+    const error = results.find(r => r.error)?.error
+
+    if (error) throw error
+
+    revalidatePath('/admin/categorias')
+    revalidatePath('/denunciar')
+    return { success: true }
+  } catch (err: any) {
+    console.error('Erro ao reordenar categorias:', err)
+    return { success: false, error: err.message }
+  }
+}
+

@@ -14,7 +14,7 @@ export async function getUsuarios() {
   try {
     const { data: usuarios, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, nome, role, criado_em, permissoes, ativo')
       .order('criado_em', { ascending: false })
 
     if (error) throw error
@@ -29,7 +29,10 @@ export async function getUsuarios() {
  * Busca o perfil do usuário atualmente logado
  */
 export async function getMe() {
-  const supabase = createAdminClient()
+  const { cookies } = await import('next/headers')
+  const { createClient } = await import('@/utils/supabase/server')
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError) {
@@ -40,7 +43,7 @@ export async function getMe() {
 
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, nome, role, criado_em, permissoes, ativo')
       .eq('id', user.id)
       .single()
 
@@ -244,3 +247,4 @@ export async function deleteUsuario(id: string) {
     return { success: false, error: err.message }
   }
 }
+

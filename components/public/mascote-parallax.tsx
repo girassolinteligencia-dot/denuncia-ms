@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 
-export function MascoteParallax({ imageUrl = '/assets/mascote_oficial.png' }: { imageUrl?: string }) {
+export function MascoteParallax({ imageUrl = '/assets/mascote_sem_fundo.png' }: { imageUrl?: string }) {
   const [offsetY, setOffsetY] = useState(0)
 
   useEffect(() => {

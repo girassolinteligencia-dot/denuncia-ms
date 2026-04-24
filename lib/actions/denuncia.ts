@@ -4,7 +4,7 @@ import type { SubmitDenunciaRequest } from '@/types'
 import { gerarProtocolo } from '@/lib/protocolo'
 import { gerarPDFDenuncia } from '@/lib/pdf'
 import { sendEmail } from '@/lib/email'
-import { validarOTP } from './auth'
+import { validarOTP, verificarOTP } from './auth'
 import { createHash } from 'crypto'
 import { encryptData } from '@/lib/encrypt'
 import { gerarEmailDenunciante } from '@/lib/email-template'
@@ -61,8 +61,8 @@ export async function registrarDenuncia(
     if (banido) return { success: false, error: 'Acesso suspenso por violação dos termos.' }
 
     // 2. Validar OTP (O código agora é consumido apenas se passar por aqui)
-    const otpValido = await validarOTP(emailNorm, formData.otpToken || '')
-    if (!otpValido) {
+    const otpCheck = await verificarOTP(emailNorm, formData.otpToken || '')
+    if (!otpCheck.success) {
       return { success: false, error: 'Código de verificação inválido ou já utilizado. Solicite um novo.' }
     }
 
@@ -89,6 +89,9 @@ export async function registrarDenuncia(
         titulo:             formData.titulo,
         descricao_original: formData.descricao_original,
         local:              localCompleto || null,
+        cep:                formData.cep || null,
+        numero:             formData.numero || null,
+        bairro:             formData.bairro || null,
         cidade:             formData.cidade || null,
         data_ocorrido:      formData.data_ocorrido || null,
         status:             'recebida',
@@ -99,6 +102,9 @@ export async function registrarDenuncia(
     if (denErr || !denuncia) {
       throw new Error(`Erro no Banco: ${denErr?.message || 'Falha ao criar registro'}`)
     }
+
+    // Marca OTP como usado apenas após insert bem-sucedido
+    await validarOTP(emailNorm, formData.otpToken || '')
 
     // 6. Processamento em Segundo Plano (Non-blocking para o usuário)
     // Usamos um try/catch interno para que falhas no PDF ou E-mail não cancelem o sucesso da denúncia

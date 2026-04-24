@@ -1,4 +1,5 @@
 import React from 'react'
+export const dynamic = 'force-dynamic'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { DenunciasListTable } from '@/components/admin/denuncias-list-table'
 import { Filter, Search as SearchIcon } from 'lucide-react'
@@ -13,7 +14,7 @@ export default async function DenunciasAdminPage() {
   // Busca denúncias com categoria
   const { data: denuncias, error } = await supabase
     .from('denuncias')
-    .select('*, categorias(label, emoji)')
+    .select('id, protocolo, titulo, status, criado_em, categoria_id, cat_info:categorias(label, icon_name)')
     .order('criado_em', { ascending: false })
 
   if (error) {

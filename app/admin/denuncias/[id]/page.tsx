@@ -51,7 +51,7 @@ export default async function DetalheDenunciaPage({ params }: { params: { id: st
               <div className="p-8 space-y-8">
                  <div>
                     <div className="flex items-center gap-2 mb-2">
-                       <span className="text-2xl">{denuncia.categorias?.emoji}</span>
+                       <span className="text-2xl">{denuncia.categorias?.icon_name}</span>
                        <p className="text-xs font-black text-primary uppercase tracking-widest">{denuncia.categorias?.label}</p>
                     </div>
                     <h1 className="text-3xl font-black text-dark tracking-tighter uppercase leading-none">{denuncia.titulo}</h1>

@@ -12,7 +12,7 @@ export default async function CategoriasPage() {
   // Busca categorias cadastradas
   const { data: categorias, error } = await supabase
     .from('categorias')
-    .select('*')
+    .select('id, slug, label, bloco, icon_name, instrucao_publica, aviso_legal, template_descricao, ativo, ordem, criado_em, atualizado_em')
     .order('ordem', { ascending: true })
 
   if (error) {
@@ -40,3 +40,5 @@ export default async function CategoriasPage() {
     </div>
   )
 }
+
+

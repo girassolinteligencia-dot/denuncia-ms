@@ -64,7 +64,25 @@ export async function getDenunciaDetalhes(id: string) {
   try {
     const { data, error } = await supabase
       .from('denuncias')
-      .select('*, categorias(*), arquivos_denuncia(*)')
+      .select(`
+        id, 
+        protocolo, 
+        categoria_id, 
+        titulo, 
+        descricao_original, 
+        local, 
+        cep, 
+        numero, 
+        bairro, 
+        cidade, 
+        municipio,
+        data_ocorrido, 
+        status, 
+        criado_em, 
+        atualizado_em,
+        categorias(label, icon_name), 
+        arquivos_denuncia(*)
+      `)
       .eq('id', id)
       .single()
 

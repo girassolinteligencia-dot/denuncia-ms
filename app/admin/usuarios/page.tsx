@@ -1,4 +1,4 @@
-import { getMe } from '@/lib/actions/admin-usuarios'
+import { getMe, getUsuarios } from '@/lib/actions/admin-usuarios'
 import { UserTable } from '@/components/admin/user-table'
 import { redirect } from 'next/navigation'
 
@@ -8,12 +8,12 @@ export default async function UsuariosPage() {
   const me = await getMe()
   
   // Tranca de Segurança: Apenas Admin Master
-  if (!me.success || me.data?.role !== 'admin') {
+  if (!me.success || (me.data?.role !== 'admin' && me.data?.role !== 'superadmin')) {
     return redirect('/admin/dashboard')
   }
 
   const result = await getUsuarios()
-  const usuarios = result.success ? result.data : []
+  const usuarios = (result.success && result.data) ? result.data : []
 
   return (
     <div className="space-y-8 animate-fade-in px-4">

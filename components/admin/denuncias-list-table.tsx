@@ -53,7 +53,7 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
                        <span className="text-[10px] font-bold text-primary uppercase tracking-wider mb-0.5">
-                          {denuncia.categorias?.emoji} {denuncia.categorias?.label}
+                          {(denuncia.cat_info || denuncia.categorias)?.icon_name} {(denuncia.cat_info || denuncia.categorias)?.label}
                        </span>
                        <span className="text-sm font-bold text-dark truncate max-w-xs">{denuncia.titulo}</span>
                     </div>
@@ -113,7 +113,7 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
 
               <div className="space-y-1">
                 <p className="text-[10px] font-bold text-muted uppercase tracking-wider">
-                  {denuncia.categorias?.emoji} {denuncia.categorias?.label}
+                  {(denuncia.cat_info || denuncia.categorias)?.icon_name} {(denuncia.cat_info || denuncia.categorias)?.label}
                 </p>
                 <h4 className="text-sm font-bold text-dark leading-snug line-clamp-2">
                   {denuncia.titulo}
