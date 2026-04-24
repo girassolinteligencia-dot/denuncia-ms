@@ -46,10 +46,6 @@ const FAQ_ITEMS = [
     category: 'Acompanhamento',
     items: [
       {
-        q: 'Como sei se minha denúncia está sendo apurada?',
-        a: 'Basta acessar a área "Acompanhar" no menu principal e inserir seu número de protocolo. Lá você verá o status atualizado em tempo real.'
-      },
-      {
         q: 'Quanto tempo leva para uma resposta?',
         a: 'O encaminhamento ao órgão responsável é imediato. O tempo de resposta final depende da complexidade do fato e dos prazos internos de cada instituição.'
       }
