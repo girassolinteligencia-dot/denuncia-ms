@@ -50,36 +50,37 @@ export default async function PublicHomePage() {
         )}
 
         <div className="container-page relative z-10">
-          <div className="max-w-4xl mx-auto lg:mx-0">
+          <div className="max-w-5xl mx-auto">
             
-            {/* Coluna Única: Conteúdo com Mascote no Topo */}
-            <div className="space-y-8 text-center lg:text-left animate-fade-in pb-16 lg:pb-32">
+            {/* Coluna Única: Conteúdo Totalmente Centralizado */}
+            <div className="space-y-12 text-center animate-fade-in pb-20 lg:pb-40">
                 
-                {/* Mascote Completo no Topo - Tamanho Dobrado (Estático para evitar sobreposição) */}
-                <div className="flex justify-center lg:justify-start -mb-4">
+                {/* Mascote Gigante Centralizado */}
+                <div className="flex justify-center -mb-8 sm:-mb-12 lg:-mb-16">
                   <img 
-                    src={configMap['identidade.mascote'] || '/assets/mascote_sem_fundo.png'} 
+                    src={configMap['identidade.mascote'] || '/_next/static/media/mascote_bruno_ortiz_hd_1777003245753.png'} 
                     alt="Bruno Ortiz" 
-                    className="h-80 sm:h-[450px] lg:h-[550px] w-auto object-contain drop-shadow-[0_20px_50px_rgba(255,255,255,0.15)]"
+                    className="h-96 sm:h-[600px] lg:h-[750px] w-auto object-contain drop-shadow-[0_30px_60px_rgba(255,255,255,0.2)] hover:scale-105 transition-transform duration-700"
+                    style={{ imageRendering: 'high-quality' }}
                   />
                 </div>
 
                 <div className="space-y-6">
-                  <div className="flex items-center gap-3 justify-center lg:justify-start">
-                    <span className="text-white font-black text-lg sm:text-2xl tracking-tight uppercase italic text-left leading-tight">
+                  <div className="flex items-center gap-3 justify-center">
+                    <span className="text-white font-black text-xl sm:text-3xl tracking-tight uppercase italic text-center leading-tight">
                       Olá, eu sou o Bruno Ortiz.<br /> Sua voz tem peso aqui.
                     </span>
                   </div>
-                  <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tighter leading-[1.1] italic uppercase">
+                  <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-white tracking-tighter leading-[1.1] italic uppercase mx-auto">
                     DENUNCIA MS<br />
                     <span className="text-secondary">Direto ao ponto.</span>
                   </h1>
-                  <p className="text-lg sm:text-xl text-white/70 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+                  <p className="text-xl sm:text-2xl text-white/70 max-w-2xl mx-auto leading-relaxed font-medium">
                     Sem senhas. Sem demora. Relate o problema agora e nós levamos sua voz direto aos órgãos de controle para cobrar resultados.
                   </p>
                 </div>
 
-              <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-4 pt-6">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-10">
                 <Link
                   href="/denunciar"
                   className="btn-primary w-full sm:w-auto gap-4 text-xl py-8 px-10 bg-secondary hover:bg-secondary-600 border-none text-dark shadow-[0_0_40px_rgba(255,215,0,0.3)] hover:shadow-[0_0_60px_rgba(255,215,0,0.5)] group h-[70px] uppercase font-black italic transition-all duration-300 animate-pulse-slow"
