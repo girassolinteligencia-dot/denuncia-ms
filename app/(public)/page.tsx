@@ -55,12 +55,12 @@ export default async function PublicHomePage() {
             {/* Coluna Esquerda: Texto e CTA */}
             <div className="space-y-8 text-center lg:text-left animate-fade-in">
                 
-                {/* Mascote Completo no Topo */}
-                <div className="flex justify-center lg:justify-start -mb-4">
+                {/* Mascote Completo no Topo - Tamanho Dobrado */}
+                <div className="flex justify-center lg:justify-start -mb-8">
                   <img 
                     src={configMap['identidade.mascote'] || '/assets/mascote_sem_fundo.png'} 
                     alt="Bruno Ortiz" 
-                    className="h-40 sm:h-56 lg:h-64 w-auto object-contain drop-shadow-[0_10px_30px_rgba(255,255,255,0.1)] hover:scale-105 transition-transform duration-500"
+                    className="h-80 sm:h-[450px] lg:h-[550px] w-auto object-contain drop-shadow-[0_20px_50px_rgba(255,255,255,0.15)] hover:scale-105 transition-transform duration-500"
                   />
                 </div>
 
