@@ -213,7 +213,7 @@ export default async function PublicHomePage() {
           <StepCard
             num="02"
             title="Receba seu protocolo"
-            desc="Ao concluir, você recebe um número único de protocolo e uma chave de acesso para acompanhar o status da sua denúncia."
+            desc="Ao concluir, você recebe um número único de protocolo e uma chave de acesso que comprovam a oficialização do seu relato."
             icon={ShieldCheck}
             color="text-secondary"
           />

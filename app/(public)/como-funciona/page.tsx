@@ -125,7 +125,7 @@ export default function ComoFuncionaPage() {
                         />
                         <FeatureItem 
                           title="Protocolo Independente" 
-                          desc="O número gerado permite o acompanhamento do status sem que seus dados pessoais fiquem expostos no painel público."
+                          desc="O número gerado comprova a oficialização do seu relato e garante que seus dados pessoais não fiquem expostos."
                         />
                         
                         {/* Alerta MPMS */}
@@ -192,14 +192,14 @@ export default function ComoFuncionaPage() {
                  q="Perdi meu protocolo, e agora?" 
                  a="Por segurança, protocolos perdidos não podem ser recuperados. É fundamental anotar a chave de acesso gerada ao final do processo." 
                />
-               <FaqItem 
-                 q="Como sei que minha denúncia foi lida?" 
-                 a="Você pode usar seu número de protocolo na área 'Acompanhar'. Lá constarão atualizações de status conforme o órgão der andamento." 
-               />
-               <FaqItem 
-                 q="Quanto tempo leva para resolver?" 
-                 a="O prazo varia conforme a complexidade e o órgão responsável, mas o sistema garante o encaminhamento imediato após o registro." 
-               />
+                <FaqItem 
+                  q="Como sei que minha denúncia foi entregue?" 
+                  a="O número de protocolo é o seu comprovante legal de que o documento foi gerado e enviado ao órgão competente. Você pode consultar a validade do registro na área 'Consultar Protocolo'." 
+                />
+                <FaqItem 
+                  q="Quanto tempo leva para o órgão responder?" 
+                  a="A DENUNCIA MS garante a entrega imediata. O tempo de resposta e as providências tomadas são de responsabilidade exclusiva da instituição que recebeu a denúncia." 
+                />
             </div>
          </div>
       </section>

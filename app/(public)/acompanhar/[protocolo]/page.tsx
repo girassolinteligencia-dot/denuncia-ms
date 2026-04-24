@@ -14,44 +14,44 @@ import Link from 'next/link'
 
 const STATUS_MAP: any = {
   recebida: {
-    label: 'Recebida',
-    desc: 'Sua denúncia foi registrada com sucesso e aguarda triagem inicial.',
-    icon: Clock,
+    label: 'Protocolada',
+    desc: 'Sua denúncia foi registrada formalmente na plataforma DENUNCIA MS e o documento oficial foi gerado com sucesso.',
+    icon: ShieldCheck,
     color: 'text-primary',
     bgColor: 'bg-primary-50',
     step: 1
   },
   em_analise: {
-    label: 'Em Análise',
-    desc: 'Nossa equipe está revisando os detalhes e evidências fornecidas.',
-    icon: Search,
-    color: 'text-info',
-    bgColor: 'bg-blue-50',
-    step: 2
+    label: 'Protocolada',
+    desc: 'Sua denúncia foi registrada formalmente na plataforma DENUNCIA MS e o documento oficial foi gerado com sucesso.',
+    icon: ShieldCheck,
+    color: 'text-primary',
+    bgColor: 'bg-primary-50',
+    step: 1
   },
   encaminhada: {
-    label: 'Encaminhada',
-    desc: 'A denúncia foi oficializada e encaminhada ao órgão competente do Mato Grosso do Sul.',
+    label: 'Enviada ao Órgão',
+    desc: 'O protocolo oficial foi despachado para o órgão competente do Mato Grosso do Sul para as devidas providências.',
     icon: Send,
     color: 'text-secondary',
     bgColor: 'bg-secondary-50',
-    step: 3
+    step: 2
   },
   resolvida: {
-    label: 'Resolvida',
-    desc: 'O processo foi concluído e as medidas cabíveis foram tomadas.',
-    icon: CheckCircle2,
-    color: 'text-success',
-    bgColor: 'bg-green-50',
-    step: 4
+    label: 'Enviada ao Órgão',
+    desc: 'O protocolo oficial foi despachado para o órgão competente do Mato Grosso do Sul para as devidas providências.',
+    icon: Send,
+    color: 'text-secondary',
+    bgColor: 'bg-secondary-50',
+    step: 2
   },
   arquivada: {
     label: 'Arquivada',
-    desc: 'A denúncia foi encerrada por insuficiência de provas ou duplicidade.',
+    desc: 'O registro foi encerrado pela plataforma. Verifique os termos de uso para mais informações.',
     icon: AlertTriangle,
     color: 'text-muted',
     bgColor: 'bg-surface',
-    step: 4
+    step: 0
   }
 }
 
@@ -117,30 +117,21 @@ export default async function DetalhesProtocoloPage({
           </div>
         </div>
 
-        {/* Linha do Tempo Visual */}
-        <div className="bg-white rounded-card shadow-card-lg border border-border p-8 py-12">
-           <div className="flex items-center justify-between relative px-4 sm:px-12">
-              <div className="absolute top-1/2 left-0 w-full h-1 bg-surface -z-10 -translate-y-1/2"></div>
-              {[1, 2, 3, 4].map(s => (
-                <div key={s} className="flex flex-col items-center gap-3">
-                   <div className={`w-8 h-8 rounded-full border-4 transition-all ${status.step >= s ? 'bg-primary border-primary shadow-glow-cyan scale-110' : 'bg-white border-surface'}`}>
-                   </div>
-                   <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${status.step >= s ? 'text-primary' : 'text-muted/30'}`}>
-                      Passo {s}
-                   </span>
-                </div>
-              ))}
-           </div>
-           
-           <div className={`mt-12 p-6 rounded-xl border-l-4 ${status.color.replace('text', 'border')} ${status.bgColor} space-y-2 animate-slide-up`}>
+        {/* Card de Informação Único (Sem Timeline) */}
+        <div className="bg-white rounded-card shadow-card-lg border border-border p-8">
+           <div className={`p-6 rounded-xl border-l-4 ${status.color.replace('text', 'border')} ${status.bgColor} space-y-2 animate-slide-up`}>
               <p className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                 <AlertTriangle size={14} />
-                 Informações do Órgão Gestor
+                 <ShieldCheck size={14} />
+                 Confirmação de Registro
               </p>
               <p className="text-sm text-dark/70 font-medium leading-relaxed">
                  {status.desc}
               </p>
            </div>
+           <p className="text-[10px] text-muted font-medium mt-6 italic text-center">
+             A plataforma DENUNCIA MS atua como canal de oficialização e entrega. 
+             O andamento interno da denúncia após o envio é de responsabilidade exclusiva do órgão destinatário.
+           </p>
         </div>
 
         {/* Resumo dos Dados */}
