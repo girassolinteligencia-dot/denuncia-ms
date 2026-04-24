@@ -91,7 +91,7 @@ export default async function PublicLayout({
                   <ul className="space-y-4 text-[11px] text-white/50 font-medium">
                      <li className="flex flex-col gap-1">
                         <span className="text-[9px] text-white/20 uppercase font-black">E-mail oficial</span>
-                        <span className="hover:text-white transition-colors cursor-pointer">contato@denunciams.com.br</span>
+                        <span className="hover:text-white transition-colors cursor-pointer">denunciams.ouvidoria@gmail.com</span>
                      </li>
                      <li className="flex flex-col gap-1">
                         <span className="text-[9px] text-white/20 uppercase font-black">Abrangência</span>
