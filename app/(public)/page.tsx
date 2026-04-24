@@ -58,7 +58,7 @@ export default async function PublicHomePage() {
                 {/* Mascote Gigante Centralizado */}
                 <div className="flex justify-center -mb-8 sm:-mb-12 lg:-mb-16">
                   <img 
-                    src={configMap['identidade.mascote'] || '/_next/static/media/mascote_bruno_ortiz_hd_1777003245753.png'} 
+                    src={configMap['identidade.mascote'] || '/assets/mascote_bruno_ortiz_hd.png'} 
                     alt="Bruno Ortiz" 
                     className="h-96 sm:h-[600px] lg:h-[750px] w-auto object-contain drop-shadow-[0_30px_60px_rgba(255,255,255,0.2)] hover:scale-105 transition-transform duration-700"
                     style={{ imageRendering: 'high-quality' }}
