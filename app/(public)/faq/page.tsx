@@ -42,16 +42,8 @@ const FAQ_ITEMS = [
       },
     ]
   },
-  {
-    category: 'Acompanhamento',
-    items: [
-      {
-        q: 'Quanto tempo leva para uma resposta?',
-        a: 'O encaminhamento ao órgão responsável é imediato. O tempo de resposta final depende da complexidade do fato e dos prazos internos de cada instituição.'
-      }
-    ]
-  }
 ]
+
 
 export default function FAQPage() {
   return (
