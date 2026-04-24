@@ -1,14 +1,17 @@
 import React from 'react'
 import { createAdminClient } from '@/lib/supabase-admin'
 import Link from 'next/link'
-import {
-  ShieldCheck,
-  Search,
-  Zap,
+import { LucideIcon } from '@/components/ui/lucide-icon'
+import { 
+  ShieldCheck, 
+  Search, 
+  ClipboardList, 
+  FileCheck, 
   ArrowRight,
   ArrowUpRight,
   Fingerprint,
-  Radio
+  Radio,
+  Zap
 } from 'lucide-react'
 import { FeedbackNewsletter } from '@/components/public/feedback-newsletter'
 import { EnqueteDinamica } from '@/components/public/enquete-dinamica'
@@ -180,8 +183,8 @@ export default async function PublicHomePage() {
                 href={`/denunciar?categoria=${cat.slug}`}
                 className="bg-white rounded-2xl p-2 sm:p-8 border border-border/60 shadow-sm hover:shadow-glow-cyan hover:border-primary/30 transition-all group flex flex-col items-center justify-center gap-1 sm:gap-4 aspect-square sm:aspect-auto"
               >
-                <div className="text-xl sm:text-5xl group-hover:scale-110 transition-transform duration-300 transform-gpu text-dark">
-                  {cat.emoji || '📂'}
+                <div className="text-primary/80 group-hover:scale-110 transition-transform duration-300 transform-gpu">
+                  <LucideIcon name={cat.icon_name} size={48} strokeWidth={1.5} className="w-8 h-8 sm:w-12 sm:h-12" />
                 </div>
                 <div className="text-center">
                   <h3 className="font-black text-dark text-[7px] sm:text-lg leading-none uppercase tracking-tighter sm:tracking-tight px-0.5">

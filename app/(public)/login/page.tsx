@@ -119,7 +119,7 @@ function LoginForm() {
 
           <div className="p-4 bg-surface border-t border-border text-center">
             <p className="text-[8px] sm:text-[9px] text-muted font-bold uppercase tracking-widest leading-relaxed">
-              Uso restrito a servidores autorizados.<br/>
+              Uso restrito a equipe autorizada.<br/>
               Acessos são monitorados e auditados.
             </p>
           </div>

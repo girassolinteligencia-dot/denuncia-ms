@@ -15,7 +15,7 @@ export async function updateCategoria(id: string, updates: Partial<Categoria>) {
       .from('categorias')
       .update({
         label: updates.label,
-        emoji: updates.emoji,
+        icon_name: updates.icon_name,
         slug: updates.slug,
         email_destino: updates.email_destino,
         instrucao_publica: updates.instrucao_publica,

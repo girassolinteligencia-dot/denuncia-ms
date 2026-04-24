@@ -11,9 +11,11 @@ import {
   XCircle,
   Mail,
   Zap,
-  AlertTriangle
+  AlertTriangle,
+  FolderOpen
 } from 'lucide-react'
 import { updateCategoria, createCategoria, deleteCategoria } from '@/lib/actions/admin-categorias'
+import { LucideIcon } from '@/components/ui/lucide-icon'
 import type { Categoria } from '@/types'
 import { toast } from 'sonner'
 
@@ -117,7 +119,7 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
             slug: '',
             label: 'Nova Categoria',
             bloco: 'Geral',
-            emoji: '📂',
+            icon_name: 'FolderOpen',
             instrucao_publica: '',
             aviso_legal: '',
             template_descricao: [],
@@ -143,8 +145,8 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
               <GripVertical size={20} />
             </div>
 
-            <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-2xl shadow-inner border border-border/50 group-hover:bg-primary-50 transition-colors">
-              {cat.emoji || '📂'}
+            <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-primary shadow-inner border border-border/50 group-hover:bg-primary-50 transition-colors">
+              <LucideIcon name={cat.icon_name || 'FolderOpen'} size={24} strokeWidth={1.5} />
             </div>
 
             <div className="flex-1">
@@ -233,14 +235,23 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
              <form onSubmit={handleUpdateCategory} className="flex-1 overflow-y-auto p-6 space-y-6">
                 <div className="grid grid-cols-4 gap-4">
                    <div className="col-span-1">
-                      <label className="label">Emoji</label>
-                      <input 
-                        className="input text-center text-xl h-11" 
-                        value={editingCat.emoji || ''} 
-                        onChange={e => setEditingCat({...editingCat, emoji: e.target.value})}
-                      />
+                      <label className="label">Ícone</label>
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="w-11 h-11 bg-surface border rounded-lg flex items-center justify-center text-primary">
+                          <LucideIcon name={editingCat.icon_name || 'FolderOpen'} size={24} />
+                        </div>
+                      </div>
                    </div>
                    <div className="col-span-3">
+                      <label className="label">Nome do Ícone Lucide</label>
+                      <input 
+                        className="input h-11 font-mono text-xs" 
+                        placeholder="ex: Construction, Hospital..."
+                        value={editingCat.icon_name || ''} 
+                        onChange={e => setEditingCat({...editingCat, icon_name: e.target.value})}
+                      />
+                   </div>
+                   <div className="col-span-4">
                       <label className="label label-required">Título da Categoria</label>
                       <input 
                         className="input h-11" 

@@ -75,7 +75,7 @@ export interface Categoria {
   slug: string
   label: string
   bloco: string
-  emoji: string | null
+  icon_name: string | null
   instrucao_publica: string | null
   aviso_legal: string | null
   template_descricao: { topico: string; placeholder: string }[]

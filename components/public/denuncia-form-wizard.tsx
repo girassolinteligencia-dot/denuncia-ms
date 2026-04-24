@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import { LucideIcon } from '@/components/ui/lucide-icon'
 import { 
   ArrowRight, 
   ArrowLeft, 
@@ -599,7 +600,9 @@ export function DenunciaFormWizard({
                 </div>
                 <div className="flex -space-x-4">
                   {categorias.slice(0, 4).map((c, i) => (
-                    <div key={i} className="w-12 h-12 rounded-full border-4 border-white bg-surface flex items-center justify-center text-xl shadow-sm">{c.emoji}</div>
+                    <div key={i} className="w-12 h-12 rounded-full border-4 border-white bg-surface flex items-center justify-center shadow-sm">
+                      <LucideIcon name={c.icon_name} size={20} className="text-primary/60" />
+                    </div>
                   ))}
                 </div>
               </div>
@@ -621,7 +624,9 @@ export function DenunciaFormWizard({
                       : 'bg-white border-border/50 hover:border-primary/30 hover:bg-surface shadow-sm'
                     }`}
                   >
-                    <div className="text-3xl sm:text-5xl lg:text-6xl mb-2 sm:mb-6 group-hover:scale-110 transition-transform inline-block">{cat.emoji}</div>
+                    <div className="mb-2 sm:mb-6 group-hover:scale-110 transition-transform inline-block text-primary/80">
+                      <LucideIcon name={cat.icon_name} size={64} strokeWidth={1.2} className="w-8 h-8 sm:w-16 sm:h-16" />
+                    </div>
                     <h3 className="font-black text-dark text-[11px] sm:text-xl leading-tight uppercase italic mb-1 sm:mb-3">{cat.label}</h3>
                     <p className="hidden sm:block text-xs text-muted font-bold line-clamp-2 leading-relaxed">{cat.instrucao_publica}</p>
                     {formData.categoria_id === cat.id && (
