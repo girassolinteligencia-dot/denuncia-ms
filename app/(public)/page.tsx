@@ -90,16 +90,13 @@ export default async function PublicHomePage() {
             </div>
 
             {/* Coluna Direita: Mascote (Estático, sem sobreposição) */}
-            <div className="relative flex justify-center lg:justify-end overflow-visible">
+            <div className="relative flex justify-center lg:justify-end overflow-visible min-h-[350px] sm:min-h-[500px] lg:min-h-[650px]">
                <div className="absolute inset-0 bg-secondary/10 rounded-full blur-[120px] scale-150 z-0 animate-pulse"></div>
-               <picture className="relative z-10">
-                  <source srcSet="/assets/mascote_sem_fundo.webp" type="image/webp" />
-                  <img 
-                    src={configMap['identidade.mascote'] || '/assets/mascote_sem_fundo.png'} 
-                    alt="Mascote Oficial da plataforma DENUNCIA MS" 
-                    className="w-auto h-[350px] sm:h-[500px] lg:h-[650px] object-contain object-bottom drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-700 hover:scale-[1.02]"
-                  />
-               </picture>
+               <img 
+                 src={configMap['identidade.mascote'] || '/assets/mascote_sem_fundo.png'} 
+                 alt="Mascote Oficial da plataforma DENUNCIA MS" 
+                 className="relative z-10 w-auto h-[350px] sm:h-[500px] lg:h-[650px] object-contain object-bottom drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-700 hover:scale-[1.02]"
+               />
             </div>
 
           </div>
