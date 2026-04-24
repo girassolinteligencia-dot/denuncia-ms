@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase-admin'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { createHash } from 'crypto'
+import type { Enquete } from '@/types'
 
 /**
  * Registra um voto em uma enquete validando o IP do usuário
@@ -44,10 +45,15 @@ export async function getEnqueteAtiva(local: 'landing' | 'noticias') {
         id, 
         titulo, 
         descricao, 
+        local_exibicao,
+        ativa,
+        data_expiracao,
+        limite_votos,
+        encerrada_manualmente,
+        criado_em,
         opcoes:enquete_opcoes(id, texto, ordem),
         votos:enquete_votos(opcao_id)
       `)
-      .eq('ativa', true)
       .eq('local_exibicao', local)
       .order('criado_em', { ascending: false })
       .limit(1)
@@ -56,10 +62,24 @@ export async function getEnqueteAtiva(local: 'landing' | 'noticias') {
     if (error) throw error
     if (!enquete) return null
 
-    // Processar resultados
     const totalVotos = enquete.votos.length
-    const resultados = enquete.opcoes.map((opt: { id: string, texto: string, ordem: number }) => {
-      const votosOpt = enquete.votos.filter((v: { opcao_id: string }) => v.opcao_id === opt.id).length
+    
+    // Determinar Status em tempo real
+    let statusAtual: 'ativa' | 'encerrada' | 'expirada' | 'limite_atingido' = 'ativa'
+    
+    if (enquete.encerrada_manualmente) {
+      statusAtual = 'encerrada'
+    } else if (enquete.data_expiracao && new Date(enquete.data_expiracao) < new Date()) {
+      statusAtual = 'expirada'
+    } else if (enquete.limite_votos && totalVotos >= enquete.limite_votos) {
+      statusAtual = 'limite_atingido'
+    } else if (!enquete.ativa) {
+      statusAtual = 'encerrada'
+    }
+
+    // Processar resultados para o Dashboard
+    const resultados = enquete.opcoes.map((opt: any) => {
+      const votosOpt = enquete.votos.filter((v: any) => v.opcao_id === opt.id).length
       return {
         ...opt,
         votos: votosOpt,
@@ -70,7 +90,6 @@ export async function getEnqueteAtiva(local: 'landing' | 'noticias') {
     const ip = headers().get('x-forwarded-for') || '127.0.0.1'
     const ipHash = createHash('sha256').update(ip + (process.env.ENCRYPTION_KEY || 'default')).digest('hex')
     
-    // Busca específica para saber se o IP atual já votou
     const { data: votoExistente } = await supabase
       .from('enquete_votos')
       .select('id')
@@ -79,13 +98,12 @@ export async function getEnqueteAtiva(local: 'landing' | 'noticias') {
       .maybeSingle()
 
     return {
-      id: enquete.id,
-      titulo: enquete.titulo,
-      descricao: enquete.descricao,
+      ...enquete,
+      status_atual: statusAtual,
       opcoes: resultados,
       totalVotos,
       jaVotou: !!votoExistente
-    }
+    } as Enquete
   } catch (err) {
     console.error('[polls] Erro ao buscar enquete:', err)
     return null
@@ -95,21 +113,33 @@ export async function getEnqueteAtiva(local: 'landing' | 'noticias') {
 /**
  * Cria uma nova enquete com suas opções
  */
-export async function criarEnquete(titulo: string, local: string, opcoes: string[]) {
+export async function criarEnquete(data: { 
+  titulo: string, 
+  local: string, 
+  opcoes: string[],
+  dataExpiracao?: string,
+  limiteVotos?: number
+}) {
   const supabase = createAdminClient()
   
   try {
     // 1. Inserir Enquete
     const { data: enquete, error: eErr } = await supabase
       .from('enquetes')
-      .insert([{ titulo, local_exibicao: local, ativa: true }])
+      .insert([{ 
+        titulo: data.titulo, 
+        local_exibicao: data.local, 
+        ativa: true,
+        data_expiracao: data.dataExpiracao || null,
+        limite_votos: data.limiteVotos || null
+      }])
       .select()
       .single()
 
     if (eErr) throw eErr
 
     // 2. Inserir Opções
-    const opcoesData = opcoes.map((texto, index) => ({
+    const opcoesData = data.opcoes.map((texto, index) => ({
       enquete_id: enquete.id,
       texto,
       ordem: index
@@ -160,28 +190,35 @@ export async function deletarEnquete(id: string) {
 /**
  * Atualiza uma enquete existente e suas opções
  */
-export async function atualizarEnquete(id: string, updates: { titulo?: string, local?: string, ativa?: boolean, opcoes?: { id?: string, texto: string, ordem: number }[] }) {
+export async function atualizarEnquete(id: string, updates: { 
+  titulo?: string, 
+  local?: string, 
+  ativa?: boolean, 
+  encerrada_manualmente?: boolean,
+  data_expiracao?: string | null,
+  limite_votos?: number | null,
+  opcoes?: { id?: string, texto: string, ordem: number }[] 
+}) {
   const supabase = createAdminClient()
   
   try {
     // 1. Atualizar dados básicos da Enquete
-    if (updates.titulo || updates.local || updates.ativa !== undefined) {
-      const { error: eErr } = await supabase
-        .from('enquetes')
-        .update({ 
-          titulo: updates.titulo, 
-          local_exibicao: updates.local, 
-          ativa: updates.ativa 
-        })
-        .eq('id', id)
+    const { error: eErr } = await supabase
+      .from('enquetes')
+      .update({ 
+        titulo: updates.titulo, 
+        local_exibicao: updates.local, 
+        ativa: updates.ativa,
+        encerrada_manualmente: updates.encerrada_manualmente,
+        data_expiracao: updates.data_expiracao,
+        limite_votos: updates.limite_votos
+      })
+      .eq('id', id)
 
-      if (eErr) throw eErr
-    }
+    if (eErr) throw eErr
 
     // 2. Atualizar Opções (se fornecidas)
     if (updates.opcoes) {
-      // Para simplificar e garantir a ordem, removemos as antigas e inserimos as novas
-      // (Em um cenário real, poderíamos dar update individual, mas o delete/insert é mais seguro para reordenação total)
       const { error: dErr } = await supabase
         .from('enquete_opcoes')
         .delete()

@@ -243,3 +243,29 @@ export interface ConsultaProtocoloResponse {
   atualizado_em: string
   historico: { status: StatusDenuncia; alterado_em: string }[]
 }
+
+export interface Enquete {
+  id: string
+  titulo: string
+  descricao?: string
+  local_exibicao: 'landing' | 'noticias'
+  ativa: boolean
+  data_expiracao?: string | null
+  limite_votos?: number | null
+  encerrada_manualmente: boolean
+  criado_em: string
+  // Virtual fields
+  status_atual?: 'ativa' | 'encerrada' | 'expirada' | 'limite_atingido'
+  opcoes?: EnqueteOpcao[]
+  totalVotos?: number
+  jaVotou?: boolean
+}
+
+export interface EnqueteOpcao {
+  id: string
+  enquete_id: string
+  texto: string
+  ordem: number
+  votos?: number
+  percentual?: number
+}

@@ -1,19 +1,16 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Plus, Trash2, ToggleLeft, ToggleRight, Loader2 } from 'lucide-react'
+import { Plus, Trash2, ToggleLeft, ToggleRight, Loader2, Lock, Timer, Target } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { setPesquisaSatisfacaoAtiva, criarEnquete, deletarEnquete, atualizarEnquete } from '@/lib/actions/enquetes'
-
-// Note: In a real app, I'd have server actions for CRUD. For now I'll implement the UI logic.
-// I'll assume we have a server action called `salvarEnquete` which I'll create next.
 
 export function EnquetesManager({ 
   initialEnquetes, 
   satisfacaoAtiva 
 }: { 
-  initialEnquetes: any[], // Tipagem simplificada para props iniciais
+  initialEnquetes: any[], 
   satisfacaoAtiva: boolean 
 }) {
   const router = useRouter()
@@ -21,6 +18,19 @@ export function EnquetesManager({
   const [isSatisfacaoAtiva, setIsSatisfacaoAtiva] = useState(satisfacaoAtiva)
   const [showNovoForm, setShowNovoForm] = useState(false)
   const [enqueteParaEditar, setEnqueteParaEditar] = useState<any>(null)
+
+  const handleEncerrar = async (id: string) => {
+    if (!confirm('Deseja encerrar esta enquete agora? Ninguém mais poderá votar.')) return
+    setLoading(true)
+    const res = await atualizarEnquete(id, { encerrada_manualmente: true, ativa: false })
+    setLoading(false)
+    if (res.success) {
+      toast.success('Enquete encerrada com sucesso!')
+      router.refresh()
+    } else {
+      toast.error('Erro ao encerrar: ' + res.error)
+    }
+  }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir esta enquete?')) return
@@ -89,25 +99,49 @@ export function EnquetesManager({
           <div key={enquete.id} className="bg-white rounded-[2rem] border border-border shadow-card p-8 space-y-6">
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <div className="flex items-center gap-2">
+                <div className="flex gap-2 mb-2">
                   <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${enquete.ativa ? 'bg-success/10 text-success border border-success/20' : 'bg-muted/10 text-muted border border-border'}`}>
-                    {enquete.ativa ? 'Ativa' : 'Pausada'}
+                    {enquete.ativa ? 'Ativa' : 'Encerrada'}
                   </span>
                   <span className="text-[8px] font-black uppercase tracking-widest text-muted">{enquete.local_exibicao}</span>
                 </div>
-                <h3 className="text-xl font-black text-dark uppercase italic tracking-tight">{enquete.titulo}</h3>
+                <h3 className="text-xl font-black text-dark uppercase italic tracking-tight leading-tight">{enquete.titulo}</h3>
               </div>
-              <button 
-                onClick={() => handleDelete(enquete.id)}
-                disabled={loading}
-                className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors disabled:opacity-50"
-              >
-                <Trash2 size={18} />
-              </button>
+              <div className="flex gap-2">
+                {enquete.ativa && !enquete.encerrada_manualmente && (
+                  <button 
+                    onClick={() => handleEncerrar(enquete.id)}
+                    title="Encerrar agora"
+                    className="text-amber-500 hover:bg-amber-50 p-2 rounded-lg transition-colors"
+                  >
+                    <Lock size={18} />
+                  </button>
+                )}
+                <button 
+                  onClick={() => handleDelete(enquete.id)}
+                  disabled={loading}
+                  className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 text-[8px] font-black uppercase tracking-widest text-muted">
+                 {enquete.data_expiracao && (
+                   <span className="flex items-center gap-1 border border-border px-2 py-1 rounded-lg">
+                      <Timer size={10} /> Expira em: {new Date(enquete.data_expiracao).toLocaleString()}
+                   </span>
+                 )}
+                 {enquete.limite_votos && (
+                   <span className="flex items-center gap-1 border border-border px-2 py-1 rounded-lg">
+                      <Target size={10} /> Meta: {enquete.limite_votos} votos
+                   </span>
+                 )}
             </div>
 
             <div className="space-y-3">
-              {enquete.opcoes.map((opt: any) => {
+              {(enquete.opcoes || []).map((opt: any) => {
                 const total = enquete.total_votos || 1
                 const perc = Math.round(((opt.votos || 0) / total) * 100)
                 return (
@@ -164,6 +198,8 @@ function NovoEnqueteForm({
   const [local, setLocal] = useState(enquete?.local_exibicao || 'landing')
   const [ativa, setAtiva] = useState(enquete?.ativa ?? true)
   const [opcoes, setOpcoes] = useState<string[]>(enquete?.opcoes?.map((o: any) => o.texto) || ['', ''])
+  const [dataExpiracao, setDataExpiracao] = useState(enquete?.data_expiracao ? new Date(enquete.data_expiracao).toISOString().slice(0, 16) : '')
+  const [limiteVotos, setLimiteVotos] = useState(enquete?.limite_votos || '')
   const [loading, setLoading] = useState(false)
 
   const handleAddOpcao = () => {
@@ -189,16 +225,22 @@ function NovoEnqueteForm({
     }
     setLoading(true)
     
-    const payload = {
-      titulo,
-      local,
-      ativa,
-      opcoes: opcoes.map((texto, i) => ({ texto, ordem: i }))
-    }
-
     const res = enquete 
-      ? await atualizarEnquete(enquete.id, payload)
-      : await criarEnquete(titulo, local, opcoes)
+      ? await atualizarEnquete(enquete.id, {
+          titulo,
+          local,
+          ativa,
+          data_expiracao: dataExpiracao || null,
+          limite_votos: limiteVotos ? Number(limiteVotos) : null,
+          opcoes: opcoes.map((texto, i) => ({ texto, ordem: i }))
+        })
+      : await criarEnquete({
+          titulo,
+          local,
+          opcoes,
+          dataExpiracao: dataExpiracao || undefined,
+          limiteVotos: limiteVotos ? Number(limiteVotos) : undefined
+        })
 
     setLoading(false)
     
@@ -235,6 +277,27 @@ function NovoEnqueteForm({
               className="input h-14 rounded-xl border-2 font-bold" 
               placeholder="Ex: Qual sua opinião sobre o transporte público?" 
             />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-primary">Prazo de Expiração</label>
+              <input 
+                type="datetime-local"
+                value={dataExpiracao} 
+                onChange={e => setDataExpiracao(e.target.value)}
+                className="input h-14 rounded-xl border-2 font-bold"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-primary">Meta de Votos</label>
+              <input 
+                type="number"
+                value={limiteVotos} 
+                onChange={e => setLimiteVotos(e.target.value)}
+                className="input h-14 rounded-xl border-2 font-bold"
+                placeholder="Ex: 500"
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-primary">Local de Exibição</label>
