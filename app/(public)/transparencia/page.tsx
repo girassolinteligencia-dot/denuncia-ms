@@ -26,11 +26,11 @@ export default async function TransparenciaPage() {
              Dados Auditáveis & Transparência
           </div>
           <div className="space-y-4">
-            <h1 className="text-4xl sm:text-6xl font-black tracking-tighter italic uppercase">
-              Governança de <span className="text-secondary italic">Dados</span>
+            <h1 className="text-4xl sm:text-7xl font-black tracking-tighter uppercase italic">
+              Inteligência Cívica <span className="text-secondary italic">Aplicada</span>
             </h1>
             <p className="text-white/50 text-sm sm:text-lg max-w-2xl font-medium leading-relaxed">
-              O compromisso da Denúncia MS com a transparência total. Veja como sua voz está transformando Mato Grosso do Sul através de dados e ações reais.
+              Sua voz convertida em inteligência estratégica. Veja como o engajamento coletivo gera diagnósticos precisos para cobrar eficiência e transparência das entidades responsáveis.
             </p>
           </div>
           
