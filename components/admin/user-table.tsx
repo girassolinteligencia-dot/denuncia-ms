@@ -9,38 +9,27 @@ import {
   PowerOff
 } from 'lucide-react'
 import { toast } from 'sonner'
-import type { Profile, UserRole } from '@/types'
-import { updateUsuarioRole, deleteUsuario, toggleUsuarioStatus } from '@/lib/actions/admin-usuarios'
+import type { Profile } from '@/types'
+import { deleteUsuario, toggleUsuarioStatus } from '@/lib/actions/admin-usuarios'
 import { CreateUserModal } from './create-user-modal'
 
 export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers }) => {
   const [usuarios, setUsuarios] = useState<Profile[]>(initialUsers)
   const [loading, setLoading] = useState<string | null>(null)
   const [modalAberto, setModalAberto] = useState(false)
+  const [usuarioParaEditar, setUsuarioParaEditar] = useState<Profile | null>(null)
   
-  const handleUpdateRole = async (id: string, currentRole: UserRole) => {
-    const roles: UserRole[] = ['admin', 'moderador', 'comunicador']
-    const nextRole = roles[(roles.indexOf(currentRole) + 1) % roles.length]
-    
-    const roleLabels: Record<string, string> = {
-      admin: 'Administrador Master',
-      moderador: 'Analista de Ouvidoria',
-      comunicador: 'Gestor de Comunicação'
-    }
-
-    if (!confirm(`Deseja alterar o nível de acesso para ${roleLabels[nextRole]}?`)) return
-    
-    setLoading(id)
-    const result = await updateUsuarioRole(id, nextRole)
-    
-    if (result.success) {
-      toast.success('Permissão atualizada!')
-      setUsuarios(prev => prev.map(u => u.id === id ? { ...u, role: nextRole } : u))
-    } else {
-      toast.error('Erro: ' + result.error)
-    }
-    setLoading(null)
+  const handleEdit = (user: Profile) => {
+    setUsuarioParaEditar(user)
+    setModalAberto(true)
   }
+
+  const handleNovo = () => {
+    setUsuarioParaEditar(null)
+    setModalAberto(true)
+  }
+  
+  // Removido handleUpdateRole antigo em favor da edição via Modal
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     const action = currentStatus ? 'SUSPENDER' : 'REATIVAR'
@@ -82,7 +71,7 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
     <div className="space-y-4">
       <div className="flex justify-end">
         <button 
-          onClick={() => setModalAberto(true)}
+          onClick={handleNovo}
           className="btn-primary gap-2 bg-dark hover:bg-black text-white px-6 h-12 rounded-xl"
         >
           <UserPlus size={18} />
@@ -116,9 +105,10 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
                 </td>
                 <td className="px-6 py-5">
                    <button 
-                    onClick={() => handleUpdateRole(user.id, user.role)}
+                    onClick={() => handleEdit(user)}
                     disabled={loading === user.id || !user.ativo}
                     className="flex items-center gap-2 hover:bg-surface p-2 rounded-lg transition-all disabled:opacity-50"
+                    title="Clique para configurar permissões"
                    >
                       <Shield size={14} className={user.role === 'admin' ? 'text-secondary' : 'text-primary'} />
                       <span className={`text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'text-secondary' : 'text-dark'}`}>
@@ -166,8 +156,8 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
       <CreateUserModal 
         isOpen={modalAberto} 
         onClose={() => setModalAberto(false)}
+        userToEdit={usuarioParaEditar}
         onSuccess={() => {
-          // O revalidatePath cuidará de atualizar a lista se usarmos router.refresh()
           window.location.reload()
         }}
       />

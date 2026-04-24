@@ -3,16 +3,17 @@
 import React, { useState } from 'react'
 import { X, UserPlus, Mail, Lock, Loader2, Save } from 'lucide-react'
 import { toast } from 'sonner'
-import { createUsuarioAdmin } from '@/lib/actions/admin-usuarios'
-import type { UserRole } from '@/types'
+import { createUsuarioAdmin, updateUsuarioAdmin } from '@/lib/actions/admin-usuarios'
+import type { UserRole, Profile } from '@/types'
 
 interface CreateUserModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
+  userToEdit?: Profile | null
 }
 
-export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClose, onSuccess }) => {
+export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClose, onSuccess, userToEdit }) => {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     nome: '',
@@ -22,6 +23,28 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
     role: 'moderador' as UserRole,
     permissoes: ['dashboard', 'denuncias', 'categorias', 'comunicacao'] as string[]
   })
+
+  React.useEffect(() => {
+    if (userToEdit) {
+      setFormData({
+        nome: userToEdit.nome || '',
+        email: userToEdit.email || '',
+        password: '',
+        confirmPassword: '',
+        role: userToEdit.role,
+        permissoes: userToEdit.permissoes || []
+      })
+    } else {
+      setFormData({
+        nome: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        role: 'moderador',
+        permissoes: ['dashboard', 'denuncias', 'categorias', 'comunicacao']
+      })
+    }
+  }, [userToEdit, isOpen])
 
   const MODULOS = [
     { id: 'dashboard', label: 'Dashboard', desc: 'Visão geral e métricas' },
@@ -59,47 +82,55 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('As senhas não coincidem.')
-      return
-    }
-
-    if (formData.password.length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres.')
-      return
-    }
-
-    setLoading(true)
     try {
-      const result = await createUsuarioAdmin({
-        nome: formData.nome,
-        email: formData.email,
-        password: formData.password,
-        role: formData.role,
-        permissoes: formData.permissoes
-      })
-
-      if (result.success) {
-        if (result.warning) {
-          toast.warning(result.warning, { duration: 10000 })
-        } else {
-          toast.success('Usuário criado e e-mail de boas-vindas enviado!')
-        }
-        onSuccess()
-        onClose()
-        setFormData({ 
-          nome: '', 
-          email: '', 
-          password: '', 
-          confirmPassword: '', 
-          role: 'moderador',
-          permissoes: ['dashboard', 'denuncias', 'categorias', 'comunicacao']
+      if (userToEdit) {
+        const result = await updateUsuarioAdmin(userToEdit.id, {
+          nome: formData.nome,
+          role: formData.role,
+          permissoes: formData.permissoes
         })
+        if (result.success) {
+          toast.success('Usuário atualizado com sucesso!')
+          onSuccess()
+          onClose()
+        } else {
+          throw new Error(result.error)
+        }
       } else {
-        throw new Error(result.error)
+        // Validação de senha apenas na criação
+        if (formData.password !== formData.confirmPassword) {
+          toast.error('As senhas não coincidem.')
+          setLoading(false)
+          return
+        }
+        if (formData.password.length < 6) {
+          toast.error('A senha deve ter pelo menos 6 caracteres.')
+          setLoading(false)
+          return
+        }
+
+        const result = await createUsuarioAdmin({
+          nome: formData.nome,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+          permissoes: formData.permissoes
+        })
+
+        if (result.success) {
+          if (result.warning) {
+            toast.warning(result.warning, { duration: 10000 })
+          } else {
+            toast.success('Usuário criado e e-mail de boas-vindas enviado!')
+          }
+          onSuccess()
+          onClose()
+        } else {
+          throw new Error(result.error)
+        }
       }
     } catch (err: any) {
-      toast.error('Erro ao criar usuário: ' + err.message)
+      toast.error('Erro: ' + err.message)
     } finally {
       setLoading(false)
     }
@@ -114,7 +145,9 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
             <div className="p-2 bg-primary/10 rounded-xl">
               <UserPlus size={20} />
             </div>
-            <h2 className="font-black uppercase italic tracking-tighter text-lg">Novo Usuário</h2>
+            <h2 className="font-black uppercase italic tracking-tighter text-lg">
+              {userToEdit ? 'Editar Usuário' : 'Novo Usuário'}
+            </h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white rounded-full transition-colors">
             <X size={20} className="text-muted" />
@@ -152,36 +185,38 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted pl-1">Senha Inicial</label>
-              <div className="relative">
-                <input 
-                  required
-                  type="password"
-                  className="input h-12 pl-10 rounded-xl text-sm"
-                  placeholder="******"
-                  value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
-                />
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
+          {!userToEdit && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted pl-1">Senha Inicial</label>
+                <div className="relative">
+                  <input 
+                    required
+                    type="password"
+                    className="input h-12 pl-10 rounded-xl text-sm"
+                    placeholder="******"
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted pl-1">Confirmar</label>
+                <div className="relative">
+                  <input 
+                    required
+                    type="password"
+                    className="input h-12 pl-10 rounded-xl text-sm"
+                    placeholder="******"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                  />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted pl-1">Confirmar</label>
-              <div className="relative">
-                <input 
-                  required
-                  type="password"
-                  className="input h-12 pl-10 rounded-xl text-sm"
-                  placeholder="******"
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                />
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
-              </div>
-            </div>
-          </div>
+          )}
 
           <div className="space-y-4">
             <label className="text-[10px] font-black uppercase tracking-widest text-muted pl-1">Configuração de Acesso</label>
@@ -245,7 +280,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
               className="w-full h-14 bg-dark hover:bg-black text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-lg flex items-center justify-center gap-3 transition-all disabled:opacity-50"
             >
               {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-              {loading ? 'Criando Conta...' : 'Criar e Notificar'}
+              {loading ? (userToEdit ? 'Salvando...' : 'Criando...') : (userToEdit ? 'Salvar Alterações' : 'Criar e Notificar')}
             </button>
           </div>
         </form>

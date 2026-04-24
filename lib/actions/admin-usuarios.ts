@@ -161,6 +161,34 @@ export async function toggleUsuarioStatus(id: string, currentStatus: boolean) {
 /**
  * Atualiza o papel (role) de um usuário
  */
+export async function updateUsuarioAdmin(id: string, data: {
+  nome: string
+  role: UserRole
+  permissoes: string[]
+}) {
+  const supabase = createAdminClient()
+
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ 
+        nome: data.nome, 
+        role: data.role,
+        permissoes: data.permissoes,
+        atualizado_em: new Date().toISOString()
+      })
+      .eq('id', id)
+
+    if (error) throw error
+    
+    revalidatePath('/admin/usuarios')
+    return { success: true }
+  } catch (err: any) {
+    console.error('Erro ao atualizar usuário:', err)
+    return { success: false, error: err.message }
+  }
+}
+
 export async function updateUsuarioRole(id: string, role: UserRole) {
   const supabase = createAdminClient()
 
