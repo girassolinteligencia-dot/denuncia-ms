@@ -69,18 +69,18 @@ export default async function PublicLayout({
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-xs font-black text-dark hover:text-primary transition-colors uppercase tracking-tighter italic">Início</Link>
-            <Link href="/como-funciona" className="text-xs font-black text-dark hover:text-primary transition-colors uppercase tracking-tighter italic">Como funciona</Link>
-            <Link href="/transparencia" className="text-xs font-black text-dark hover:text-primary transition-colors uppercase tracking-tighter italic">Transparência</Link>
-            <Link href="/noticias" className="text-xs font-black text-dark hover:text-primary transition-colors uppercase tracking-tighter italic">Notícias</Link>
+            <Link href="/" className="text-sm font-black text-dark hover:text-primary transition-colors uppercase tracking-tighter italic">Início</Link>
+            <Link href="/como-funciona" className="text-sm font-black text-dark hover:text-primary transition-colors uppercase tracking-tighter italic">Como funciona</Link>
+            <Link href="/transparencia" className="text-sm font-black text-dark hover:text-primary transition-colors uppercase tracking-tighter italic">Transparência</Link>
+            <Link href="/noticias" className="text-sm font-black text-dark hover:text-primary transition-colors uppercase tracking-tighter italic">Notícias</Link>
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto no-scrollbar">
-             <Link href="/acompanhar" className="btn-outline px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs gap-1 sm:gap-2 shrink-0">
+             <Link href="/acompanhar" className="btn-outline px-2 sm:px-3 py-1.5 text-[10px] sm:text-sm gap-1 sm:gap-2 shrink-0">
                 <Search size={14} className="sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Acompanhar</span>
              </Link>
-             <Link href="/denunciar" className="btn-primary px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs gap-1 sm:gap-2 bg-secondary hover:bg-secondary-600 border-none shadow-glow-green shrink-0">
+             <Link href="/denunciar" className="btn-primary px-2 sm:px-3 py-1.5 text-[10px] sm:text-sm gap-1 sm:gap-2 bg-secondary hover:bg-secondary-600 border-none shadow-glow-green shrink-0">
                 <ShieldCheck size={14} className="sm:w-4 sm:h-4" />
                 <span>Denunciar</span>
              </Link>
@@ -97,16 +97,16 @@ export default async function PublicLayout({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 border-b border-white/5 pb-12">
                {/* Coluna 1: Sobre */}
                <div className="space-y-6">
-                  <h3 className="font-black text-white uppercase tracking-tighter italic text-[11px]">A Plataforma</h3>
-                  <p className="text-[11px] text-white/40 leading-relaxed text-justify font-medium">
+                  <h3 className="font-black text-white uppercase tracking-tighter italic text-[13px]">A Plataforma</h3>
+                  <p className="text-xs text-white/40 leading-relaxed text-justify font-medium">
                      O <strong>{appName}</strong> opera como uma plataforma cívica estritamente independente, sem vínculo com entes públicos ou políticos. Atuamos como um elo tecnológico que conecta o cidadão de MS diretamente aos órgãos competentes.
                   </p>
                </div>
                
                {/* Coluna 2: Navegação */}
                <div>
-                  <h3 className="font-black text-white mb-6 uppercase tracking-tighter italic text-[11px]">Navegação</h3>
-                  <ul className="space-y-3 text-[11px] text-white/50 font-medium">
+                  <h3 className="font-black text-white mb-6 uppercase tracking-tighter italic text-[13px]">Navegação</h3>
+                  <ul className="space-y-3 text-xs text-white/50 font-medium">
                      <li><Link href="/" className="hover:text-electric transition-colors">Início</Link></li>
                      <li><Link href="/como-funciona" className="hover:text-electric transition-colors">Como funciona</Link></li>
                      <li><Link href="/noticias" className="hover:text-electric transition-colors">Notícias</Link></li>
@@ -116,8 +116,8 @@ export default async function PublicLayout({
 
                {/* Coluna 3: Suporte & Legal */}
                <div>
-                  <h3 className="font-black text-white mb-6 uppercase tracking-tighter italic text-[11px]">Suporte & Legal</h3>
-                  <ul className="space-y-3 text-[11px] text-white/50 font-medium">
+                  <h3 className="font-black text-white mb-6 uppercase tracking-tighter italic text-[13px]">Suporte & Legal</h3>
+                  <ul className="space-y-3 text-xs text-white/50 font-medium">
                      <li><Link href="/faq" className="hover:text-electric transition-colors">Dúvidas Frequentes</Link></li>
                      <li><Link href="/privacidade" className="hover:text-electric transition-colors">Privacidade</Link></li>
                      <li><Link href="/termos" className="hover:text-electric transition-colors">Termos de Uso</Link></li>
@@ -127,8 +127,8 @@ export default async function PublicLayout({
 
                {/* Coluna 4: Contato */}
                <div>
-                  <h3 className="font-black text-white mb-6 uppercase tracking-tighter italic text-[11px]">Contato</h3>
-                  <ul className="space-y-4 text-[11px] text-white/50 font-medium">
+                  <h3 className="font-black text-white mb-6 uppercase tracking-tighter italic text-[13px]">Contato</h3>
+                  <ul className="space-y-4 text-xs text-white/50 font-medium">
                      <li className="flex flex-col gap-1">
                         <span className="text-[9px] text-white/20 uppercase font-black">E-mail oficial</span>
                         <span className="hover:text-white transition-colors cursor-pointer">denunciams.ouvidoria@gmail.com</span>
