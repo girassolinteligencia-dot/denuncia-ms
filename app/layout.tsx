@@ -36,6 +36,9 @@ export const metadata: Metadata = {
 
 import { Analytics } from "@vercel/analytics/react"
 import { Outfit, Inter } from 'next/font/google'
+import { createAdminClient } from '@/lib/supabase-admin'
+import { EmergencyScreen } from '@/components/public/emergency-screen'
+import { headers } from 'next/headers'
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -49,11 +52,30 @@ const inter = Inter({
   variable: '--font-inter',
 })
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const supabase = createAdminClient()
+  const headerList = headers()
+  const pathname = headerList.get('x-pathname') || ''
+
+  // Busca status de emergência
+  const { data: configs } = await supabase
+    .from('sistema_config')
+    .select('chave, valor')
+    .in('chave', ['status_emergencia', 'mensagem_emergencia'])
+  
+  const configMap = (configs || []).reduce((acc: Record<string, string>, cur) => {
+    acc[cur.chave] = cur.valor
+    return acc
+  }, {})
+
+  const isEmergency = configMap['status_emergencia'] === 'true'
+  const emergencyMsg = configMap['mensagem_emergencia'] || ''
+  const isAdminPath = pathname.startsWith('/admin')
+
   return (
     <html lang="pt-BR" className={`scroll-smooth ${outfit.variable} ${inter.variable}`}>
       <head>
@@ -61,7 +83,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="min-h-screen font-sans antialiased">
-        {children}
+        {isEmergency && !isAdminPath ? (
+          <EmergencyScreen mensagem={emergencyMsg} />
+        ) : (
+          children
+        )}
         <Analytics />
       </body>
     </html>

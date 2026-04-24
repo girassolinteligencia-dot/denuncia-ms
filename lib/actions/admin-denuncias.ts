@@ -309,3 +309,76 @@ export async function banirUsuario(emailHash: string, motivo: string) {
     return { success: false, error: err.message }
   }
 }
+
+/**
+ * Busca dados históricos de denúncias para o gráfico de evolução (últimos 30 dias)
+ */
+export async function getProtocolEvolutionData() {
+  const supabase = createAdminClient()
+  const hoje = new Date()
+  const dataInicio = new Date()
+  dataInicio.setDate(hoje.getDate() - 30)
+
+  try {
+    const { data, error } = await supabase
+      .from('denuncias')
+      .select('criado_em')
+      .gte('criado_em', dataInicio.toISOString())
+      .order('criado_em', { ascending: true })
+
+    if (error) throw error
+
+    // Agrupar por dia
+    const grouped = (data || []).reduce((acc: Record<string, number>, curr) => {
+      const date = new Date(curr.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+      acc[date] = (acc[date] || 0) + 1
+      return acc
+    }, {})
+
+    // Preencher dias vazios para o gráfico não ter buracos
+    const chartData = []
+    for (let i = 30; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(hoje.getDate() - i)
+      const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+      chartData.push({
+        date: dateStr,
+        total: grouped[dateStr] || 0
+      })
+    }
+
+    return { success: true, data: chartData }
+  } catch (err: any) {
+    console.error('Erro ao buscar evolução de protocolos:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Busca todas as denúncias com coordenadas para o mapa de inteligência
+ */
+export async function getGeographicIntelligence() {
+  const supabase = createAdminClient()
+  try {
+    const { data, error } = await supabase
+      .from('denuncias')
+      .select('id, protocolo, titulo, status, latitude, longitude, municipio, criado_em')
+      .not('latitude', 'is', null)
+      .not('longitude', 'is', null)
+      .order('criado_em', { ascending: false })
+
+    if (error) throw error
+
+    return { 
+      success: true, 
+      data: (data || []).map(d => ({
+        ...d,
+        lat: Number(d.latitude),
+        lng: Number(d.longitude)
+      }))
+    }
+  } catch (err: any) {
+    console.error('Erro ao buscar inteligência geográfica:', err)
+    return { success: false, error: err.message }
+  }
+}

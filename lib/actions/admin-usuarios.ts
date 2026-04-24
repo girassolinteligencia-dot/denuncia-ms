@@ -31,7 +31,11 @@ export async function getUsuarios() {
 export async function getMe() {
   const supabase = createAdminClient()
   try {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError) {
+      console.error('[AUTH ERROR] getMe failed to get user:', authError)
+      return { success: false, error: authError.message }
+    }
     if (!user) return { success: false, error: 'Não autenticado' }
 
     const { data: profile, error } = await supabase
@@ -40,9 +44,14 @@ export async function getMe() {
       .eq('id', user.id)
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('[DB ERROR] getMe failed to fetch profile for user:', user.id, error)
+      throw error
+    }
+    
     return { success: true, data: profile as Profile }
   } catch (err: unknown) {
+    console.error('[CRITICAL ERROR] getMe exception:', err)
     return { success: false, error: (err as Error).message }
   }
 }

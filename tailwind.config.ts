@@ -66,6 +66,10 @@ const config: Config = {
         card: '12px',
         btn:  '8px',
       },
+      fontFamily: {
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-outfit)', 'system-ui', 'sans-serif'],
+      },
       animation: {
         'fade-in':     'fadeIn .2s ease-out',
         'slide-up':    'slideUp .3s ease-out',

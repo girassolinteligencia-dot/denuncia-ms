@@ -2,91 +2,113 @@
 
 import { createAdminClient } from '@/lib/supabase-admin'
 import { revalidatePath } from 'next/cache'
-import type { ConfigTemplate, ConfigCampoFormulario } from '@/types'
 
 /**
- * Atualiza os templates de documentos (PDF/E-mail)
+ * Busca uma configuração do sistema pela chave
  */
-export async function updateTemplate(id: string, updates: Partial<ConfigTemplate>) {
+export async function getSystemConfig(chave: string) {
   const supabase = createAdminClient()
-
   try {
-    const { error } = await supabase
-      .from('config_templates')
-      .update({
-        conteudo: updates.conteudo,
-        incluir_qrcode: updates.incluir_qrcode,
-        atualizado_em: new Date().toISOString()
-      })
-      .eq('id', id)
+    const { data, error } = await supabase
+      .from('sistema_config')
+      .select('valor')
+      .eq('chave', chave)
+      .single()
 
     if (error) throw error
-
-    revalidatePath('/admin/configuracoes/templates')
-    return { success: true }
-  } catch (err) {
-    const error = err as Error
-    console.error('Erro ao atualizar template:', error)
-    return { success: false, error: error.message }
+    return { 
+      success: true, 
+      valor: data.valor === 'true',
+      valor_raw: data.valor 
+    }
+  } catch (error) {
+    console.error(`Erro ao buscar config ${chave}:`, error)
+    return { success: false, valor: false, valor_raw: '' }
   }
 }
 
 /**
- * Atualiza as configurações dos campos do formulário
+ * Atualiza uma configuração do sistema
  */
-export async function updateConfigCampos(id: string, updates: Partial<ConfigCampoFormulario>) {
+export async function updateSystemConfig(chave: string, valor: boolean | string) {
   const supabase = createAdminClient()
+  try {
+    const { error } = await supabase
+      .from('sistema_config')
+      .update({ 
+        valor: String(valor),
+        atualizado_em: new Date().toISOString()
+      })
+      .eq('chave', chave)
 
+    if (error) throw error
+    
+    // Revalidar caminhos públicos para refletir mudança imediata
+    revalidatePath('/', 'layout')
+    
+    return { success: true }
+  } catch (error) {
+    console.error(`Erro ao atualizar config ${chave}:`, error)
+    return { success: false, error: 'Falha ao atualizar configuração' }
+  }
+}
+
+/**
+ * Atualiza um campo do formulário de denúncia
+ */
+export async function updateConfigCampos(id: string, data: Record<string, any>) {
+  const supabase = createAdminClient()
   try {
     const { error } = await supabase
       .from('config_campos_formulario')
-      .update({
-        label: updates.label,
-        placeholder: updates.placeholder,
-        obrigatorio: updates.obrigatorio,
-        visivel: updates.visivel,
-        ordem: updates.ordem,
-        atualizado_em: new Date().toISOString()
-      })
+      .update(data)
       .eq('id', id)
 
     if (error) throw error
-
     revalidatePath('/admin/configuracoes/campos')
-    revalidatePath('/denunciar')
     return { success: true }
-  } catch (err) {
-    const error = err as Error
+  } catch (error) {
     console.error('Erro ao atualizar campo:', error)
-    return { success: false, error: error.message }
+    return { success: false }
   }
 }
 
 /**
- * Atualiza as configurações de tipos de arquivos permitidos
+ * Atualiza um template de documento (PDF/E-mail)
  */
-export async function updateConfigTipoArquivo(id: string, updates: any) {
+export async function updateTemplate(id: string, data: Record<string, any>) {
   const supabase = createAdminClient()
-
   try {
     const { error } = await supabase
-      .from('config_tipos_arquivo')
-      .update({
-        ativo: updates.ativo,
-        qtd_maxima: updates.qtd_maxima,
-        tamanho_max_mb: updates.tamanho_max_mb,
-        atualizado_em: new Date().toISOString()
-      })
+      .from('config_templates')
+      .update(data)
       .eq('id', id)
 
     if (error) throw error
-
-    revalidatePath('/admin/configuracoes/arquivos')
-    revalidatePath('/denunciar')
+    revalidatePath('/admin/configuracoes/templates')
     return { success: true }
-  } catch (err) {
-    const error = err as Error
+  } catch (error) {
+    console.error('Erro ao atualizar template:', error)
+    return { success: false }
+  }
+}
+
+/**
+ * Atualiza políticas de tipos de arquivo
+ */
+export async function updateConfigTipoArquivo(id: string, data: Record<string, any>) {
+  const supabase = createAdminClient()
+  try {
+    const { error } = await supabase
+      .from('config_tipos_arquivo')
+      .update(data)
+      .eq('id', id)
+
+    if (error) throw error
+    revalidatePath('/admin/configuracoes/arquivos')
+    return { success: true }
+  } catch (error) {
     console.error('Erro ao atualizar tipo de arquivo:', error)
-    return { success: false, error: error.message }
+    return { success: false }
   }
 }

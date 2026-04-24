@@ -89,6 +89,7 @@ export async function registrarDenuncia(
         titulo:             formData.titulo,
         descricao_original: formData.descricao_original,
         local:              localCompleto || null,
+        cidade:             formData.cidade || null,
         data_ocorrido:      formData.data_ocorrido || null,
         status:             'recebida',
       })

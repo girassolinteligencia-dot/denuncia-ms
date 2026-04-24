@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
@@ -8,41 +9,16 @@ import {
   FileText, 
   Settings, 
   Tags, 
-  Share2, 
   Newspaper, 
-  Image as ImageIcon, 
   Users, 
-  History,
   ChevronRight,
   LogOut,
-  Megaphone,
   ShieldCheck,
   ShieldAlert,
   Activity,
-  RefreshCw
+  RefreshCw,
+  Globe
 } from 'lucide-react'
-
-const MENU_ITEMS = [
-  { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
-]
-
-const OPERACAO_ITEMS = [
-  { label: 'Denúncias', icon: FileText, href: '/admin/denuncias' },
-  { label: 'Categorias', icon: Tags, href: '/admin/categorias' },
-]
-
-const CONTEUDO_ITEMS = [
-  { label: 'Comunicação', icon: Newspaper, href: '/admin/conteudo' }, // Notícias, Banners, Enquetes
-]
-
-const SISTEMA_ITEMS = [
-  { label: 'Configurações', icon: Settings, href: '/admin/configuracoes' }, // Geral, Legal, Integrações, Campos
-  { label: 'Usuários', icon: Users, href: '/admin/usuarios' },
-]
-
-const SEGURANCA_ITEMS = [
-  { label: 'Segurança', icon: ShieldAlert, href: '/admin/seguranca' }, // Logs, Auditoria, Saúde
-]
 
 import { logout } from '@/lib/actions/auth'
 import { getMe } from '@/lib/actions/admin-usuarios'
@@ -50,7 +26,20 @@ import type { Profile } from '@/types'
 
 export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> = ({ isOpen, onClose }) => {
   const pathname = usePathname()
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
+  const searchParams = useSearchParams()
+  const isActive = (href: string) => {
+    if (!pathname) return false
+    try {
+      if (href.includes('?')) {
+        const [path, query] = href.split('?')
+        const currentQuery = searchParams?.toString() || ''
+        return pathname === path && currentQuery === query
+      }
+      return pathname === href || pathname.startsWith(`${href}/`)
+    } catch {
+      return false
+    }
+  }
   const [isLoggingOut, setIsLoggingOut] = React.useState(false)
   const [userProfile, setUserProfile] = React.useState<Profile | null>(null)
 
@@ -62,7 +51,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
     })
   }, [])
 
-  const isAdminMaster = userProfile?.role === 'admin'
+  const isAdminMaster = userProfile?.role === 'admin' || userProfile?.role === 'superadmin'
   const permissoes = userProfile?.permissoes || []
 
   const temAcesso = (modulo: string) => {
@@ -84,6 +73,12 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
     }
   }
 
+  // Wrapper para renderização segura de ícones caso o Lucide falhe por versão
+  const Icon = ({ icon: IconComponent, ...props }: { icon: React.ElementType | undefined, size?: number, className?: string }) => {
+    if (!IconComponent) return <ShieldAlert size={props.size || 18} className="text-red-500" />
+    return <IconComponent {...props} />
+  }
+
   return (
     <>
       {/* Overlay mobile */}
@@ -99,12 +94,14 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
       }`}>
         <div className="p-6 border-b border-white/5 bg-gradient-to-br from-primary to-primary-dark shrink-0">
           <div className="flex items-center justify-between">
-            <Link href="/admin/dashboard" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-accent shadow-glow-cyan border border-white/20 backdrop-blur-md">
-                <Megaphone size={24} className="fill-accent" />
-              </div>
+            <Link href="/admin/dashboard" className="flex items-center gap-4">
+              <img 
+                src="/favicon.ico" 
+                alt="Logo MS" 
+                className="w-10 h-10 object-contain drop-shadow-md"
+              />
               <div>
-                <h1 className="font-black text-white text-base leading-none tracking-tighter">DENUNCIA MS</h1>
+                <h1 className="font-black text-white text-base leading-none tracking-tighter">DENÚNCIA MS</h1>
                 <p className="text-[9px] text-electric font-black uppercase tracking-[0.2em] mt-1 drop-shadow-sm">Admin Engine</p>
               </div>
             </Link>
@@ -116,131 +113,161 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
         </div>
 
         <nav className="flex-1 p-4 space-y-6 scrollbar-hide">
-          {/* Dashboard */}
-          {temAcesso('dashboard') && (
-            <div>
-              <ul className="space-y-1">
-                {MENU_ITEMS.map((item) => (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
-                        isActive(item.href)
-                          ? 'bg-secondary text-white shadow-glow-green border-r-4 border-accent'
-                          : 'hover:bg-white/5 hover:text-white'
-                      }`}
-                    >
-                      <item.icon size={18} className={isActive(item.href) ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {/* INTELIGÊNCIA & GOVERNANÇA - Visibilidade Total */}
+          <div>
+            <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Inteligência & Gestão</p>
+            <ul className="space-y-1">
+              <li>
+                <Link
+                  href="/admin/dashboard"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                    isActive('/admin/dashboard')
+                      ? 'bg-secondary text-white shadow-glow-green border-r-4 border-accent'
+                      : 'hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <Icon icon={LayoutDashboard} size={18} className={isActive('/admin/dashboard') ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
+                  Painel de Impacto
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/admin/dashboard?tab=geo"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                    isActive('/admin/dashboard?tab=geo')
+                      ? 'bg-secondary text-white shadow-glow-green border-r-4 border-accent'
+                      : 'hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <Icon icon={Globe} size={18} className={isActive('/admin/dashboard?tab=geo') ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
+                  Inteligência Geográfica
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/admin/dashboard?tab=system"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                    isActive('/admin/dashboard?tab=system')
+                      ? 'bg-secondary text-white shadow-glow-green border-r-4 border-accent'
+                      : 'hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <Icon icon={ShieldCheck} size={18} className={isActive('/admin/dashboard?tab=system') ? 'text-accent' : 'text-white/40 group-hover:text-electric'} />
+                  Centro de Governança
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/sala-de-situacao"
+                  target="_blank"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group hover:bg-white/5 hover:text-white"
+                >
+                  <Icon icon={Activity} size={18} className="text-white/40 group-hover:text-electric" />
+                  Sala de Situação (Pública)
+                </Link>
+              </li>
+            </ul>
+          </div>
 
           {/* Operação - Denúncias e Categorias */}
           {(temAcesso('denuncias') || temAcesso('categorias')) && (
             <div>
-              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Operação</p>
+              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Operação Operacional</p>
               <ul className="space-y-1">
-                {OPERACAO_ITEMS.map((item) => {
-                  const moduleKey = item.href.includes('denuncias') ? 'denuncias' : 'categorias';
-                  if (!temAcesso(moduleKey)) return null;
-                  
-                  return (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
-                          isActive(item.href)
-                            ? 'bg-white/10 text-white'
-                            : 'hover:bg-white/5 hover:text-white'
-                        }`}
-                      >
-                        <item.icon size={18} className="text-white/40 group-hover:text-electric" />
-                        {item.label}
-                      </Link>
-                    </li>
-                  )
-                })}
+                {temAcesso('denuncias') && (
+                  <li>
+                    <Link
+                      href="/admin/denuncias"
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                        isActive('/admin/denuncias') ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <Icon icon={FileText} size={18} className="text-white/40 group-hover:text-electric" />
+                      Denúncias
+                    </Link>
+                  </li>
+                )}
+                {temAcesso('categorias') && (
+                  <li>
+                    <Link
+                      href="/admin/categorias"
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                        isActive('/admin/categorias') ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <Icon icon={Tags} size={18} className="text-white/40 group-hover:text-electric" />
+                      Categorias
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
           )}
 
-          {/* Comunicação */}
+          {/* Conteúdo & Comunicação */}
           {temAcesso('comunicacao') && (
             <div>
-              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Público</p>
+              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Comunicação</p>
               <ul className="space-y-1">
-                {CONTEUDO_ITEMS.map((item) => (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
-                        isActive(item.href)
-                          ? 'bg-white/10 text-white'
-                          : 'hover:bg-white/5 hover:text-white'
-                      }`}
-                    >
-                      <item.icon size={18} className="text-white/40 group-hover:text-electric" />
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
+                <li>
+                  <Link
+                    href="/admin/conteudo"
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                      isActive('/admin/conteudo') ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <Icon icon={Newspaper} size={18} className="text-white/40 group-hover:text-electric" />
+                    Conteúdo & Notícias
+                  </Link>
+                </li>
               </ul>
             </div>
           )}
 
-          {/* Sistema - Usuários e Configurações */}
-          {(temAcesso('usuarios') || temAcesso('configuracoes')) && (
+          {/* Sistema e Segurança */}
+          {(temAcesso('usuarios') || temAcesso('configuracoes') || temAcesso('seguranca')) && (
             <div>
-              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Sistema</p>
+              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Configurações & Segurança</p>
               <ul className="space-y-1">
-                {SISTEMA_ITEMS.map((item) => {
-                  const moduleKey = item.href.includes('usuarios') ? 'usuarios' : 'configuracoes';
-                  if (!temAcesso(moduleKey)) return null;
-
-                  return (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
-                          isActive(item.href)
-                            ? 'bg-white/10 text-white'
-                            : 'hover:bg-white/5 hover:text-white'
-                        }`}
-                      >
-                        <item.icon size={18} className="text-white/40 group-hover:text-electric" />
-                        {item.label}
-                      </Link>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          )}
-
-          {/* Segurança - Governança e Logs */}
-          {temAcesso('seguranca') && (
-            <div>
-              <p className="px-3 text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3">Governança</p>
-              <ul className="space-y-1">
-                {SEGURANCA_ITEMS.map((item) => (
-                  <li key={item.href}>
+                {temAcesso('configuracoes') && (
+                  <li>
                     <Link
-                      href={item.href}
+                      href="/admin/configuracoes"
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
-                        isActive(item.href)
-                          ? 'bg-white/10 text-white'
-                          : 'hover:bg-white/5 hover:text-white'
+                        isActive('/admin/configuracoes') ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
                       }`}
                     >
-                      <item.icon size={18} className="text-white/40 group-hover:text-electric" />
-                      {item.label}
+                      <Icon icon={Settings} size={18} className="text-white/40 group-hover:text-electric" />
+                      Configurações Gerais
                     </Link>
                   </li>
-                ))}
+                )}
+                {temAcesso('usuarios') && (
+                  <li>
+                    <Link
+                      href="/admin/usuarios"
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                        isActive('/admin/usuarios') ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <Icon icon={Users} size={18} className="text-white/40 group-hover:text-electric" />
+                      Gestão de Usuários
+                    </Link>
+                  </li>
+                )}
+                {temAcesso('seguranca') && (
+                  <li>
+                    <Link
+                      href="/admin/seguranca"
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                        isActive('/admin/seguranca') ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <Icon icon={ShieldAlert} size={18} className="text-white/40 group-hover:text-electric" />
+                      Auditoria & Logs
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
           )}
@@ -252,7 +279,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
           disabled={isLoggingOut}
           className="w-full h-11 flex items-center justify-center gap-3 px-3 rounded-btn text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
         >
-          {isLoggingOut ? <RefreshCw size={16} className="animate-spin" /> : <LogOut size={16} />}
+          {isLoggingOut ? <Icon icon={RefreshCw} size={16} className="animate-spin" /> : <Icon icon={LogOut} size={16} />}
           {isLoggingOut ? 'Saindo...' : 'Encerrar Sessão'}
         </button>
       </div>

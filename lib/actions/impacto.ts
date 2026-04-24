@@ -14,16 +14,17 @@ export async function getImpactoStats() {
     const { count: denunciasHoje } = await supabase
       .from('denuncias')
       .select('*', { count: 'exact', head: true })
-      .gte('criado_at', hoje.toISOString())
+      .gte('criado_em', hoje.toISOString())
 
-    // 2. Foco Geográfico (Cidade com mais denúncias)
+    // 2. Foco Geográfico (Município com mais denúncias)
     const { data: cidadesData } = await supabase
       .from('denuncias')
-      .select('cidade')
+      .select('municipio')
+      .not('municipio', 'is', null)
 
     const contagemCidades = (cidadesData || []).reduce((acc: Record<string, number>, curr) => {
-      if (curr.cidade) {
-        acc[curr.cidade] = (acc[curr.cidade] || 0) + 1
+      if (curr.municipio) {
+        acc[curr.municipio] = (acc[curr.municipio] || 0) + 1
       }
       return acc
     }, {})
@@ -44,12 +45,46 @@ export async function getImpactoStats() {
       stats: {
         hoje: denunciasHoje || 0,
         feedback: feedbackBase > 0 ? `${feedbackBase}%` : '--',
-        cidade: focoGeografico,
+        municipio: focoGeografico,
         crescimento: '+12%' // Placeholder para cálculo de tendência futura
       }
     }
   } catch (error) {
     console.error('Erro ao buscar stats de impacto:', error)
     return { success: false, error: 'Falha ao carregar dados' }
+  }
+}
+
+/**
+ * Busca dados agregados por município para o mapa de transparência
+ */
+export async function getMunicipalityMapData() {
+  const supabase = createAdminClient()
+  try {
+    const { data, error } = await supabase
+      .from('denuncias')
+      .select('municipio')
+      .not('municipio', 'is', null)
+
+    if (error) throw error
+
+    const counts = (data || []).reduce((acc: Record<string, number>, curr) => {
+      const city = curr.municipio
+      if (city) {
+        acc[city] = (acc[city] || 0) + 1
+      }
+      return acc
+    }, {})
+
+    return {
+      success: true,
+      data: Object.entries(counts).map(([name, count]) => ({
+        name,
+        count
+      }))
+    }
+  } catch (error) {
+    console.error('Erro ao buscar dados do mapa:', error)
+    return { success: false, error: 'Falha ao carregar dados geográficos' }
   }
 }

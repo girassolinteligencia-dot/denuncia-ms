@@ -1,5 +1,7 @@
 /* Outfit is loaded via layout.tsx next/font/google */
 
+@import 'leaflet/dist/leaflet.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -78,6 +80,16 @@ html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
   scroll-padding-top: 100px; /* Compensa o header sticky */
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+
+body, input, textarea, select, button, label {
+  font-family: var(--font-sans);
 }
 
 body {

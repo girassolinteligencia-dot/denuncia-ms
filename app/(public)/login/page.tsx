@@ -47,13 +47,14 @@ function LoginForm() {
     <div className="min-h-[calc(100vh-80px)] bg-surface flex items-center justify-center p-4 sm:p-6 bg-grid-slate-100">
       <div className="w-full max-w-md animate-fade-in px-2 sm:px-0">
         <div className="text-center mb-8 sm:mb-10">
-          <Link href="/" className="inline-flex items-center gap-3 mb-6 sm:mb-8 group">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-xl sm:rounded-2xl flex items-center justify-center text-accent shadow-glow-cyan group-hover:scale-110 transition-transform">
-              <Megaphone className="w-6 h-6 sm:w-7 sm:h-7 fill-accent" />
-            </div>
-            <div className="text-left">
-              <h1 className="font-black text-dark text-lg sm:text-xl leading-none tracking-tighter uppercase italic">Denúncia <span className="text-primary">MS</span></h1>
-              <p className="text-[8px] sm:text-[9px] text-secondary font-black uppercase tracking-[0.2em] mt-1 italic">Mato Grosso do Sul</p>
+          <Link href="/" className="inline-flex flex-col items-center gap-4 mb-8 group">
+            <img 
+              src="/favicon.ico" 
+              alt="Logo Denúncia MS" 
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform"
+            />
+            <div className="text-center">
+              <p className="text-[10px] text-secondary font-black uppercase tracking-[0.3em] italic">Mato Grosso do Sul</p>
             </div>
           </Link>
           <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tighter uppercase italic">Acesso <span className="underline decoration-secondary decoration-4 underline-offset-4">Administrativo</span></h2>

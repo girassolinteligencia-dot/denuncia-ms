@@ -1,35 +1,28 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { updateSession } from '@/utils/supabase/middleware'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-const IP_HEADERS = [
-  'x-forwarded-for',
-  'x-real-ip',
-  'cf-connecting-ip',
-  'true-client-ip',
-  'x-client-ip',
-]
+export function middleware(request: NextRequest) {
+  // Criar um novo conjunto de headers para que possamos passar o pathname para os Server Components
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', request.nextUrl.pathname)
 
-export async function middleware(request: NextRequest) {
-  const isDenunciaRoute =
-    request.nextUrl.pathname.startsWith('/api/denuncia') ||
-    request.nextUrl.pathname.startsWith('/denunciar')
-
-  if (isDenunciaRoute) {
-    const requestHeaders = new Headers(request.headers)
-    IP_HEADERS.forEach(h => requestHeaders.delete(h))
-
-    const response = await updateSession(request)
-
-    IP_HEADERS.forEach(h => response.headers.delete(h))
-
-    return response
-  }
-
-  return await updateSession(request)
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  })
 }
 
+// Configurar para rodar em todas as rotas exceto assets estáticos
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 }

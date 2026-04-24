@@ -60,7 +60,7 @@ export default async function PublicHomePage() {
               <div className="relative group">
                 <div className="absolute -inset-4 bg-primary/20 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
                 <img 
-                  src="/assets/mascote_bruno_ortiz_hd.webp" 
+                  src="/assets/mascote_oficial.png" 
                   alt="Mascote Bruno Ortiz" 
                   className="w-48 h-48 sm:w-72 sm:h-72 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700 relative z-10"
                 />

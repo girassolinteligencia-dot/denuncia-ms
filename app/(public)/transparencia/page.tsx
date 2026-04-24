@@ -3,12 +3,18 @@ import { PainelImpacto } from '@/components/public/painel-impacto'
 import { ShieldCheck, BarChart3, Globe, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
+import { getMunicipalityMapData } from '@/lib/actions/impacto'
+import { MSMunicipalityMap } from '@/components/public/transparencia-mapa'
+
 export const metadata = {
   title: 'Transparência e Impacto | DENUNCIA MS',
   description: 'Acompanhe em tempo real as métricas de impacto e o feed de inteligência da plataforma.',
 }
 
-export default function TransparenciaPage() {
+export default async function TransparenciaPage() {
+  const mapDataResult = await getMunicipalityMapData()
+  const mapData = mapDataResult.success ? mapDataResult.data || [] : []
+
   return (
     <div className="min-h-screen bg-surface">
       {/* Hero Transparência */}
@@ -43,6 +49,23 @@ export default function TransparenciaPage() {
 
       {/* Componente de Impacto (Movido da Home) */}
       <PainelImpacto />
+
+      {/* Mapa de Calor Geográfico */}
+      <section className="section bg-white">
+        <div className="container-page text-center space-y-12">
+          <div className="max-w-2xl mx-auto space-y-4">
+            <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tighter uppercase italic">Inteligência Territorial</h2>
+            <p className="text-muted text-sm sm:text-base font-medium leading-relaxed">
+              Visualize a distribuição geográfica das denúncias no Estado. 
+              As áreas com maior intensidade indicam onde a cidadania está mais ativa.
+            </p>
+          </div>
+          
+          <div className="bg-surface/50 rounded-[3rem] p-8 sm:p-16 border border-border shadow-inner">
+             <MSMunicipalityMap data={mapData} />
+          </div>
+        </div>
+      </section>
 
       {/* Seção Adicional de Transparência */}
       <section className="section bg-white border-t border-border">

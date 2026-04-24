@@ -10,15 +10,55 @@ export default async function PublicLayout({
 }) {
   const supabase = createAdminClient()
   
-  // Busca configurações do Módulo 0 (Cached by Next.js if enabled, or just fetch)
-  const { data: configs } = await supabase.from('plataforma_config').select('chave, valor')
-  const configMap = (configs || []).reduce((acc: Record<string, string>, cur) => {
+  // Busca configurações de identidade
+  const { data: platformConfigs } = await supabase.from('plataforma_config').select('chave, valor')
+  const platformMap = (platformConfigs || []).reduce((acc: Record<string, string>, cur) => {
     acc[cur.chave] = cur.valor
     return acc
   }, {})
 
-  const appName = configMap['identidade.nome'] || 'DENUNCIA MS'
-  const appLogo = configMap['identidade.logo'] || '/assets/logo.png'
+  // Busca configurações de sistema (Kill Switches)
+  const { data: systemConfigs } = await supabase.from('sistema_config').select('chave, valor')
+  const systemMap = (systemConfigs || []).reduce((acc: Record<string, string>, cur) => {
+    acc[cur.chave] = cur.valor
+    return acc
+  }, {})
+
+  const appName = platformMap['identidade.nome'] || 'DENUNCIA MS'
+  const appLogo = platformMap['identidade.logo'] || '/assets/logo.png'
+  const isMaintenance = systemMap['manutencao_global'] === 'true'
+
+  if (isMaintenance) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center">
+        <div className="relative w-64 h-64 mb-12">
+           <div className="absolute inset-0 bg-orange-100 rounded-full scale-90 animate-pulse"></div>
+           <div className="relative z-10 w-full h-full flex items-center justify-center text-orange-500">
+              <ShieldCheck size={120} className="opacity-20 animate-bounce" />
+           </div>
+        </div>
+        <div className="space-y-6 max-w-xl">
+           <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-100 border border-orange-200 rounded-full text-orange-600 text-[10px] font-black uppercase tracking-[0.3em]">
+              🚧 Modo de Manutenção Ativo
+           </div>
+           <h1 className="text-4xl md:text-5xl font-black text-dark tracking-tighter uppercase italic leading-none">
+             Estamos ficando <br />
+             <span className="text-orange-500 italic">Ainda Melhores!</span>
+           </h1>
+           <p className="text-muted text-lg font-medium leading-relaxed">
+             O <strong>{appName}</strong> está passando por uma atualização técnica programada para garantir mais segurança e novas funcionalidades para você.
+           </p>
+           <div className="pt-8 flex flex-col items-center gap-4">
+              <p className="text-[10px] font-black text-muted uppercase tracking-[0.3em]">Previsão de retorno</p>
+              <div className="flex gap-2">
+                 <div className="w-12 h-12 bg-surface rounded-xl flex items-center justify-center font-black text-dark border border-border">--</div>
+                 <div className="w-12 h-12 bg-surface rounded-xl flex items-center justify-center font-black text-dark border border-border">--</div>
+              </div>
+           </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
