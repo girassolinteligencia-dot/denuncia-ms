@@ -37,16 +37,24 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
   }
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+    const action = currentStatus ? 'SUSPENDER' : 'REATIVAR'
+    if (!confirm(`Deseja realmente ${action} o acesso deste usuário?`)) return
+
     setLoading(id)
-    const result = await toggleUsuarioStatus(id, currentStatus)
-    
-    if (result.success) {
-      toast.success(currentStatus ? 'Acesso suspenso' : 'Acesso reativado')
-      setUsuarios(prev => prev.map(u => u.id === id ? { ...u, ativo: !currentStatus } : u))
-    } else {
-      toast.error('Erro ao alterar status')
+    try {
+      const result = await toggleUsuarioStatus(id, currentStatus)
+      
+      if (result.success) {
+        toast.success(currentStatus ? 'Acesso suspenso com sucesso' : 'Acesso reativado com sucesso')
+        setUsuarios(prev => prev.map(u => u.id === id ? { ...u, ativo: !currentStatus } : u))
+      } else {
+        toast.error('Erro ao alterar status: ' + result.error)
+      }
+    } catch (err) {
+      toast.error('Erro de conexão ao alterar status')
+    } finally {
+      setLoading(null)
     }
-    setLoading(null)
   }
 
   const handleDelete = async (id: string) => {
@@ -112,22 +120,23 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
                       </span>
                    </button>
                 </td>
-                <td className="px-6 py-5">
-                   <button 
-                    onClick={() => handleToggleStatus(user.id, user.ativo ?? true)}
-                    disabled={loading === user.id}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border-2 transition-all ${
-                      user.ativo 
-                      ? 'border-green-100 bg-green-50 text-green-700 hover:border-green-300' 
-                      : 'border-red-100 bg-red-50 text-red-700 hover:border-red-300'
-                    }`}
-                   >
-                      {user.ativo ? <Power size={12} /> : <PowerOff size={12} />}
-                      <span className="text-[9px] font-black uppercase tracking-widest">
-                         {user.ativo ? 'Ativo' : 'Suspenso'}
-                      </span>
-                   </button>
-                </td>
+                 <td className="px-6 py-5">
+                    <button 
+                     onClick={() => handleToggleStatus(user.id, user.ativo ?? true)}
+                     disabled={loading === user.id}
+                     className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all active:scale-95 cursor-pointer shadow-sm ${
+                       user.ativo 
+                       ? 'border-green-100 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-400' 
+                       : 'border-red-200 bg-red-100 text-red-800 hover:bg-red-200 hover:border-red-500'
+                     }`}
+                     title={user.ativo ? "Clique para suspender acesso" : "Clique para reativar acesso"}
+                    >
+                       {user.ativo ? <Power size={14} className="animate-pulse-slow" /> : <PowerOff size={14} />}
+                       <span className="text-[10px] font-black uppercase tracking-widest">
+                          {user.ativo ? 'Ativo' : 'Suspenso'}
+                       </span>
+                    </button>
+                 </td>
                 <td className="px-6 py-5">
                   <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
