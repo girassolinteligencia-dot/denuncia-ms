@@ -76,7 +76,7 @@ export async function getMe() {
             .eq('id', user.id)
             .single()
           
-          if (updatedProfile) return { success: true, data: updatedProfile as Profile }
+          if (updatedProfile) return { success: true, data: { ...updatedProfile, email: user.email } as any }
         } else {
           console.error('[REPAIR] Falha na auto-elevação:', upsertError.message)
         }
@@ -89,7 +89,7 @@ export async function getMe() {
       return { success: false, error: 'Perfil não encontrado' }
     }
     
-    return { success: true, data: profile as Profile }
+    return { success: true, data: { ...profile, email: user.email } as any }
   } catch (err: unknown) {
     console.error('[CRITICAL] getMe exception:', err)
     return { success: false, error: (err as Error).message }
