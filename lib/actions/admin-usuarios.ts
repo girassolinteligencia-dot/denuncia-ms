@@ -33,60 +33,68 @@ export async function getMe() {
   const { createClient } = await import('@/utils/supabase/server')
   const cookieStore = await cookies()
   const supabase = createClient(cookieStore)
+  
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
-    if (authError) {
-      console.warn('[AUTH] getMe user fetch failed:', authError.message)
-      return { success: false, error: authError.message }
-    }
-    
-    if (!user) {
-      console.warn('[AUTH] No user session found in getMe')
+    if (authError || !user) {
+      console.warn('[AUTH] getMe user fetch failed or no user')
       return { success: false, error: 'Não autenticado' }
     }
-
-    const { data: profile, error } = await supabase
+    
+    // 1. Tentar buscar o perfil
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, nome, role, criado_em, permissoes, ativo')
       .eq('id', user.id)
       .single()
 
-    // Lógica de Autocorreção: Se for o e-mail mestre, garante privilégios de superadmin
-    if (user && user.email === 'girassolinteligencia@gmail.com') {
-      if (!profile || profile.role !== 'superadmin' || !profile.permissoes?.includes('usuarios')) {
-        console.log('[REPAIR] Auto-elevando privilégios para girassolinteligencia@gmail.com')
-        const adminSupabase = createAdminClient()
-        const { error: upsertError } = await adminSupabase
-          .from('profiles')
-          .upsert({
-            id: user.id,
-            nome: profile?.nome || 'Super Administrador',
-            role: 'superadmin',
-            permissoes: ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"],
-            ativo: true,
-            atualizado_em: new Date().toISOString()
-          })
-
-        if (!upsertError) {
-          // Busca o perfil atualizado
-          const { data: updatedProfile } = await supabase
+    // 2. Lógica de Reparo para o e-mail mestre
+    if (user.email === 'girassolinteligencia@gmail.com') {
+      try {
+        if (!profile || profile.role !== 'superadmin' || !profile.permissoes?.includes('usuarios')) {
+          console.log('[REPAIR] Tentando elevar privilégios para girassolinteligencia@gmail.com')
+          const adminSupabase = createAdminClient()
+          await adminSupabase
+            .from('profiles')
+            .upsert({
+              id: user.id,
+              nome: profile?.nome || 'Super Administrador',
+              role: 'superadmin',
+              permissoes: ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"],
+              ativo: true,
+              atualizado_em: new Date().toISOString()
+            })
+          
+          // Tentar buscar novamente após o reparo
+          const { data: refreshedProfile } = await supabase
             .from('profiles')
             .select('id, nome, role, criado_em, permissoes, ativo')
             .eq('id', user.id)
             .single()
           
-          if (updatedProfile) return { success: true, data: { ...updatedProfile, email: user.email } as any }
-        } else {
-          console.error('[REPAIR] Falha na auto-elevação:', upsertError.message)
+          if (refreshedProfile) {
+            return { success: true, data: { ...refreshedProfile, email: user.email } as any }
+          }
         }
+      } catch (repairErr) {
+        console.error('[REPAIR] Erro crítico no reparo:', repairErr)
       }
     }
 
-    if (error) {
-      console.error('[DB] Profile fetch failed for user', user.id, ':', error.message)
-      // Se não houver profile mas o user existe no Auth, pode ser um erro de sincronização
-      return { success: false, error: 'Perfil não encontrado' }
+    // 3. Retornar o perfil encontrado ou um objeto básico se falhar, mas garantindo o e-mail
+    if (profileError || !profile) {
+      console.warn('[DB] Perfil não encontrado, retornando dados básicos do Auth')
+      return { 
+        success: true, 
+        data: { 
+          id: user.id, 
+          nome: user.user_metadata?.nome || 'Usuário', 
+          role: (user.email === 'girassolinteligencia@gmail.com' ? 'superadmin' : 'user') as any,
+          email: user.email,
+          permissoes: user.email === 'girassolinteligencia@gmail.com' ? ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"] : []
+        } as any 
+      }
     }
     
     return { success: true, data: { ...profile, email: user.email } as any }
