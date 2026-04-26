@@ -140,15 +140,29 @@ export async function createUsuarioAdmin(data: {
 
   try {
     // 1. Criar no Auth do Supabase com senha definida e e-mail já confirmado
-    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+    let authUserRes = await supabase.auth.admin.createUser({
       email: data.email,
       password: data.password,
       email_confirm: true,
       user_metadata: { nome: data.nome }
     })
 
-    if (authError) throw authError
-    if (!authUser.user) throw new Error('Falha ao criar usuário no Auth')
+    // Se o erro for de usuário já cadastrado, vamos tentar recuperar o ID dele
+    if (authUserRes.error?.message?.includes('already been registered')) {
+      const { data: listData } = await supabase.auth.admin.listUsers()
+      const existingUser = listData.users.find(u => u.email === data.email)
+      
+      if (existingUser) {
+        authUserRes = { data: { user: existingUser }, error: null } as any
+      } else {
+        throw authUserRes.error
+      }
+    } else if (authUserRes.error) {
+      throw authUserRes.error
+    }
+
+    const authUser = authUserRes.data
+    if (!authUser?.user) throw new Error('Falha ao obter usuário')
 
     // 2. O Profile deve ser criado automaticamente por Trigger, 
     // mas vamos forçar a criação/update com todos os campos para garantir integridade
