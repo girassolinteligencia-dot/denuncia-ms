@@ -410,3 +410,71 @@ export async function getGeographicIntelligence() {
     return { success: false, error: err.message }
   }
 }
+
+/**
+ * Realiza a geocodificação em lote de denuncias que possuem endereço mas não possuem coordenadas.
+ * Utiliza o serviço Nominatim (OpenStreetMap).
+ */
+export async function retroGeocodeMissingCoords() {
+  const supabase = createAdminClient()
+  
+  try {
+    // 1. Buscar denúncias sem coordenadas que tenham dados de endereço
+    const { data: denuncias, error } = await supabase
+      .from('denuncias')
+      .select('id, local, cidade, bairro, municipio')
+      .is('latitude', null)
+      .not('local', 'is', null)
+      .limit(15) // Limite pequeno para evitar rate limit do Nominatim em uma única requisição
+
+    if (error) throw error
+    if (!denuncias || denuncias.length === 0) return { success: true, processed: 0 }
+
+    let count = 0
+    for (const d of denuncias) {
+      try {
+        const address = `${d.local}, ${d.bairro || ''}, ${d.municipio || d.cidade || ''}, Mato Grosso do Sul, Brasil`
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`
+        
+        const response = await fetch(url, {
+          headers: { 'User-Agent': 'DenunciaMS-Admin-RetroGeocode/1.0' }
+        })
+        
+        const results = await response.json()
+
+        if (results && results.length > 0) {
+          const { lat, lon, display_name } = results[0]
+          
+          // Extrair município do display_name se o campo municipio estiver vazio
+          let detectCity = d.municipio
+          if (!detectCity) {
+            const parts = display_name.split(',')
+            detectCity = parts[parts.length - 4]?.trim() || parts[parts.length - 5]?.trim() || ''
+          }
+
+          await supabase
+            .from('denuncias')
+            .update({
+              latitude: parseFloat(lat),
+              longitude: parseFloat(lon),
+              municipio: detectCity || d.municipio
+            })
+            .eq('id', d.id)
+          
+          count++
+          
+          // Delay de 1s entre as requisições para respeitar a política do Nominatim
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      } catch (err) {
+        console.warn(`[retro-geocode] Falha ao geocodificar ID ${d.id}:`, err)
+      }
+    }
+
+    revalidatePath('/admin/dashboard')
+    return { success: true, processed: count }
+  } catch (err: any) {
+    console.error('Erro no retro-geocoding:', err)
+    return { success: false, error: err.message }
+  }
+}

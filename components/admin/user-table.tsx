@@ -6,7 +6,8 @@ import {
   RefreshCw,
   UserPlus,
   Power,
-  PowerOff
+  PowerOff,
+  Edit2
 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Profile } from '@/types'
@@ -72,7 +73,7 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
       <div className="flex justify-end">
         <button 
           onClick={handleNovo}
-          className="btn-primary gap-2 bg-dark hover:bg-black text-white px-6 h-12 rounded-xl"
+          className="btn-primary w-full sm:w-auto gap-2 bg-dark hover:bg-black text-white px-6 h-12 rounded-xl"
         >
           <UserPlus size={18} />
           <span className="font-black uppercase text-[10px] tracking-widest">Novo Usuário</span>
@@ -80,63 +81,64 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
       </div>
 
       <div className="bg-white rounded-card shadow-card-lg border border-border overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-surface text-[10px] font-black text-muted uppercase tracking-[0.2em] border-b border-border">
-              <th className="px-6 py-5">Usuário</th>
-              <th className="px-6 py-5">Nível de Acesso</th>
-              <th className="px-6 py-5">Status</th>
-              <th className="px-6 py-5 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {usuarios.map(user => (
-              <tr key={user.id} className={`transition-colors group ${!user.ativo ? 'bg-red-50/30 opacity-70' : 'hover:bg-surface/50'}`}>
-                <td className="px-6 py-5">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm ${!user.ativo ? 'bg-muted/20 text-muted' : 'bg-primary/5 text-primary'}`}>
-                      {user.nome?.charAt(0) || '?'}
+        {/* Versão Desktop — Tabela */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-surface text-[10px] font-black text-muted uppercase tracking-[0.2em] border-b border-border">
+                <th className="px-6 py-5">Usuário</th>
+                <th className="px-6 py-5">Nível de Acesso</th>
+                <th className="px-6 py-5">Status</th>
+                <th className="px-6 py-5 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {usuarios.map(user => (
+                <tr key={user.id} className={`transition-colors group ${!user.ativo ? 'bg-red-50/30 opacity-70' : 'hover:bg-surface/50'}`}>
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm ${!user.ativo ? 'bg-muted/20 text-muted' : 'bg-primary/5 text-primary'}`}>
+                        {user.nome?.charAt(0) || '?'}
+                      </div>
+                      <div>
+                        <p className={`text-sm font-bold ${!user.ativo ? 'text-muted line-through' : 'text-dark'}`}>{user.nome || 'Sem Nome'}</p>
+                        <p className="text-[10px] text-muted font-medium font-mono">{user.email || user.id.slice(0, 8)}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className={`text-sm font-bold ${!user.ativo ? 'text-muted line-through' : 'text-dark'}`}>{user.nome || 'Sem Nome'}</p>
-                      <p className="text-[10px] text-muted font-medium font-mono">{user.email || user.id.slice(0, 8)}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-5">
-                   <button 
-                    onClick={() => handleEdit(user)}
-                    disabled={loading === user.id || !user.ativo}
-                    className="flex items-center gap-2 hover:bg-surface p-2 rounded-lg transition-all disabled:opacity-50"
-                    title="Clique para configurar permissões"
-                   >
-                      <Shield size={14} className={user.role === 'admin' ? 'text-secondary' : 'text-primary'} />
-                      <span className={`text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'text-secondary' : 'text-dark'}`}>
-                         {user.role === 'admin' ? 'Administrador Master' : 
-                          user.role === 'moderador' ? 'Analista de Ouvidoria' : 
-                          user.role === 'comunicador' ? 'Gestor de Comunicação' : user.role}
-                      </span>
-                   </button>
-                </td>
-                 <td className="px-6 py-5">
-                    <button 
-                     onClick={() => handleToggleStatus(user.id, user.ativo ?? true)}
-                     disabled={loading === user.id}
-                     className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all active:scale-95 cursor-pointer shadow-sm ${
-                       user.ativo 
-                       ? 'border-green-100 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-400' 
-                       : 'border-red-200 bg-red-100 text-red-800 hover:bg-red-200 hover:border-red-500'
-                     }`}
-                     title={user.ativo ? "Clique para suspender acesso" : "Clique para reativar acesso"}
-                    >
-                       {user.ativo ? <Power size={14} className="animate-pulse-slow" /> : <PowerOff size={14} />}
-                       <span className="text-[10px] font-black uppercase tracking-widest">
-                          {user.ativo ? 'Ativo' : 'Suspenso'}
-                       </span>
-                    </button>
-                 </td>
-                <td className="px-6 py-5">
-                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  </td>
+                  <td className="px-6 py-5">
+                     <button 
+                      onClick={() => handleEdit(user)}
+                      disabled={loading === user.id || !user.ativo}
+                      className="flex items-center gap-2 hover:bg-surface p-2 rounded-lg transition-all disabled:opacity-50"
+                      title="Clique para configurar permissões"
+                     >
+                        <Shield size={14} className={user.role === 'admin' ? 'text-secondary' : 'text-primary'} />
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'text-secondary' : 'text-dark'}`}>
+                           {user.role === 'admin' ? 'Administrador Master' : 
+                            user.role === 'moderador' ? 'Analista de Ouvidoria' : 
+                            user.role === 'comunicador' ? 'Gestor de Comunicação' : user.role}
+                        </span>
+                     </button>
+                  </td>
+                   <td className="px-6 py-5">
+                      <button 
+                       onClick={() => handleToggleStatus(user.id, user.ativo ?? true)}
+                       disabled={loading === user.id}
+                       className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all active:scale-95 cursor-pointer shadow-sm ${
+                         user.ativo 
+                         ? 'border-green-100 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-400' 
+                         : 'border-red-200 bg-red-100 text-red-800 hover:bg-red-200 hover:border-red-500'
+                       }`}
+                       title={user.ativo ? "Clique para suspender acesso" : "Clique para reativar acesso"}
+                      >
+                         {user.ativo ? <Power size={14} className="animate-pulse-slow" /> : <PowerOff size={14} />}
+                         <span className="text-[10px] font-black uppercase tracking-widest">
+                            {user.ativo ? 'Ativo' : 'Suspenso'}
+                         </span>
+                      </button>
+                   </td>
+                  <td className="px-6 py-5 text-right">
                     <button 
                       onClick={() => handleDelete(user.id)}
                       disabled={loading === user.id}
@@ -145,12 +147,65 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
                     >
                       {loading === user.id ? <RefreshCw className="animate-spin" size={16} /> : <Trash2 size={16} />}
                     </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Versão Mobile — Lista de Cards */}
+        <div className="md:hidden divide-y divide-border/50">
+          {usuarios.map(user => (
+            <div key={user.id} className={`p-5 space-y-4 ${!user.ativo ? 'bg-red-50/20 grayscale' : ''}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm ${!user.ativo ? 'bg-muted/20 text-muted' : 'bg-primary/5 text-primary'}`}>
+                    {user.nome?.charAt(0) || '?'}
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  <div>
+                    <p className="text-sm font-bold text-dark">{user.nome || 'Sem Nome'}</p>
+                    <p className="text-[10px] text-muted font-mono">{user.email || 'N/A'}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => handleDelete(user.id)}
+                  disabled={loading === user.id}
+                  className="p-2 text-muted hover:text-red-600"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface rounded-lg border border-border">
+                  <Shield size={12} className={user.role === 'admin' ? 'text-secondary' : 'text-primary'} />
+                  <span className="text-[9px] font-black uppercase tracking-widest">
+                    {user.role}
+                  </span>
+                </div>
+                
+                <button 
+                  onClick={() => handleToggleStatus(user.id, user.ativo ?? true)}
+                  disabled={loading === user.id}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[9px] font-black uppercase tracking-widest ${
+                    user.ativo ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'
+                  }`}
+                >
+                  {user.ativo ? <Power size={12} /> : <PowerOff size={12} />}
+                  {user.ativo ? 'Ativo' : 'Suspenso'}
+                </button>
+                
+                <button 
+                  onClick={() => handleEdit(user)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary border border-primary/10 rounded-lg text-[9px] font-black uppercase tracking-widest ml-auto"
+                >
+                   <Edit2 size={12} /> Editar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <CreateUserModal 

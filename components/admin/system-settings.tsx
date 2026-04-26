@@ -242,6 +242,52 @@ export const SystemSettings = () => {
          </div>
       </div>
 
+      {/* MANUTENÇÃO DE DADOS */}
+      <div className="bg-white p-8 rounded-[2rem] border-2 border-border space-y-6">
+         <div className="flex items-center gap-4">
+            <div className="p-3 bg-secondary/10 text-secondary rounded-2xl">
+               <RefreshCw size={24} />
+            </div>
+            <div>
+               <h3 className="text-lg font-black text-dark uppercase italic tracking-tighter">Manutenção de Inteligência</h3>
+               <p className="text-[10px] font-black text-muted uppercase tracking-widest">Sincronização Geográfica Retroativa</p>
+            </div>
+         </div>
+         
+         <p className="text-sm text-muted font-medium leading-relaxed">
+            Identifica denúncias que possuem endereço mas não foram geolocalizadas (latitude/longitude). 
+            Esta ferramenta processa os dados em lotes para alimentar os mapas de calor e inteligência territorial.
+         </p>
+
+         <button 
+           onClick={async () => {
+             setSaving(true)
+             try {
+                const { retroGeocodeMissingCoords } = await import('@/lib/actions/admin-denuncias')
+                const res = await retroGeocodeMissingCoords()
+                if (res.success) {
+                   if (res.processed! > 0) {
+                      toast.success(`${res.processed} denúncias geolocalizadas com sucesso!`)
+                   } else {
+                      toast.info('Nenhuma denúncia pendente de geolocalização encontrada.')
+                   }
+                } else {
+                   toast.error('Erro ao processar geolocalização: ' + res.error)
+                }
+             } catch (err) {
+                toast.error('Erro de conexão.')
+             } finally {
+                setSaving(false)
+             }
+           }}
+           disabled={saving}
+           className="btn-primary w-full md:w-auto px-8 gap-3 bg-secondary text-dark border-none shadow-glow-green"
+         >
+            {saving ? <RefreshCw className="animate-spin" size={18} /> : <Globe size={18} />}
+            {saving ? 'Processando Lote...' : 'Sincronizar Coordenadas Antigas'}
+         </button>
+      </div>
+
       {/* Info Card */}
       <div className="bg-dark text-white p-8 rounded-[2rem] flex flex-col md:flex-row items-center gap-6 border border-white/5 shadow-2xl">
          <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-secondary">

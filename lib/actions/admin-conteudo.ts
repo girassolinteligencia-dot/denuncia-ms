@@ -29,7 +29,6 @@ export async function upsertNoticia(data: Partial<Noticia>, imageFile?: Buffer |
       ...data,
       imagem_url,
       slug: data.titulo ? data.titulo.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '') : data.slug,
-      atualizado_at: new Date().toISOString()
     }
 
     const { error } = await supabase

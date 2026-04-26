@@ -69,51 +69,54 @@ const SortableCategoryItem = ({
     <div 
       ref={setNodeRef}
       style={style}
-      className={`bg-white border rounded-card p-4 flex items-center gap-4 hover:shadow-card-md transition-all group ${isDragging ? 'shadow-2xl border-primary ring-2 ring-primary/20 scale-[1.02]' : 'border-border'} ${!cat.ativo ? 'opacity-60 border-dashed' : ''}`}
+      className={`bg-white border rounded-card p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 hover:shadow-card-md transition-all group ${isDragging ? 'shadow-2xl border-primary ring-2 ring-primary/20 scale-[1.02]' : 'border-border'} ${!cat.ativo ? 'opacity-60 border-dashed' : ''}`}
     >
-      <div 
-        {...attributes} 
-        {...listeners}
-        className="cursor-grab text-muted hover:text-primary transition-colors p-2 -ml-2"
-      >
-        <GripVertical size={20} />
-      </div>
+      <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div 
+          {...attributes} 
+          {...listeners}
+          className="cursor-grab text-muted hover:text-primary transition-colors p-2 -ml-2 shrink-0"
+        >
+          <GripVertical size={18} className="sm:w-5 sm:h-5" />
+        </div>
 
-      <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-primary shadow-inner border border-border/50 group-hover:bg-primary-50 transition-colors">
-        <LucideIcon name={cat.icon_name || 'FolderOpen'} size={24} strokeWidth={1.5} />
-      </div>
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-surface flex items-center justify-center text-primary shadow-inner border border-border/50 group-hover:bg-primary-50 transition-colors shrink-0">
+          <LucideIcon name={cat.icon_name || 'FolderOpen'} size={20} />
+        </div>
 
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <h3 className="font-bold text-dark">{cat.label}</h3>
-          <code className="text-[10px] bg-primary-50 text-primary px-1.5 py-0.5 rounded font-bold uppercase">
-            {cat.slug}
-          </code>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-bold text-dark text-sm sm:text-base truncate">{cat.label}</h3>
+            <code className="text-[9px] sm:text-[10px] bg-primary-50 text-primary px-1.5 py-0.5 rounded font-bold uppercase shrink-0">
+              {cat.slug}
+            </code>
+          </div>
           {!cat.ativo && (
-            <span className="badge bg-red-50 text-error border border-red-100 uppercase tracking-tighter text-[9px]">
+            <span className="badge bg-red-50 text-error border border-red-100 uppercase tracking-tighter text-[8px] sm:text-[9px] mt-1 inline-block">
               OMITIDA NO SITE
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3 mt-1">
-           <p className="text-[10px] text-muted font-bold truncate max-w-md">
-              Destino: {cat.email_destino || 'E-mail Padrão da Plataforma'}
-           </p>
-        </div>
       </div>
 
-      <div className="flex items-center gap-3 pr-2">
-        <div className="flex items-center gap-2 pr-4 border-r border-border mr-2">
-           <button 
+      <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-border/50">
+        <div className="flex items-center gap-3">
+           <p className="text-[10px] text-muted font-bold truncate max-w-[150px] sm:max-w-md italic">
+              {cat.email_destino || 'E-mail Padrão'}
+           </p>
+        </div>
+
+        <div className="flex items-center gap-1 sm:gap-3">
+          <button 
             onClick={() => onToggleActive(cat.id)}
             className={`p-2 rounded-lg transition-all ${cat.ativo ? 'text-success hover:bg-green-50' : 'text-muted hover:bg-surface'}`}
             title={cat.ativo ? 'Omitir Categoria' : 'Tornar Visível'}
-           >
-              {cat.ativo ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
-           </button>
-        </div>
+          >
+            {cat.ativo ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
+          </button>
+          
+          <div className="h-6 w-px bg-border mx-1"></div>
 
-        <div className="flex items-center gap-2">
           <button 
             onClick={() => onEdit(cat)}
             className="p-2 text-muted hover:text-primary hover:bg-primary-50 rounded-lg transition-all"
@@ -251,15 +254,15 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
 
   return (
     <div className="space-y-6 animate-fade-in relative">
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={18} />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="relative flex-1 max-w-md w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
           <input 
             type="text"
             placeholder="Pesquisar categorias..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="input pl-10 h-11"
+            className="input pl-10 h-11 text-sm"
           />
         </div>
         <button 
@@ -277,9 +280,9 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
             criado_em: new Date().toISOString(),
             atualizado_em: new Date().toISOString()
           })}
-          className="btn-primary gap-2 h-11"
+          className="btn-primary w-full sm:w-auto gap-2 h-11 text-xs font-black uppercase tracking-widest"
         >
-          <Plus size={20} />
+          <Plus size={18} />
           Nova Categoria
         </button>
       </div>

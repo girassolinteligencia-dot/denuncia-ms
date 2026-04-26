@@ -11,43 +11,68 @@ export async function gerarSugestoesDeNoticias() {
   const supabase = createAdminClient()
 
   try {
-    // 1. Buscar denuncias recentes (últimos 7 dias)
+    // 1. Buscar denuncias recentes (últimos 7 dias) com detalhes para contexto
     const seteDiasAtras = new Date()
     seteDiasAtras.setDate(seteDiasAtras.getDate() - 7)
 
     const { data: denuncias, error: dError } = await supabase
       .from('denuncias')
-      .select('titulo, categoria_id, criado_em, categorias(label)')
+      .select('titulo, descricao_original, local, municipio, criado_em, categorias(label)')
       .gte('criado_em', seteDiasAtras.toISOString())
+      .order('criado_em', { ascending: false })
 
     if (dError) throw dError
     if (!denuncias || denuncias.length === 0) {
       return { success: false, error: 'Nenhuma denuncia recente para análise.' }
     }
 
-    // 2. Agrupar tendências (Simulação de Análise de IA)
-    // Em um cenário real, enviaríamos o texto para o Gemini/GPT.
-    // Aqui, vamos estruturar o prompt e simular a resposta estruturada.
-    
-    const categoriasContagem = denuncias.reduce((acc: any, d: any) => {
-      const label = d.categorias?.label || 'Geral'
-      acc[label] = (acc[label] || 0) + 1
+    // 2. Analisar tendências por categoria e localização
+    const analise = denuncias.reduce((acc: any, d: any) => {
+      const cat = d.categorias?.label || 'Geral'
+      const mun = d.municipio || 'Mato Grosso do Sul'
+      
+      if (!acc.categorias[cat]) acc.categorias[cat] = 0
+      if (!acc.municipios[mun]) acc.municipios[mun] = 0
+      
+      acc.categorias[cat]++
+      acc.municipios[mun]++
+      acc.recentes.push(d.titulo.substring(0, 50))
+      
       return acc
-    }, {})
+    }, { categorias: {}, municipios: {}, recentes: [] })
 
-    const categoriaTop = Object.entries(categoriasContagem).sort((a: any, b: any) => b[1] - a[1])[0]
+    const categoriaTop = Object.entries(analise.categorias).sort((a: any, b: any) => b[1] - a[1])[0]
+    const municipioTop = Object.entries(analise.municipios).sort((a: any, b: any) => b[1] - a[1])[0]
 
-    // 3. Criar a Notícia Sugerida (Pendende de Moderação)
-    const tituloSugerido = `Aumento nas fiscalizações de ${categoriaTop[0]} em Mato Grosso do Sul`
-    const conteudoSugerido = `A plataforma Denuncia MS registrou um aumento de ${categoriaTop[1]} novos protocolos relacionados a ${categoriaTop[0]} na última semana. Esta tendência reflete o engajamento direto da população no monitoramento e melhoria da região. Lembramos que todos os dados são tratados com sigilo e consolidados em relatórios de transparência para as devidas providências.`
+    // 3. Gerar Notícia Baseada em Contexto Real
+    // Simulando o raciocínio da IA com base nos dados reais
+    const totalPeriodo = denuncias.length
+    const exemplos = analise.recentes.slice(0, 3).join(', ')
+
+    let tituloSugerido = ''
+    let conteudoSugerido = ''
+
+    if (categoriaTop[1] > totalPeriodo * 0.4) {
+      // Tendência forte em uma única categoria
+      tituloSugerido = `Alerta: Cresce volume de denúncias sobre ${categoriaTop[0]} em ${municipioTop[0]}`
+      conteudoSugerido = `A inteligência da plataforma Denuncia MS detectou uma concentração atípica de protocolos relacionados a ${categoriaTop[0]} nos últimos dias, especialmente na região de ${municipioTop[0]}. 
+      
+Entre os principais relatos, destacam-se casos envolvendo "${exemplos}". Este padrão de engajamento cidadão é fundamental para que as autoridades identifiquem falhas sistêmicas de fiscalização. A plataforma continua monitorando os desdobramentos e encaminhando cada protocolo aos órgãos responsáveis para providências imediatas.`
+    } else {
+      // Cenário distribuído
+      tituloSugerido = `Panorama Semanal: Cidadania ativa impulsiona ${totalPeriodo} novas fiscalizações no MS`
+      conteudoSugerido = `Na última semana, a rede de monitoramento colaborativo Denuncia MS processou ${totalPeriodo} novos protocolos de diversas naturezas. 
+
+O destaque do período foi a área de ${categoriaTop[0]}, seguida por demandas em ${municipioTop[0]}. A diversidade dos relatos, que cobrem desde infraestrutura urbana até serviços de saúde, demonstra a consolidação da plataforma como o principal canal de transparência e cobrança social do estado. Todos os dados anonimizados compõem agora o mapa de inteligência territorial para consulta pública.`
+    }
 
     const novaNoticia = {
       titulo: tituloSugerido,
-      slug: `ai-suggested-${Date.now()}`,
+      slug: `boletim-inteligencia-${Date.now()}`,
       conteudo: conteudoSugerido,
-      categoria: categoriaTop[0],
-      publicado: false, // EXIGE MODERAÇÃO
-      gerado_por_ia: true // Flag para o admin saber a origem
+      categoria: 'Inteligência',
+      publicado: false, 
+      gerado_por_ia: true 
     }
 
     const { error: nError } = await supabase
@@ -57,7 +82,7 @@ export async function gerarSugestoesDeNoticias() {
     if (nError) throw nError
 
     revalidatePath('/admin/noticias')
-    return { success: true, message: 'Nova sugestão de notícia gerada e enviada para moderação.' }
+    return { success: true, message: `Análise de ${totalPeriodo} denúncias concluída. Nova sugestão gerada.` }
 
   } catch (err: any) {
     console.error('Erro na geração de IA:', err)

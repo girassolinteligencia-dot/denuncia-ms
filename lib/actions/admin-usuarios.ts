@@ -202,7 +202,7 @@ export async function createUsuarioAdmin(data: {
             <p style="font-size:13px;color:#666;font-style:italic">
               Por segurança, recomendamos alterar sua senha após o primeiro acesso no seu perfil.
             </p>
-            <a href="${process.env.NEXT_PUBLIC_SITE_URL || ''}/admin" 
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://denuncia-ms.vercel.app'}/admin" 
                style="display:inline-block;background:#021691;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:20px">
                Acessar Painel
             </a>

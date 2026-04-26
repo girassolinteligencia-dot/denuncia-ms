@@ -86,41 +86,43 @@ function DashboardContent() {
           <p className="text-muted text-[11px] font-black uppercase tracking-widest mt-1">Centro de Comando Denuncia MS — Monitoramento Cidadão</p>
         </div>
 
-        <div className="flex p-1.5 bg-surface rounded-2xl border border-border self-start shadow-inner">
-          <button 
-            onClick={() => setActiveTab('analytics')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-              activeTab === 'analytics' ? 'bg-white text-primary shadow-md border border-border scale-105' : 'text-muted hover:text-dark'
-            }`}
-          >
-            <LayoutDashboard size={16} />
-            Analítico
-          </button>
-          <button 
-            onClick={() => setActiveTab('geo')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-              activeTab === 'geo' ? 'bg-white text-primary shadow-md border border-border scale-105' : 'text-muted hover:text-dark'
-            }`}
-          >
-            <Globe size={16} />
-            Geográfico
-          </button>
-          <button 
-            onClick={() => setActiveTab('system')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-              activeTab === 'system' ? 'bg-white text-primary shadow-md border border-border scale-105' : 'text-muted hover:text-dark'
-            }`}
-          >
-            <ShieldCheck size={16} />
-            Governança
-          </button>
+        <div className="flex p-1.5 bg-surface rounded-2xl border border-border self-start shadow-inner overflow-x-auto max-w-full scrollbar-hide">
+          <div className="flex items-center min-w-max">
+            <button 
+              onClick={() => setActiveTab('analytics')}
+              className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all shrink-0 ${
+                activeTab === 'analytics' ? 'bg-white text-primary shadow-md border border-border scale-105' : 'text-muted hover:text-dark'
+              }`}
+            >
+              <LayoutDashboard size={14} className="sm:size-16" />
+              Analítico
+            </button>
+            <button 
+              onClick={() => setActiveTab('geo')}
+              className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all shrink-0 ${
+                activeTab === 'geo' ? 'bg-white text-primary shadow-md border border-border scale-105' : 'text-muted hover:text-dark'
+              }`}
+            >
+              <Globe size={14} className="sm:size-16" />
+              Geográfico
+            </button>
+            <button 
+              onClick={() => setActiveTab('system')}
+              className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all shrink-0 ${
+                activeTab === 'system' ? 'bg-white text-primary shadow-md border border-border scale-105' : 'text-muted hover:text-dark'
+              }`}
+            >
+              <ShieldCheck size={14} className="sm:size-16" />
+              Governança
+            </button>
+          </div>
         </div>
       </div>
 
       {activeTab === 'analytics' ? (
         <>
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-3 sm:gap-4">
             <KPIItem title="Denuncias" value={stats.total} change="Volume Total" icon={FileText} color="text-primary" bgColor="bg-primary/10" />
             <KPIItem title="Novas" value={stats.recebida} change="Pendentes" icon={Clock} color="text-warning" bgColor="bg-yellow-50" />
             <KPIItem title="Resolvidas" value={stats.resolvida} change="Taxa: 85%" icon={CheckCircle2} color="text-success" bgColor="bg-green-50" />

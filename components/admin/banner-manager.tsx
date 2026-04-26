@@ -128,12 +128,12 @@ export const BannerManager: React.FC<{ initialBanners: Banner[] }> = ({ initialB
 
       <div className="space-y-4">
         {banners.map((banner) => (
-          <div key={banner.id} className="bg-white rounded-card shadow-card border border-border overflow-hidden flex items-center gap-6 p-4 hover:shadow-card-md transition-all">
-            <div className="cursor-grab text-muted hover:text-primary transition-colors">
+          <div key={banner.id} className="bg-white rounded-card shadow-card border border-border overflow-hidden flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 p-4 hover:shadow-card-md transition-all relative">
+            <div className="hidden sm:block cursor-grab text-muted hover:text-primary transition-colors">
               <GripVertical size={24} />
             </div>
 
-            <div className="w-48 h-20 bg-surface rounded-lg overflow-hidden border border-border shrink-0">
+            <div className="w-full sm:w-48 h-32 sm:h-20 bg-surface rounded-lg overflow-hidden border border-border shrink-0">
                {banner.imagem_url ? (
                  <img src={banner.imagem_url} alt="Banner" className="w-full h-full object-cover" />
                ) : (
@@ -143,27 +143,32 @@ export const BannerManager: React.FC<{ initialBanners: Banner[] }> = ({ initialB
                )}
             </div>
 
-            <div className="flex-1 space-y-1">
-               <div className="flex items-center gap-2">
-                 <span className="badge bg-primary-50 text-primary uppercase text-[8px] font-black tracking-widest">
-                   {banner.posicao}
-                 </span>
-                 {banner.ativo ? (
-                   <span className="badge bg-green-50 text-success uppercase text-[8px] font-black tracking-widest">Ativo</span>
-                 ) : (
-                   <span className="badge bg-red-50 text-error uppercase text-[8px] font-black tracking-widest">Pausado</span>
-                 )}
+            <div className="flex-1 space-y-2 sm:space-y-1">
+               <div className="flex items-center justify-between sm:justify-start gap-2">
+                 <div className="flex items-center gap-2">
+                    <span className="badge bg-primary-50 text-primary uppercase text-[8px] font-black tracking-widest">
+                      {banner.posicao}
+                    </span>
+                    {banner.ativo ? (
+                      <span className="badge bg-green-50 text-success uppercase text-[8px] font-black tracking-widest">Ativo</span>
+                    ) : (
+                      <span className="badge bg-red-50 text-error uppercase text-[8px] font-black tracking-widest">Pausado</span>
+                    )}
+                 </div>
+                 <div className="sm:hidden text-muted">
+                    <GripVertical size={18} />
+                 </div>
                </div>
-               <div className="flex items-center gap-2 text-xs text-muted font-medium">
-                 <LinkIcon size={14} className="text-primary" />
-                 <span className="line-clamp-1">{banner.link_url || 'Sem link externo definido'}</span>
+               <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted font-medium">
+                 <LinkIcon size={14} className="text-primary shrink-0" />
+                 <span className="line-clamp-1 break-all">{banner.link_url || 'Sem link externo definido'}</span>
                </div>
             </div>
 
-             <div className="flex items-center gap-2">
+             <div className="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
                 <button 
                   onClick={() => handleOpenEdit(banner)}
-                  className="btn-outline btn-sm font-bold"
+                  className="btn-outline flex-1 sm:flex-initial btn-sm font-bold text-[10px] sm:text-xs"
                 >
                   Editar
                 </button>

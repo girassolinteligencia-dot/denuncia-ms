@@ -144,7 +144,7 @@ export const AdminGeoIntelligence = ({ data }: { data: GeoData[] }) => {
       </div>
 
       {/* Container do Mapa */}
-      <div className="relative w-full h-[600px] rounded-3xl overflow-hidden border border-border shadow-2xl bg-slate-100">
+      <div className="relative w-full h-[400px] sm:h-[600px] rounded-3xl overflow-hidden border border-border shadow-2xl bg-slate-100">
         <MapContainer 
           center={[-20.4697, -54.6201]} // Centro do MS (Campo Grande)
           zoom={7} 
@@ -191,21 +191,21 @@ export const AdminGeoIntelligence = ({ data }: { data: GeoData[] }) => {
           {viewMode === 'heat' && <HeatmapLayer points={heatPoints} />}
         </MapContainer>
         
-        {/* Legend Overlay */}
-        <div className="absolute bottom-6 left-6 z-[400] bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-border shadow-lg">
-           <h4 className="text-[10px] font-black uppercase tracking-widest text-dark mb-3">Legenda Operacional</h4>
-           <div className="space-y-2">
+        {/* Legend Overlay - Responsive position */}
+        <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:bottom-6 sm:left-6 z-[400] bg-white/90 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-border shadow-lg">
+           <h4 className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark mb-2 sm:mb-3">Legenda Operacional</h4>
+           <div className="flex flex-row sm:flex-col flex-wrap gap-x-4 gap-y-2">
               <div className="flex items-center gap-2">
-                 <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                 <span className="text-[9px] font-bold text-muted">Recebidas/Em Análise</span>
+                 <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-orange-500"></div>
+                 <span className="text-[8px] sm:text-[9px] font-bold text-muted">Recebidas</span>
               </div>
               <div className="flex items-center gap-2">
-                 <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                 <span className="text-[9px] font-bold text-muted">Encaminhadas</span>
+                 <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-blue-500"></div>
+                 <span className="text-[8px] sm:text-[9px] font-bold text-muted">Encaminhadas</span>
               </div>
               <div className="flex items-center gap-2">
-                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                 <span className="text-[9px] font-bold text-muted">Resolvidas</span>
+                 <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500"></div>
+                 <span className="text-[8px] sm:text-[9px] font-bold text-muted">Resolvidas</span>
               </div>
            </div>
         </div>

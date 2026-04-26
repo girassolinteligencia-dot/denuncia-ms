@@ -1,14 +1,11 @@
 'use client'
 
 import React, { useState } from 'react'
-import Link from 'next/link'
 import { 
   Plus, 
   Search, 
   Calendar, 
   User, 
-  Eye, 
-  MoreHorizontal,
   Image as ImageIcon,
   Zap,
   Sparkles,
@@ -172,25 +169,18 @@ export const NewsManager: React.FC<{ initialNoticias: Noticia[] }> = ({ initialN
          </div>
       </div>
 
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={18} />
-          <input className="input pl-10 h-11" placeholder="Pesquisar notícias..." />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="relative flex-1 max-w-md w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
+          <input className="input pl-10 h-11 text-sm" placeholder="Pesquisar notícias..." />
         </div>
-        <div className="flex items-center gap-3">
-           <Link 
-            href="/admin/seed-news"
-            className="btn-primary gap-2 h-11 bg-white border border-border text-dark hover:bg-surface shadow-none"
-           >
-             <Zap size={20} className="text-secondary fill-secondary" />
-             Gerador de IA
-           </Link>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
            <button 
             onClick={handleOpenCreate}
-            className="btn-primary gap-2 h-11 bg-secondary hover:bg-secondary-600 border-none shadow-glow-green"
+            className="btn-primary flex-1 sm:flex-initial gap-2 h-11 bg-secondary hover:bg-secondary-600 border-none shadow-glow-green text-xs font-black uppercase tracking-widest"
            >
-             <Plus size={20} />
-             Criar Nova Publicação
+             <Plus size={18} />
+             Nova Publicação
            </button>
         </div>
       </div>

@@ -32,43 +32,43 @@ export default async function DetalheDenunciaPage({ params }: { params: { id: st
   const denuncia = result.data
 
   return (
-    <div className="space-y-8 animate-fade-in max-w-6xl mx-auto pb-20">
-      <div className="flex items-center justify-between">
-        <Link href="/admin/denuncias" className="inline-flex items-center gap-2 text-xs font-black text-muted hover:text-primary transition-colors uppercase tracking-widest">
-           <ChevronLeft size={16} /> Voltar para listagem
+    <div className="space-y-6 sm:space-y-8 animate-fade-in max-w-6xl mx-auto pb-20 px-4 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <Link href="/admin/denuncias" className="inline-flex items-center gap-2 text-[10px] sm:text-xs font-black text-muted hover:text-primary transition-colors uppercase tracking-widest">
+           <ChevronLeft size={14} className="sm:size-16" /> Voltar para listagem
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
            <ExportButton denuncia={denuncia} />
-           <span className="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border bg-amber-50 text-amber-700 border-amber-200">
+           <span className="text-[9px] sm:text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border bg-amber-50 text-amber-700 border-amber-200 shrink-0">
               Denuncia Identificada
            </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Coluna Principal: Conteúdo da Denuncia */}
         <div className="lg:col-span-2 space-y-6">
            <div className="bg-white rounded-card shadow-card border border-border overflow-hidden">
-              <div className="p-8 space-y-8">
+              <div className="p-6 sm:p-8 space-y-6 sm:space-y-8">
                  <div>
                     <div className="flex items-center gap-2 mb-2">
-                       <span className="text-2xl">{denuncia.categorias?.icon_name}</span>
-                       <p className="text-xs font-black text-primary uppercase tracking-widest">{denuncia.categorias?.label}</p>
+                       <span className="text-xl sm:text-2xl">{denuncia.categorias?.icon_name}</span>
+                       <p className="text-[10px] sm:text-xs font-black text-primary uppercase tracking-widest">{denuncia.categorias?.label}</p>
                     </div>
-                    <h1 className="text-3xl font-black text-dark tracking-tighter uppercase leading-none">{denuncia.titulo}</h1>
-                    <div className="flex items-center gap-6 mt-4 pb-6 border-b border-border">
-                       <div className="flex items-center gap-2 text-muted text-xs font-bold">
-                          <MapPin size={16} className="text-primary" />
+                    <h1 className="text-xl sm:text-3xl font-black text-dark tracking-tighter uppercase leading-tight sm:leading-none">{denuncia.titulo}</h1>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-10 mt-4 pb-6 border-b border-border">
+                       <div className="flex items-start sm:items-center gap-2 text-muted text-[11px] sm:text-xs font-bold min-w-0">
+                          <MapPin size={16} className="text-primary shrink-0" />
                           {denuncia.local ? (
-                            <span>
-                               {denuncia.local}, {denuncia.numero || 'S/N'}<br/>
-                               <span className="text-[10px] opacity-70">
-                                  {denuncia.bairro} — {denuncia.cidade} {denuncia.cep && `(CEP: ${denuncia.cep})`}
+                            <span className="truncate sm:whitespace-normal">
+                               {denuncia.local}, {denuncia.numero || 'S/N'}<br className="hidden sm:block"/>
+                               <span className="text-[9px] sm:text-[10px] opacity-70">
+                                  {denuncia.bairro} — {denuncia.municipio || denuncia.cidade}
                                 </span>
                             </span>
                           ) : 'Local não informado'}
                        </div>
-                       <div className="flex items-center gap-2 text-muted text-xs font-bold">
+                       <div className="flex items-center gap-2 text-muted text-[11px] sm:text-xs font-bold shrink-0">
                           <Calendar size={16} className="text-primary" />
                           Ocorrido em: {denuncia.data_ocorrido ? new Date(denuncia.data_ocorrido).toLocaleDateString() : 'Não informada'}
                        </div>

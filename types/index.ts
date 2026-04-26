@@ -128,6 +128,9 @@ export interface Denuncia {
   status: StatusDenuncia,
   criado_em: string
   atualizado_em: string
+  latitude?: number | null
+  longitude?: number | null
+  municipio?: string | null
   arquivos?: ArquivoDenuncia[]
   // Virtual fields — populated server-side by getDenunciaDetalhes (decrypted PII)
   denunciante_nome?: string | null
@@ -232,6 +235,9 @@ export interface SubmitDenunciaRequest {
   telefone?: string
   cpf?: string
   otpToken?: string
+  latitude?: number | null
+  longitude?: number | null
+  municipio?: string | null
 }
 
 export interface ConsultaProtocoloResponse {
@@ -281,7 +287,6 @@ export interface Noticia {
   imagem_url?: string | null
   gerado_por_ia?: boolean
   criado_em: string
-  atualizado_at?: string
 }
 
 export interface Banner {
