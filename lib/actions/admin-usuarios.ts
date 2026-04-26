@@ -55,6 +55,18 @@ export async function getMe() {
         if (!profile || profile.role !== 'superadmin' || !profile.permissoes?.includes('usuarios')) {
           console.log('[REPAIR] Tentando elevar privilégios para girassolinteligencia@gmail.com')
           const adminSupabase = createAdminClient()
+          
+          // 1. Garantir Buckets de Storage
+          const buckets = ['banners', 'noticias', 'config', 'denuncias', 'relatos-oficiais']
+          for (const b of buckets) {
+            const { data: existing } = await adminSupabase.storage.getBucket(b)
+            if (!existing) {
+              await adminSupabase.storage.createBucket(b, { public: true })
+              console.log(`[REPAIR] Bucket '${b}' criado.`)
+            }
+          }
+
+          // 2. Garantir Perfil de Superadmin
           await adminSupabase
             .from('profiles')
             .upsert({

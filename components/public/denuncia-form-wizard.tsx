@@ -370,14 +370,23 @@ export function DenunciaFormWizard({
     const arquivosFalhando = formData.arquivos.filter(a => a.status === 'erro' || a.status === 'enviando')
 
     if (arquivosFalhando.length > 0) {
-      toast.error('Aguarde o envio de todos os arquivos ou remova os que falharam.')
+      const nomes = arquivosFalhando.map(a => a.name).join(', ')
+      console.warn('[wizard] Impedindo submissão por arquivos pendentes:', nomes)
+      toast.error('Arquivos pendentes ou com erro', {
+        description: `Por favor, remova ou aguarde o envio de: ${nomes}`
+      })
       return
     }
 
+    setLoading(true)
     try {
       const { registrarDenuncia } = await import('@/lib/actions/denuncia')
       
-      console.log('[wizard] Enviando para registrarDenuncia...')
+      console.log('[wizard] Enviando para registrarDenuncia...', { 
+        arquivos: arquivosProntos.length,
+        email: formData.email 
+      })
+
       const res = await registrarDenuncia(formData, arquivosProntos.map(a => ({
         name: a.name,
         type: a.type,
@@ -891,16 +900,34 @@ export function DenunciaFormWizard({
 
                 <div className="space-y-4">
                   {formData.arquivos.map((f, i) => (
-                    <div key={i} className="p-3 bg-white border border-border/50 rounded-2xl flex items-center justify-between shadow-sm">
+                    <div key={i} className={`p-3 border rounded-2xl flex items-center justify-between shadow-sm transition-all ${
+                      f.status === 'erro' ? 'bg-red-50 border-red-200' : 
+                      f.status === 'enviando' ? 'bg-blue-50 border-blue-200 animate-pulse' : 
+                      'bg-white border-border/50'
+                    }`}>
                       <div className="flex items-center gap-3 truncate">
-                        <FileText size={14} className="text-primary" />
-                        <p className="text-[10px] font-black text-dark truncate">{f.name}</p>
+                        {f.status === 'enviando' ? (
+                          <Loader2 size={14} className="text-primary animate-spin" />
+                        ) : f.status === 'erro' ? (
+                          <AlertTriangle size={14} className="text-red-500" />
+                        ) : (
+                          <CheckCircle2 size={14} className="text-green-500" />
+                        )}
+                        <p className={`text-[10px] font-black truncate ${f.status === 'erro' ? 'text-red-700' : 'text-dark'}`}>
+                          {f.name}
+                        </p>
                       </div>
-                      <button onClick={() => removeFile(i)} className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-xl transition-all" title="Remover arquivo">
+                      <button onClick={() => removeFile(i)} className="text-muted hover:text-red-600 hover:bg-red-50 p-2 rounded-xl transition-all" title="Remover arquivo">
                         <Trash2 size={16} />
                       </button>
                     </div>
                   ))}
+                  {formData.arquivos.length === 0 && (
+                    <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-40">
+                      <CloudOff size={32} className="mb-2" />
+                      <p className="text-[10px] font-bold uppercase tracking-widest">Nenhum arquivo anexado</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
