@@ -53,8 +53,11 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
     })
   }, [])
 
-  const isAdminMaster = userProfile?.role === 'admin' || 
-                        userProfile?.role === 'superadmin' || 
+  // Normaliza o cargo para facilitar a checagem
+  const role = userProfile?.role?.toLowerCase() || ''
+  const isAdminMaster = role === 'admin' || 
+                        role === 'superadmin' || 
+                        role === 'administrador' ||
                         userProfile?.email === 'girassolinteligencia@gmail.com'
   
   const permissoes = userProfile?.permissoes || []
