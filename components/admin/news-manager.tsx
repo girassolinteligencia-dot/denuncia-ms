@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Link from 'next/link'
 import { 
   Plus, 
   Search, 
@@ -177,6 +178,13 @@ export const NewsManager: React.FC<{ initialNoticias: Noticia[] }> = ({ initialN
           <input className="input pl-10 h-11" placeholder="Pesquisar notícias..." />
         </div>
         <div className="flex items-center gap-3">
+           <Link 
+            href="/admin/seed-news"
+            className="btn-primary gap-2 h-11 bg-white border border-border text-dark hover:bg-surface shadow-none"
+           >
+             <Zap size={20} className="text-secondary fill-secondary" />
+             Gerador de IA
+           </Link>
            <button 
             onClick={handleOpenCreate}
             className="btn-primary gap-2 h-11 bg-secondary hover:bg-secondary-600 border-none shadow-glow-green"
