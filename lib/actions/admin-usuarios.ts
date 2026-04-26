@@ -52,6 +52,37 @@ export async function getMe() {
       .eq('id', user.id)
       .single()
 
+    // Lógica de Autocorreção: Se for o e-mail mestre, garante privilégios de superadmin
+    if (user && user.email === 'girassolinteligencia@gmail.com') {
+      if (!profile || profile.role !== 'superadmin' || !profile.permissoes?.includes('usuarios')) {
+        console.log('[REPAIR] Auto-elevando privilégios para girassolinteligencia@gmail.com')
+        const adminSupabase = createAdminClient()
+        const { error: upsertError } = await adminSupabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            nome: profile?.nome || 'Super Administrador',
+            role: 'superadmin',
+            permissoes: ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"],
+            ativo: true,
+            atualizado_em: new Date().toISOString()
+          })
+
+        if (!upsertError) {
+          // Busca o perfil atualizado
+          const { data: updatedProfile } = await supabase
+            .from('profiles')
+            .select('id, nome, role, criado_em, permissoes, ativo')
+            .eq('id', user.id)
+            .single()
+          
+          if (updatedProfile) return { success: true, data: updatedProfile as Profile }
+        } else {
+          console.error('[REPAIR] Falha na auto-elevação:', upsertError.message)
+        }
+      }
+    }
+
     if (error) {
       console.error('[DB] Profile fetch failed for user', user.id, ':', error.message)
       // Se não houver profile mas o user existe no Auth, pode ser um erro de sincronização
