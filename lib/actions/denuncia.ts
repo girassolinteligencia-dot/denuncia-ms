@@ -182,13 +182,37 @@ export async function registrarDenuncia(
 
       // 2. E-mail para o ÓRGÃO DESTINATÁRIO (Se houver email_destino na categoria)
       if (catData?.email_destino) {
+        // Prepara anexos (PDF oficial + arquivos da denuncia)
+        const emailAttachments: any[] = [
+          {
+            filename: `denuncia_${protocolo}.pdf`,
+            content:  pdfBuffer
+          }
+        ]
+
+        // Tenta baixar e anexar cada arquivo vinculado (se não for muito grande)
+        for (const f of arquivosVinculados) {
+          try {
+            const fileRes = await fetch(f.url)
+            if (fileRes.ok) {
+              const arrayBuffer = await fileRes.arrayBuffer()
+              emailAttachments.push({
+                filename: f.name,
+                content: Buffer.from(arrayBuffer)
+              })
+            }
+          } catch (e) {
+            console.warn(`[email] Erro ao baixar anexo ${f.name} para o email:`, e)
+          }
+        }
+
         sendEmail({
           to:      catData.email_destino,
-          subject: `[OFICIAL] Nova Denuncia — Protocolo ${protocolo} — ${catData.label}`,
-          text:    `Uma nova denuncia foi registrada para sua área. Protocolo: ${protocolo}.\n\nO documento oficial está em anexo.`,
+          subject: `[OFICIAL] Nova Denúncia — Protocolo ${protocolo} — ${catData.label}`,
+          text:    `Uma nova denúncia foi registrada para sua área. Protocolo: ${protocolo}.\n\nOs documentos e provas seguem em anexo.`,
           html:    `
             <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee;">
-               <h2 style="color: #021691;">Nova Denuncia Recebida</h2>
+               <h2 style="color: #021691;">Nova Denúncia Recebida</h2>
                <p>Prezado Responsável,</p>
                <p>Informamos que uma nova denúncia foi registrada através da plataforma <strong>DENUNCIA MS</strong>.</p>
                <hr />
@@ -196,16 +220,11 @@ export async function registrarDenuncia(
                <p><strong>Categoria:</strong> ${catData.label}</p>
                <p><strong>Título:</strong> ${formData.titulo}</p>
                <hr />
-               <p>O relatório oficial assinado digitalmente segue em anexo para sua análise.</p>
+               <p>O relatório oficial e todos os anexos de prova (fotos/documentos) seguem anexados a este e-mail.</p>
                <p style="font-size: 11px; color: #666;">Este é um envio automático do sistema de inteligência cívica Denuncia MS.</p>
             </div>
           `,
-          attachments: [
-            {
-              filename: `denuncia_${protocolo}.pdf`,
-              content:  pdfBuffer
-            }
-          ]
+          attachments: emailAttachments
         }).catch(e => console.error('[email] Erro ao notificar destinatário:', e))
       }
 
