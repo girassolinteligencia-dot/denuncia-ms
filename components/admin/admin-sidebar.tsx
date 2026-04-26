@@ -198,44 +198,11 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                       <Link
                         href="/admin/conteudo"
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
-                          isActive('/admin/conteudo') ? 'bg-white/10 text-white' : 'hover:bg-white/5 hover:text-white'
+                          isActive('/admin/conteudo') ? 'bg-white/10 text-white shadow-glow-blue border-r-2 border-primary' : 'hover:bg-white/5 hover:text-white'
                         }`}
                       >
-                        <LayoutDashboard size={18} className="text-white/40 group-hover:text-electric" />
-                        Gestão Unificada
-                      </Link>
-                    </li>
-                    <li className="pl-4">
-                      <Link
-                        href="/admin/noticias"
-                        className={`flex items-center gap-3 px-3 py-2 rounded-btn text-xs font-bold transition-all group ${
-                          isActive('/admin/noticias') ? 'text-secondary' : 'text-white/40 hover:text-white'
-                        }`}
-                      >
-                        <Newspaper size={14} />
-                        Notícias
-                      </Link>
-                    </li>
-                    <li className="pl-4">
-                      <Link
-                        href="/admin/banners"
-                        className={`flex items-center gap-3 px-3 py-2 rounded-btn text-xs font-bold transition-all group ${
-                          isActive('/admin/banners') ? 'text-secondary' : 'text-white/40 hover:text-white'
-                        }`}
-                      >
-                        <ImageIcon size={14} />
-                        Banners
-                      </Link>
-                    </li>
-                    <li className="pl-4">
-                      <Link
-                        href="/admin/enquetes"
-                        className={`flex items-center gap-3 px-3 py-2 rounded-btn text-xs font-bold transition-all group ${
-                          isActive('/admin/enquetes') ? 'text-secondary' : 'text-white/40 hover:text-white'
-                        }`}
-                      >
-                        <BarChart3 size={14} />
-                        Enquetes
+                        <Newspaper size={18} className="text-white/40 group-hover:text-electric" />
+                        Conteúdo & Comunicação
                       </Link>
                     </li>
                   </ul>
