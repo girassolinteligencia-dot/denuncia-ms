@@ -17,7 +17,8 @@ import {
   Activity,
   RefreshCw,
   Share2,
-  HeartPulse
+  HeartPulse,
+  Zap
 } from 'lucide-react'
 
 import { logout } from '@/lib/actions/auth'
@@ -143,6 +144,19 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                 >
                   <Activity size={18} className="text-white/40 group-hover:text-electric" />
                   Sala de Situação (Pública)
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/admin/seed-news"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                    isActive('/admin/seed-news')
+                      ? 'bg-secondary text-white shadow-glow-green border-r-4 border-accent'
+                      : 'hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <Zap size={18} className={isActive('/admin/seed-news') ? 'text-accent' : 'text-white/40 group-hover:text-secondary'} />
+                  Gerador de IA (Exemplos)
                 </Link>
               </li>
             </ul>
