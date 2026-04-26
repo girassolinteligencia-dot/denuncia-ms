@@ -65,7 +65,7 @@ export default async function PublicHomePage() {
                 <img 
                   src="/assets/mascote_sem_fundo.png" 
                   alt="Mascote Bruno Ortiz" 
-                  className="w-48 h-48 sm:w-80 sm:h-80 lg:w-[420px] lg:h-[420px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-10"
+                  className="w-72 h-72 sm:w-[480px] sm:h-[480px] lg:w-[630px] lg:h-[630px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-10"
                 />
               </div>
             </div>
