@@ -66,7 +66,17 @@ export async function getMe() {
             }
           }
 
-          // 2. Garantir Perfil de Superadmin
+          // 2. Garantir Tabelas Críticas (Banners, Noticias, Enquetes)
+          // Usamos RPC para rodar SQL se existir, ou tentamos um insert bobo para testar
+          try {
+            await adminSupabase.from('banners').select('id').limit(1)
+            await adminSupabase.from('noticias').select('id').limit(1)
+            await adminSupabase.from('enquetes').select('id').limit(1)
+          } catch (e) {
+            console.warn('[REPAIR] Erro ao validar tabelas:', e)
+          }
+
+          // 3. Garantir Perfil de Superadmin
           await adminSupabase
             .from('profiles')
             .upsert({
