@@ -34,7 +34,7 @@ export default function ComoFuncionaPage() {
                Inteligência Cívica
             </div>
             <h1 className="text-3xl sm:text-7xl font-black text-white tracking-tighter leading-[1] sm:leading-[0.9] italic">
-               Sua denuncia num <span className="text-secondary">caminho seguro.</span>
+               Sua denúncia num <span className="text-secondary">caminho seguro.</span>
             </h1>
             <p className="text-sm sm:text-lg text-white/70 max-w-xl font-medium leading-relaxed mx-auto lg:mx-0">
               Entenda como a <span className="text-white font-black">DENUNCIA MS</span> usa tecnologia para garantir sua segurança e a entrega rápida aos órgãos.
