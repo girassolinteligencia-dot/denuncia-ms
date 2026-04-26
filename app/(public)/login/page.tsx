@@ -47,16 +47,9 @@ function LoginForm() {
     <div className="min-h-[calc(100vh-80px)] bg-surface flex items-center justify-center p-4 sm:p-6 bg-grid-slate-100">
       <div className="w-full max-w-md animate-fade-in px-2 sm:px-0">
         <div className="text-center mb-8 sm:mb-10">
-          <Link href="/" className="inline-flex flex-col items-center gap-4 mb-8 group">
-            <img 
-              src="/favicon.ico" 
-              alt="Logo Denuncia MS" 
-              className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform"
-            />
-            <div className="text-center">
-              <p className="text-[10px] text-secondary font-black uppercase tracking-[0.3em] italic">Mato Grosso do Sul</p>
-            </div>
-          </Link>
+          <div className="text-center mb-4 sm:mb-6">
+            <p className="text-[10px] text-secondary font-black uppercase tracking-[0.3em] italic">Mato Grosso do Sul</p>
+          </div>
           <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tighter uppercase italic">Acesso <span className="underline decoration-secondary decoration-4 underline-offset-4">Administrativo</span></h2>
           <p className="text-muted text-xs sm:text-sm font-medium mt-2">Identifique-se para acessar o painel.</p>
         </div>

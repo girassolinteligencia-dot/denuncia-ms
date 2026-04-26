@@ -1,5 +1,5 @@
-import React from 'react'
 export const dynamic = 'force-dynamic'
+import React from 'react'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { DenunciasListTable } from '@/components/admin/denuncias-list-table'
 import { Filter, Search as SearchIcon } from 'lucide-react'

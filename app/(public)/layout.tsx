@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import React from 'react'
 import Link from 'next/link'
 import { Search, ShieldCheck } from 'lucide-react'
@@ -92,63 +93,64 @@ export default async function PublicLayout({
         {children}
       </main>
 
-      <footer className="bg-dark text-white py-16 border-t border-white/5">
+      <footer className="bg-white text-dark py-4 sm:py-6 border-t border-border">
          <div className="container-page">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 border-b border-white/5 pb-12">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8 border-b border-border pb-8 sm:pb-10 text-center md:text-left">
                {/* Coluna 1: Sobre */}
-               <div className="space-y-6">
-                  <h3 className="font-black text-white uppercase tracking-tighter italic text-[13px]">A Plataforma</h3>
-                  <p className="text-xs text-white/40 leading-relaxed text-justify font-medium">
+               <div className="space-y-3 sm:space-y-4">
+                  <h3 className="font-black text-primary uppercase tracking-tighter italic text-[13px]">A Plataforma</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-medium mx-auto md:mx-0 max-w-sm md:max-w-none">
                      O <strong>{appName}</strong> opera como uma plataforma cívica estritamente independente, sem vínculo com entes públicos ou políticos. Atuamos como um elo tecnológico que conecta o cidadão de MS diretamente aos órgãos competentes.
                   </p>
                </div>
                
                {/* Coluna 2: Navegação */}
                <div>
-                  <h3 className="font-black text-white mb-6 uppercase tracking-tighter italic text-[13px]">Navegação</h3>
-                  <ul className="space-y-3 text-xs text-white/50 font-medium">
-                     <li><Link href="/" className="hover:text-electric transition-colors">Início</Link></li>
-                     <li><Link href="/como-funciona" className="hover:text-electric transition-colors">Como funciona</Link></li>
-                     <li><Link href="/noticias" className="hover:text-electric transition-colors">Notícias</Link></li>
-                     <li><Link href="/transparencia" className="hover:text-electric transition-colors">Transparência</Link></li>
+                  <h3 className="font-black text-primary mb-3 sm:mb-4 uppercase tracking-tighter italic text-[13px]">Navegação</h3>
+                  <ul className="space-y-2 text-xs text-muted-foreground font-medium">
+                     <li><Link href="/" className="hover:text-primary transition-colors">Início</Link></li>
+                     <li><Link href="/como-funciona" className="hover:text-primary transition-colors">Como funciona</Link></li>
+                     <li><Link href="/noticias" className="hover:text-primary transition-colors">Notícias</Link></li>
+                     <li><Link href="/transparencia" className="hover:text-primary transition-colors">Transparência</Link></li>
                   </ul>
                </div>
 
                {/* Coluna 3: Suporte & Legal */}
                <div>
-                  <h3 className="font-black text-white mb-6 uppercase tracking-tighter italic text-[13px]">Suporte & Legal</h3>
-                  <ul className="space-y-3 text-xs text-white/50 font-medium">
-                     <li><Link href="/faq" className="hover:text-electric transition-colors">Dúvidas Frequentes</Link></li>
-                     <li><Link href="/privacidade" className="hover:text-electric transition-colors">Privacidade</Link></li>
-                     <li><Link href="/termos" className="hover:text-electric transition-colors">Termos de Uso</Link></li>
-                     <li><Link href="/login" className="hover:text-electric transition-colors">Acesso Restrito</Link></li>
+                  <h3 className="font-black text-primary mb-3 sm:mb-4 uppercase tracking-tighter italic text-[13px]">Suporte & Legal</h3>
+                  <ul className="space-y-2 text-xs text-muted-foreground font-medium">
+                      <li><Link href="/faq" className="hover:text-primary transition-colors">Dúvidas Frequentes</Link></li>
+                      <li><Link href="/privacidade" className="hover:text-primary transition-colors">Privacidade</Link></li>
+                      <li><Link href="/termos" className="hover:text-primary transition-colors">Termos de Uso</Link></li>
+                      <li><Link href="/identificacao-legal" className="hover:text-primary transition-colors">Identificação Legal</Link></li>
+                      <li><Link href="/login" className="hover:text-primary transition-colors">Acesso Restrito</Link></li>
                   </ul>
                </div>
 
                {/* Coluna 4: Contato */}
                <div>
-                  <h3 className="font-black text-white mb-6 uppercase tracking-tighter italic text-[13px]">Contato</h3>
-                  <ul className="space-y-4 text-xs text-white/50 font-medium">
+                  <h3 className="font-black text-primary mb-3 sm:mb-4 uppercase tracking-tighter italic text-[13px]">Contato</h3>
+                  <ul className="space-y-2 sm:space-y-3 text-xs text-muted-foreground font-medium">
                      <li className="flex flex-col gap-1">
-                        <span className="text-[9px] text-white/20 uppercase font-black">E-mail oficial</span>
-                        <span className="hover:text-white transition-colors cursor-pointer">denunciams.ouvidoria@gmail.com</span>
+                        <span className="text-[9px] text-muted uppercase font-black">E-mail oficial</span>
+                        <span className="hover:text-primary transition-colors cursor-pointer font-bold">denunciams.ouvidoria@gmail.com</span>
                      </li>
                      <li className="flex flex-col gap-1">
-                        <span className="text-[9px] text-white/20 uppercase font-black">Abrangência</span>
-                        <span>Mato Grosso do Sul, Brasil</span>
+                        <span className="text-[9px] text-muted uppercase font-black">Abrangência</span>
+                        <span className="font-bold">Mato Grosso do Sul, Brasil</span>
                      </li>
                   </ul>
                </div>
             </div>
 
-            <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-               <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
-                  © {new Date().getFullYear()} {appName} — Governança e Inteligência Cívica
+            <div className="pt-4 sm:pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+               <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-widest font-bold max-w-[280px] md:max-w-none mx-auto md:mx-0">
+                  ® {new Date().getFullYear()} {appName} — Governança e Inteligência Cívica | Produzido por Girassol Inteligência ®
                </p>
                <div className="flex gap-4">
-                  <div className="h-2 w-12 bg-primary rounded-full"></div>
-                  <div className="h-2 w-12 bg-secondary rounded-full"></div>
-                  <div className="h-2 w-12 bg-electric rounded-full"></div>
+                  <div className="h-1.5 w-10 bg-primary rounded-full"></div>
+                  <div className="h-1.5 w-10 bg-secondary rounded-full"></div>
+                  <div className="h-1.5 w-10 bg-electric rounded-full"></div>
                </div>
             </div>
          </div>

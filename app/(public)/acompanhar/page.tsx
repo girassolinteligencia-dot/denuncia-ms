@@ -10,6 +10,13 @@ export default function AcompanharPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const handleScroll = (id?: string) => {
+    setTimeout(() => {
+      if (id) {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }, 100)
+  }
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,8 +28,7 @@ export default function AcompanharPage() {
     setLoading(true)
     setError(null)
     
-    // Simulação ou chamada real via URL (vamos usar URL por enquanto para manter a simplicidade do roteamento dinâmico, 
-    // mas passando a chave via query param para ser validada no destino)
+    // Simulação ou chamada real via URL
     router.push(`/acompanhar/${protocolo.trim().toUpperCase()}?key=${chave.trim()}`)
   }
 
@@ -39,8 +45,13 @@ export default function AcompanharPage() {
               <div className="relative group">
                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors" size={20} />
                  <input 
+                   id="field-protocolo"
                    value={protocolo}
-                   onChange={(e) => setProtocolo(e.target.value)}
+                   onChange={(e) => {
+                     setProtocolo(e.target.value)
+                     if (e.target.value.length >= 12) handleScroll('field-chave')
+                   }}
+                   onBlur={() => { if(protocolo) handleScroll('field-chave') }}
                    placeholder="Protocolo (Ex: DNS-2026-X7B9)" 
                    className="input h-14 pl-12 text-lg font-black tracking-widest uppercase placeholder:font-normal placeholder:tracking-normal placeholder:text-xs"
                    required
@@ -50,9 +61,14 @@ export default function AcompanharPage() {
               <div className="relative group">
                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-secondary transition-colors" size={20} />
                  <input 
+                   id="field-chave"
                    type="text"
                    value={chave}
-                   onChange={(e) => setChave(e.target.value)}
+                   onChange={(e) => {
+                     setChave(e.target.value)
+                     if (e.target.value.length === 6) handleScroll('btn-search')
+                   }}
+                   onBlur={() => { if(chave) handleScroll('btn-search') }}
                    placeholder="Chave de Acesso (6 caracteres)" 
                    maxLength={6}
                    className="input h-14 pl-12 text-lg font-black tracking-widest uppercase placeholder:font-normal placeholder:tracking-normal placeholder:text-xs border-secondary/20 focus:border-secondary"
@@ -68,6 +84,7 @@ export default function AcompanharPage() {
            )}
 
            <button 
+             id="btn-search"
              type="submit" 
              disabled={loading}
              className="btn-primary w-full h-14 text-lg gap-2 bg-secondary hover:bg-secondary-600 border-none uppercase italic font-black disabled:opacity-50"

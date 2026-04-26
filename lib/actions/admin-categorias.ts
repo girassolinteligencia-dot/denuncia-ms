@@ -58,8 +58,14 @@ export async function createCategoria(categoria: Partial<Categoria>) {
     const { data, error } = await supabase
       .from('categorias')
       .insert({
-        ...saveData,
+        label: saveData.label,
         slug: finalSlug,
+        icon_name: saveData.icon_name,
+        bloco: saveData.bloco || 'Geral',
+        email_destino: saveData.email_destino,
+        instrucao_publica: saveData.instrucao_publica,
+        aviso_legal: saveData.aviso_legal,
+        template_descricao: saveData.template_descricao || [],
         ativo: true,
         ordem: saveData.ordem || 0,
         criado_em: new Date().toISOString(),

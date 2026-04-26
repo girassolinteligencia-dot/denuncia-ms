@@ -81,6 +81,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
     
     try {
       if (userToEdit) {
@@ -100,12 +101,10 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
         // Validação de senha apenas na criação
         if (formData.password !== formData.confirmPassword) {
           toast.error('As senhas não coincidem.')
-          setLoading(false)
           return
         }
         if (formData.password.length < 6) {
           toast.error('A senha deve ter pelo menos 6 caracteres.')
-          setLoading(false)
           return
         }
 

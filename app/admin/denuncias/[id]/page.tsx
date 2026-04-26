@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import React from 'react'
 import { getDenunciaDetalhes } from '@/lib/actions/admin-denuncias'
 import { 

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import React from 'react'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { EnquetesManager } from '@/components/admin/enquetes-manager'

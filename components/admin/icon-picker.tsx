@@ -1,16 +1,20 @@
 'use client'
 import React, { useState } from 'react'
 import * as LucideIcons from 'lucide-react'
-import { Search, X } from 'lucide-react'
+import { Search } from 'lucide-react'
 
 // Lista curada de ícones populares e relevantes para o sistema
 const POPULAR_ICONS = [
-  'Hospital', 'Construction', 'ShieldAlert', 'Trash2', 'Trees', 'Scale', 'Droplets', 
-  'Zap', 'Bus', 'School', 'HardHat', 'Stethoscope', 'AlertCircle', 'Flag', 
-  'Leaf', 'CloudRain', 'Flame', 'Volume2', 'Users', 'Heart', 'Gavel', 'FileText',
-  'Briefcase', 'Hammer', 'Wrench', 'Lightbulb', 'MapPin', 'Phone', 'ShoppingBag',
-  'Car', 'Truck', 'Bike', 'Wind', 'Sun', 'Moon', 'Mountain', 'Waves', 'Baby',
-  'Dog', 'Cat', 'Bird', 'Fish', 'Bug', 'Landmark', 'Church', 'Bypass', 'Shield'
+  // Saúde
+  'Hospital', 'Stethoscope', 'Heart', 'HeartPulse', 'Activity', 'Pill', 'Syringe', 'Thermometer', 'Baby', 'UserRound', 'Users', 'Users2',
+  // Infraestrutura e Urbanismo
+  'Construction', 'HardHat', 'Wrench', 'Hammer', 'Pickaxe', 'Trash2', 'Droplets', 'Zap', 'Lightbulb', 'Bus', 'TrainFront', 'Car', 'Truck', 'Bike', 'MapPin', 'Road', 'Landmark', 'Church', 'Building2', 'Factory', 'Warehouse',
+  // Meio Ambiente e Animais
+  'Trees', 'Leaf', 'Sprout', 'Flower2', 'Wind', 'CloudRain', 'Waves', 'Mountain', 'Sun', 'Moon', 'Flame', 'Recycle', 'PawPrint', 'Dog', 'Cat', 'Bird', 'Fish', 'Bug',
+  // Segurança e Legal
+  'Shield', 'ShieldAlert', 'ShieldCheck', 'ShieldX', 'Lock', 'Unlock', 'Key', 'Fingerprint', 'Scale', 'Gavel', 'Handshake', 'Award', 'AlertTriangle', 'AlertCircle', 'Flag', 'Siren',
+  // Comunicação e Gestão
+  'Megaphone', 'MessageSquare', 'MessageCircle', 'Phone', 'PhoneCall', 'Mail', 'Send', 'FileText', 'ClipboardList', 'Newspaper', 'Search', 'Briefcase', 'ShoppingBag', 'Store', 'Gift', 'Info', 'HelpCircle'
 ]
 
 interface IconPickerProps {

@@ -1,8 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+let supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+if (!supabaseKey && process.env.NODE_ENV !== 'production') {
+  supabaseKey = 'placeholder-key'
+}
 
 export const updateSession = async (request: NextRequest) => {
   // Create an unmodified response
@@ -12,9 +16,13 @@ export const updateSession = async (request: NextRequest) => {
     },
   });
 
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !supabaseKey) {
+    return supabaseResponse
+  }
+
   const supabase = createServerClient(
-    supabaseUrl!,
-    supabaseKey!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {

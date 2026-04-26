@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import React from 'react'
 import { 
   Activity, 
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react'
 import { getSystemHealthStats, retryFailedIntegrations } from '@/lib/actions/admin-health'
 import { limparArquivosOrfaos } from '@/lib/actions/cleanup'
+import { IntegrationsHealthTable } from '@/components/admin/integrations-health-table'
 
 export default async function AdminHealthPage() {
   const statsRes = await getSystemHealthStats()
@@ -164,6 +166,15 @@ export default async function AdminHealthPage() {
                  <p className="text-xs font-bold uppercase tracking-tight">Nenhum erro crítico detectado nas últimas 24 horas.</p>
                </div>
              )}
+          </div>
+
+          {/* NOVO: Tabela Detalhada de Integrações */}
+          <div className="animate-fade-in">
+             <div className="flex items-center gap-3 mb-6 px-2">
+               <Share2 className="text-accent" />
+               <h2 className="text-lg font-black text-white uppercase italic">Status das Entregas (Real)</h2>
+             </div>
+             <IntegrationsHealthTable data={stats.integrationHealth.detailed || []} />
           </div>
         </div>
 

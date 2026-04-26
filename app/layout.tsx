@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import type { Metadata } from 'next'
 import './globals.css'
 
@@ -35,7 +37,7 @@ export const metadata: Metadata = {
 }
 
 import { Analytics } from "@vercel/analytics/react"
-import { Outfit, Inter } from 'next/font/google'
+import { Outfit, Plus_Jakarta_Sans } from 'next/font/google'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { EmergencyScreen } from '@/components/public/emergency-screen'
 import { headers } from 'next/headers'
@@ -46,11 +48,13 @@ const outfit = Outfit({
   variable: '--font-outfit',
 })
 
-const inter = Inter({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-jakarta',
 })
+
+import { Toaster } from 'sonner'
 
 export default async function RootLayout({
   children,
@@ -77,7 +81,7 @@ export default async function RootLayout({
   const isAdminPath = pathname.startsWith('/admin')
 
   return (
-    <html lang="pt-BR" className={`scroll-smooth ${outfit.variable} ${inter.variable}`}>
+    <html lang="pt-BR" className={`scroll-smooth ${outfit.variable} ${jakarta.variable}`}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -88,6 +92,7 @@ export default async function RootLayout({
         ) : (
           children
         )}
+        <Toaster position="top-right" richColors />
         <Analytics />
       </body>
     </html>

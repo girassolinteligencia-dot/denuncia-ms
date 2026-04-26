@@ -387,13 +387,23 @@ export async function getGeographicIntelligence() {
 
     if (error) throw error
 
+    // Filtra e converte garantindo que sejam números válidos
+    const processedData = (data || []).map(d => {
+      const lat = parseFloat(String(d.latitude).trim())
+      const lng = parseFloat(String(d.longitude).trim())
+      
+      if (isNaN(lat) || isNaN(lng)) return null
+      
+      return {
+        ...d,
+        lat,
+        lng
+      }
+    }).filter(Boolean) as any[]
+
     return { 
       success: true, 
-      data: (data || []).map(d => ({
-        ...d,
-        lat: Number(d.latitude),
-        lng: Number(d.longitude)
-      }))
+      data: processedData
     }
   } catch (err: any) {
     console.error('Erro ao buscar inteligência geográfica:', err)

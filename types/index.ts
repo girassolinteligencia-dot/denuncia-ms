@@ -269,3 +269,30 @@ export interface EnqueteOpcao {
   votos?: number
   percentual?: number
 }
+
+export interface Noticia {
+  id: string
+  titulo: string
+  slug: string
+  conteudo: string
+  categoria: string
+  publicado: boolean
+  publicado_em?: string | null
+  imagem_url?: string | null
+  gerado_por_ia?: boolean
+  criado_em: string
+  atualizado_at?: string
+}
+
+export interface Banner {
+  id: string
+  titulo?: string | null
+  subtitulo?: string | null
+  link_url?: string | null
+  imagem_url: string
+  posicao: 'topo' | 'lateral' | 'rodape'
+  ordem: number
+  ativo: boolean
+  criado_at?: string
+}
+

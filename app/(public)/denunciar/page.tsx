@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import React from 'react'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { DenunciaFormWizard } from '@/components/public/denuncia-form-wizard'

@@ -8,7 +8,7 @@ import type { Noticia, Banner } from '@/types'
 /**
  * Cria ou atualiza uma notícia
  */
-export async function upsertNoticia(data: Partial<Noticia>, imageFile?: Buffer, fileName?: string) {
+export async function upsertNoticia(data: Partial<Noticia>, imageFile?: Buffer | string, fileName?: string) {
   const supabase = createAdminClient()
 
   try {
@@ -63,7 +63,7 @@ export async function deleteNoticia(id: string) {
 /**
  * Cria ou atualiza um banner
  */
-export async function upsertBanner(data: Partial<Banner>, imageFile?: Buffer, fileName?: string) {
+export async function upsertBanner(data: Partial<Banner>, imageFile?: Buffer | string, fileName?: string) {
   const supabase = createAdminClient()
 
   try {
@@ -89,6 +89,7 @@ export async function upsertBanner(data: Partial<Banner>, imageFile?: Buffer, fi
     revalidatePath('/')
     return { success: true }
   } catch (err: any) {
+    console.error('Erro ao salvar banner:', err)
     return { success: false, error: err.message }
   }
 }

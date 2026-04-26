@@ -1,5 +1,5 @@
-import React from 'react'
-import { createAdminClient } from '@/lib/supabase-admin'
+export const dynamic = 'force-dynamic'
+import { getSystemHealthStats } from '@/lib/actions/admin-health'
 import { IntegrationsHealthTable } from '@/components/admin/integrations-health-table'
 import { Zap, Mail, ShieldCheck, AlertOctagon } from 'lucide-react'
 
@@ -8,36 +8,22 @@ export const metadata = {
 }
 
 export default async function IntegracoesPage() {
-  const supabase = createAdminClient()
+  const statsRes = await getSystemHealthStats()
   
-  // Mocking data for the health table for now
-  // Real implementation will query log_integracoes aggregated by categoria
-  const healthData = [
-    {
-      id: '1',
-      categoria_id: 'cat-1',
-      categoria_nome: 'Saúde Pública',
-      categoria_slug: 'saude',
-      tem_email: true,
-      tem_webhook: true,
-      saudavel: true,
-      sucessos: 142,
-      falhas: 0,
-      ultimo_disparo: new Date().toISOString()
-    },
-    {
-      id: '2',
-      categoria_id: 'cat-2',
-      categoria_nome: 'Corrupção',
-      categoria_slug: 'corrupcao',
-      tem_email: true,
-      tem_webhook: false,
-      saudavel: false,
-      sucessos: 28,
-      falhas: 3,
-      ultimo_disparo: new Date().toISOString()
-    }
-  ]
+  if (!statsRes.success) {
+    return <div>Erro ao carregar dados de saúde.</div>
+  }
+
+  const healthData = statsRes.integrationHealth.detailed || []
+  const failedCount = statsRes.integrationHealth.failedCount || 0
+  const totalIntegrations = healthData.length
+  const successRate = totalIntegrations > 0 
+    ? (((totalIntegrations - healthData.filter(h => !h.saudavel).length) / totalIntegrations) * 100).toFixed(1) 
+    : '100'
+
+  const totalEmails = healthData.filter(h => h.tem_email).length
+  const totalWebhooks = healthData.filter(h => h.tem_webhook).length
+
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -49,10 +35,10 @@ export default async function IntegracoesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-         <KPICard title="Webhooks Ativos" value="08" icon={Zap} color="text-secondary" bgColor="bg-secondary-50" />
-         <KPICard title="E-mails Configurados" value="12" icon={Mail} color="text-primary" bgColor="bg-primary-50" />
-         <KPICard title="Taxa de Sucesso" value="98.2%" icon={ShieldCheck} color="text-success" bgColor="bg-green-50" />
-         <KPICard title="Falhas (24h)" value="03" icon={AlertOctagon} color="text-error" bgColor="bg-red-50" />
+         <KPICard title="Webhooks Ativos" value={totalWebhooks.toString().padStart(2, '0')} icon={Zap} color="text-secondary" bgColor="bg-secondary-50" />
+         <KPICard title="E-mails Configurados" value={totalEmails.toString().padStart(2, '0')} icon={Mail} color="text-primary" bgColor="bg-primary-50" />
+         <KPICard title="Taxa de Sucesso" value={`${successRate}%`} icon={ShieldCheck} color="text-success" bgColor="bg-green-50" />
+         <KPICard title="Falhas (24h)" value={failedCount.toString().padStart(2, '0')} icon={AlertOctagon} color="text-error" bgColor="bg-red-50" />
       </div>
 
       <IntegrationsHealthTable data={healthData} />

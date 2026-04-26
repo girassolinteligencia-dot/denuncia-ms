@@ -58,15 +58,21 @@ export const NewsManager: React.FC<{ initialNoticias: Noticia[] }> = ({ initialN
     e.preventDefault()
     setLoading(true)
     try {
-      let buffer: Buffer | undefined
+      let imageData: string | undefined
+      
       if (tempFile) {
-        const arrayBuffer = await tempFile.arrayBuffer()
-        buffer = Buffer.from(arrayBuffer)
+        // Converte para base64 no cliente de forma segura
+        const reader = new FileReader()
+        imageData = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = () => reject(new Error('Erro na leitura do arquivo'))
+          reader.readAsDataURL(tempFile)
+        })
       }
 
       const result = await upsertNoticia(
         editingNoticia!,
-        buffer,
+        imageData,
         tempFile?.name
       )
 

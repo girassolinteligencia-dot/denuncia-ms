@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import React from 'react'
 import { createAdminClient } from '@/lib/supabase-admin'
 import Link from 'next/link'
@@ -5,8 +6,6 @@ import { LucideIcon } from '@/components/ui/lucide-icon'
 import { 
   ShieldCheck, 
   Search, 
-  ClipboardList, 
-  FileCheck, 
   ArrowRight,
   ArrowUpRight,
   Fingerprint,
@@ -15,6 +14,7 @@ import {
 } from 'lucide-react'
 import { FeedbackNewsletter } from '@/components/public/feedback-newsletter'
 import { EnqueteDinamica } from '@/components/public/enquete-dinamica'
+import { BannerSlider } from '@/components/public/banner-slider'
 import { getEnqueteAtiva } from '@/lib/actions/enquetes'
 
 export default async function PublicHomePage() {
@@ -29,18 +29,20 @@ export default async function PublicHomePage() {
 
   const tickerText = configMap['identidade.ticker'] || ''
 
-  const { data: categorias } = await supabase
-    .from('categorias')
-    .select('*')
-    .eq('ativo', true)
-    .order('ordem', { ascending: true })
+  // Busca Dados das Seções
+  const [catRes, banRes, enqueteLanding] = await Promise.all([
+    supabase.from('categorias').select('*').eq('ativo', true).order('ordem', { ascending: true }),
+    supabase.from('banners').select('*').eq('ativo', true).order('ordem', { ascending: true }),
+    getEnqueteAtiva('landing')
+  ])
 
-  const enqueteLanding = await getEnqueteAtiva('landing')
+  const categorias = catRes.data || []
+  const banners = banRes.data || []
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section Refatorada (Centralized Layout) */}
-      <section className="bg-[#021691] border-b border-white/5 pt-16 sm:pt-24 lg:pt-32 overflow-hidden relative">
+      {/* 1. Hero Section (IDENTIDADE) */}
+      <section className="bg-[#021691] border-b border-white/5 pt-10 sm:pt-12 lg:pt-16 overflow-hidden relative">
         {tickerText && (
           <div className="absolute top-0 w-full bg-secondary/90 backdrop-blur-sm z-50 h-8 flex items-center overflow-hidden">
             <div className="whitespace-nowrap animate-marquee flex items-center gap-10 text-[10px] font-black text-dark uppercase tracking-widest">
@@ -56,14 +58,14 @@ export default async function PublicHomePage() {
           <div className="max-w-5xl mx-auto text-center space-y-12">
             
             {/* MASCOTE HERO CENTRALIZADO */}
-            <div className="flex flex-col items-center justify-center space-y-8 animate-fade-in relative">
+            <div className="flex flex-col items-center justify-center space-y-12 sm:space-y-16 animate-fade-in relative">
               <div className="relative group">
                 {/* Glow expandido para o novo tamanho */}
                 <div className="absolute -inset-20 bg-primary/20 rounded-full blur-[120px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
                 <img 
                   src="/assets/mascote_sem_fundo.png" 
                   alt="Mascote Bruno Ortiz" 
-                  className="w-80 h-80 sm:w-[600px] sm:h-[600px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform duration-700 relative z-10"
+                  className="w-48 h-48 sm:w-80 sm:h-80 lg:w-[420px] lg:h-[420px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-10"
                 />
               </div>
             </div>
@@ -105,93 +107,31 @@ export default async function PublicHomePage() {
         </div>
       </section>
 
-      {/* Proposta de Valor */}
-      <section className="section bg-dark text-white">
-        <div className="container-page space-y-12">
-          <div className="text-center space-y-4 max-w-2xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tighter italic uppercase">
-              Rápido. Oficial. <span className="text-secondary">Seguro.</span>
-            </h2>
-            <p className="text-white/60 text-sm leading-relaxed">
-              Sua fiscalização vira ação oficial. O canal direto para oficializar seu relato e cobrar resultados reais da gestão pública.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-4 hover:bg-white/10 transition-all">
-              <div className="p-3 bg-secondary/20 text-secondary rounded-2xl w-fit">
-                <Fingerprint size={28} />
-              </div>
-              <h3 className="text-lg font-black uppercase tracking-tight">Sem Cadastro ou Senha</h3>
-              <p className="text-white/50 text-sm leading-relaxed font-medium">
-                Nada de perder tempo criando login. Você preenche o que aconteceu e a informação atravessa direto para o órgão responsável.
-              </p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-4 hover:bg-white/10 transition-all">
-              <div className="p-3 bg-secondary/20 text-secondary rounded-2xl w-fit">
-                <Radio size={28} />
-              </div>
-              <h3 className="text-lg font-black uppercase tracking-tight">Ponte de Ligação Direta</h3>
-              <p className="text-white/50 text-sm leading-relaxed font-medium">
-                A plataforma funciona como um túnel direto. Suas fotos e documentos vão direto para o e-mail do órgão de controle, com segurança total.
-              </p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-4 hover:bg-white/10 transition-all">
-              <div className="p-3 bg-secondary/20 text-secondary rounded-2xl w-fit">
-                <ShieldCheck size={28} />
-              </div>
-              <h3 className="text-lg font-black uppercase tracking-tight">Dentro da Lei</h3>
-              <p className="text-white/50 text-sm leading-relaxed font-medium">
-                Seguimos a LGPD e a Lei de Acesso à Informação. Guardamos apenas o registro oficial da denuncia. Seus dados pessoais são criptografados e protegidos.
-              </p>
-            </div>
-          </div>
-
-          {/* CTA Cidadão Fiscal */}
-          <div className="bg-secondary/10 border border-secondary/30 rounded-3xl p-8 sm:p-12 text-center space-y-4 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-black uppercase tracking-tighter italic text-secondary">O Cidadão é o Fiscal</h3>
-            <p className="text-white/70 text-sm leading-relaxed">
-              Ao usar nossa plataforma, você garante que sua reclamação saia da rede social e vire um processo real,
-              cobrando uma resposta direta da gestão pública.
-            </p>
-            <Link
-              href="/denunciar"
-              className="inline-flex items-center gap-3 bg-secondary text-dark font-black uppercase text-sm py-4 px-8 rounded-2xl hover:bg-secondary/90 transition-all shadow-glow-green"
-            >
-              Fazer minha denuncia agora
-              <ArrowRight size={18} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Grid de Categorias */}
-      <section className="section bg-surface">
+      {/* 2. Grid de Categorias (AÇÃO IMEDIATA - O QUÊ?) */}
+      <section className="section bg-surface pt-16 sm:pt-24">
         <div className="container-page space-y-12">
           <div className="text-center space-y-4">
-            <h2 className="text-3xl font-black text-dark tracking-tight italic">O que você deseja reportar?</h2>
-            <p className="text-muted max-w-xl mx-auto text-sm">
+            <h2 className="text-3xl font-black text-dark tracking-tight italic uppercase">O que você deseja reportar?</h2>
+            <p className="text-muted max-w-xl mx-auto text-sm font-medium">
               Selecione uma categoria abaixo para iniciar o registro. Sem senha, sem cadastro, em poucos minutos.
             </p>
           </div>
 
-          <div className="grid grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {categorias?.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/denunciar?categoria=${cat.slug}`}
-                className="bg-white rounded-2xl p-2 sm:p-8 border border-border/60 shadow-sm hover:shadow-glow-cyan hover:border-primary/30 transition-all group flex flex-col items-center justify-center gap-1 sm:gap-4 aspect-square sm:aspect-auto"
+                className="bg-white rounded-2xl p-4 sm:p-8 border border-border/60 shadow-sm hover:shadow-glow-cyan hover:border-primary/30 transition-all group flex flex-col items-center justify-center gap-2 sm:gap-4 aspect-square sm:aspect-auto"
               >
                 <div className="text-primary/80 group-hover:scale-110 transition-transform duration-300 transform-gpu">
-                  <LucideIcon name={cat.icon_name} size={48} strokeWidth={1.5} className="w-8 h-8 sm:w-12 sm:h-12" />
+                  <LucideIcon name={cat.icon_name} size={48} strokeWidth={1.5} className="w-10 h-10 sm:w-12 sm:h-12" />
                 </div>
                 <div className="text-center">
-                  <h3 className="font-black text-dark text-[7px] sm:text-lg leading-none uppercase tracking-tighter sm:tracking-tight px-0.5">
+                  <h3 className="font-black text-dark text-[11px] sm:text-lg leading-tight uppercase tracking-tighter sm:tracking-tight px-0.5">
                     {cat.label}
                   </h3>
-                  <p className="hidden sm:block text-[10px] text-muted font-bold uppercase mt-1">Reportar</p>
+                  <p className="text-[8px] sm:text-[10px] text-muted font-bold uppercase mt-1">Reportar</p>
                 </div>
                 <div className="hidden sm:flex mt-2 p-2 rounded-full bg-surface text-muted group-hover:bg-primary group-hover:text-white transition-all">
                   <ArrowUpRight size={18} />
@@ -202,8 +142,8 @@ export default async function PublicHomePage() {
         </div>
       </section>
 
-      {/* Como funciona */}
-      <section className="section bg-surface border-y border-border">
+      {/* 3. Como funciona (PROCESSO - COMO?) */}
+      <section className="section bg-surface pb-16 sm:pb-24">
         <div className="container-page grid grid-cols-1 lg:grid-cols-3 gap-12">
           <StepCard
             num="01"
@@ -229,33 +169,78 @@ export default async function PublicHomePage() {
         </div>
       </section>
 
-      {/* Por que pedimos identificação */}
-      <section className="section bg-white border-b border-border">
-        <div className="container-page max-w-3xl mx-auto text-center space-y-6">
-          <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tighter italic uppercase">
-            Identificação <span className="text-primary">Obrigatória por Lei</span>
-          </h2>
-          <p className="text-muted text-sm leading-relaxed max-w-2xl mx-auto">
-            Pedimos seus dados apenas para validar o protocolo oficial e garantir a segurança jurídica da sua denuncia, protegendo o seu sigilo de fonte.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left pt-4">
-            <div className="bg-surface rounded-2xl p-5 border border-border space-y-2">
-              <div className="text-primary font-black text-xs uppercase tracking-widest">LGPD</div>
-              <p className="text-sm text-dark font-bold">Seus dados são criptografados e protegidos por lei.</p>
+      {/* 4. ÁREA DE DESTAQUE (BANNERS - NOVIDADES) */}
+      {banners && banners.some(b => b.posicao === 'topo') && (
+        <section className="bg-surface py-12 border-t border-border/40">
+           <div className="container-page">
+              <BannerSlider banners={banners} posicao="topo" />
+           </div>
+        </section>
+      )}
+
+      {/* 5. Proposta de Valor (CONFIANÇA - POR QUÊ?) */}
+      <section className="section bg-dark text-white">
+        <div className="container-page space-y-12">
+          <div className="max-w-3xl text-center md:text-left mx-auto md:ml-0">
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tighter italic uppercase">
+              Tecnologia e Cidadania em <span className="text-secondary">Sintonia</span>
+            </h2>
+            <p className="mt-4 text-white/60 text-lg sm:text-xl font-medium leading-relaxed italic">
+              A DENUNCIA MS não é apenas um formulário. É uma central de inteligência que conecta o cidadão diretamente aos órgãos de fiscalização, garantindo transparência e agilidade.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 space-y-3 hover:bg-white/10 transition-all">
+              <div className="p-2.5 bg-secondary/20 text-secondary rounded-xl w-fit">
+                <Fingerprint size={24} />
+              </div>
+              <h3 className="text-base sm:text-lg font-black uppercase tracking-tight">Sem Cadastro ou Senha</h3>
+              <p className="text-white/50 text-xs sm:text-sm leading-relaxed font-medium">
+                Nada de perder tempo criando login. Você preenche o que aconteceu e a informação atravessa direto para o órgão responsável.
+              </p>
             </div>
-            <div className="bg-surface rounded-2xl p-5 border border-border space-y-2">
-              <div className="text-primary font-black text-xs uppercase tracking-widest">LAI — Art. 31</div>
-              <p className="text-sm text-dark font-bold">Sua identidade é ocultada no relato enviado ao órgão.</p>
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 space-y-3 hover:bg-white/10 transition-all">
+              <div className="p-2.5 bg-secondary/20 text-secondary rounded-xl w-fit">
+                <Radio size={24} />
+              </div>
+              <h3 className="text-base sm:text-lg font-black uppercase tracking-tight">Ponte de Ligação Direta</h3>
+              <p className="text-white/50 text-xs sm:text-sm leading-relaxed font-medium">
+                A plataforma funciona como um túnel direto. Suas fotos e documentos vão direto para o e-mail do órgão de controle, com segurança total.
+              </p>
             </div>
-            <div className="bg-surface rounded-2xl p-5 border border-border space-y-2">
-              <div className="text-primary font-black text-xs uppercase tracking-widest">Código Penal</div>
-              <p className="text-sm text-dark font-bold">Denuncias falsas são crimes. A identificação protege você e o sistema.</p>
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 space-y-3 hover:bg-white/10 transition-all">
+              <div className="p-2.5 bg-secondary/20 text-secondary rounded-xl w-fit">
+                <ShieldCheck size={24} />
+              </div>
+              <h3 className="text-base sm:text-lg font-black uppercase tracking-tight">Dentro da Lei</h3>
+              <p className="text-white/50 text-xs sm:text-sm leading-relaxed font-medium">
+                Seguimos a LGPD e a Lei de Acesso à Informação. Guardamos apenas o registro oficial da denuncia. Seus dados pessoais são criptografados e protegidos.
+              </p>
             </div>
+          </div>
+
+          {/* CTA Cidadão Fiscal */}
+          <div className="bg-secondary/10 border border-secondary/30 rounded-3xl p-8 sm:p-12 text-center space-y-4 max-w-2xl mx-auto">
+            <h3 className="text-2xl font-black uppercase tracking-tighter italic text-secondary">O Cidadão é o Fiscal</h3>
+            <p className="text-white/70 text-sm leading-relaxed">
+              Ao usar nossa plataforma, você garante que sua reclamação saia da rede social e vire um processo real,
+              cobrando uma resposta direta da gestão pública.
+            </p>
+            <Link
+              href="/denunciar"
+              className="inline-flex items-center gap-3 bg-secondary text-dark font-black uppercase text-sm py-4 px-8 rounded-2xl hover:bg-secondary/90 transition-all shadow-glow-green"
+            >
+              Fazer minha denuncia agora
+              <ArrowRight size={18} />
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Seção de Engajamento: Enquete & Newsletter */}
+      {/* 6. Engajamento (COMUNIDADE) */}
       {enqueteLanding && (
         <section className="section bg-surface">
           <div className="container-page">
@@ -264,8 +249,10 @@ export default async function PublicHomePage() {
         </section>
       )}
 
-      <FeedbackNewsletter ativa={configMap['funcionalidade.pesquisa_satisfacao_ativa'] === 'true'} />
-
+      <FeedbackNewsletter 
+        ativa={configMap['funcionalidade.pesquisa_satisfacao_ativa'] === 'true'} 
+        showNewsletter={false}
+      />
     </div>
   )
 }

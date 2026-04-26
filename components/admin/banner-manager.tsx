@@ -51,13 +51,23 @@ export const BannerManager: React.FC<{ initialBanners: Banner[] }> = ({ initialB
     e.preventDefault()
     setLoading(true)
     try {
-      let buffer: Buffer | undefined
+      let imageData: string | undefined
+      
       if (tempFile) {
-        const arrayBuffer = await tempFile.arrayBuffer()
-        buffer = Buffer.from(arrayBuffer)
+        // Converte para base64 no cliente de forma segura
+        const reader = new FileReader()
+        imageData = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = () => reject(new Error('Erro na leitura do arquivo'))
+          reader.readAsDataURL(tempFile)
+        })
+      } else if (!editingBanner?.id) {
+        toast.error('Por favor, selecione uma imagem para o novo banner.')
+        setLoading(false)
+        return
       }
 
-      const result = await upsertBanner(editingBanner!, buffer, tempFile?.name)
+      const result = await upsertBanner(editingBanner!, imageData, tempFile?.name)
       if (result.success) {
         toast.success('Banner salvo com sucesso!')
         setIsModalOpen(false)
@@ -66,6 +76,7 @@ export const BannerManager: React.FC<{ initialBanners: Banner[] }> = ({ initialB
         toast.error('Erro ao salvar: ' + result.error)
       }
     } catch (err: any) {
+      console.error('[banner-manager] Erro ao salvar:', err)
       toast.error('Erro: ' + err.message)
     } finally {
       setLoading(false)
@@ -200,6 +211,27 @@ export const BannerManager: React.FC<{ initialBanners: Banner[] }> = ({ initialB
                             </p>
                         </div>
                       </label>
+                  </div>
+
+                  <div className="space-y-4">
+                      <div>
+                          <label className="label">Título (Opcional)</label>
+                          <input 
+                            className="input" 
+                            placeholder="Ex: Campanha de Vacinação"
+                            value={editingBanner?.titulo || ''}
+                            onChange={e => setEditingBanner(prev => ({ ...prev, titulo: e.target.value }))}
+                          />
+                      </div>
+                      <div>
+                          <label className="label">Subtítulo (Opcional)</label>
+                          <input 
+                            className="input" 
+                            placeholder="Ex: Saiba mais sobre as datas e locais"
+                            value={editingBanner?.subtitulo || ''}
+                            onChange={e => setEditingBanner(prev => ({ ...prev, subtitulo: e.target.value }))}
+                          />
+                      </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">

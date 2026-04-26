@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import React from 'react'
 import { buscarNoticiaPorSlug } from '@/lib/actions/intelligence'
 import { notFound } from 'next/navigation'

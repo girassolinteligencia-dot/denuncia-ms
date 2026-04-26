@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import React from 'react'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { ProtocoloConfigurator } from '@/components/admin/config/protocolo-configurator'

@@ -19,8 +19,7 @@ import {
   AlertTriangle,
   CloudOff,
   Wifi,
-  Trash2,
-  X
+  Trash2
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -44,7 +43,7 @@ interface Categoria {
   slug: string
   label: string
   bloco: string
-  emoji: string | null
+  icon_name: string | null
   instrucao_publica: string | null
   aviso_legal: string | null
   template_descricao: { topico: string; placeholder: string }[]
@@ -116,13 +115,9 @@ const validarEmail = (email: string) => {
 }
 
 export function DenunciaFormWizard({ 
-  categorias, 
-  campos = [], 
-  politicasArquivo = [] 
+  categorias
 }: { 
-  categorias: Categoria[], 
-  campos?: any[], 
-  politicasArquivo?: any[] 
+  categorias: Categoria[]
 }) {
   const router = useRouter()
   const [step, setStep] = useState(1)
@@ -146,6 +141,9 @@ export function DenunciaFormWizard({
     numero: '',
     bairro: '',
     cidade: '',
+    latitude: null,
+    longitude: null,
+    municipio: '',
     data_ocorrido: new Date().toISOString().split('T')[0],
     nome: '',
     email: '',
@@ -416,17 +414,29 @@ export function DenunciaFormWizard({
   const currentCategory = categorias.find(c => c.id === formData.categoria_id)
 
   const handleTelefoneChange = (v: string) => {
-    const x = v.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/)
+    const clean = v.replace(/\D/g, '')
+    const x = clean.match(/(\d{0,2})(\d{0,5})(\d{0,4})/)
     if (!x) return
     const formatted = !x[2] ? x[1] : `(${x[1]}) ${x[2]}${x[3] ? '-' + x[3] : ''}`
     handleInputChange('telefone', formatted)
+    
+    // Auto-scroll para CPF ao atingir 11 dígitos
+    if (clean.length === 11) {
+      handleFieldScroll('field-cpf')
+    }
   }
 
   const handleCpfChange = (v: string) => {
-    const x = v.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,2})/)
+    const clean = v.replace(/\D/g, '')
+    const x = clean.match(/(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,2})/)
     if (!x) return
     const formatted = !x[2] ? x[1] : `${x[1]}.${x[2]}${x[3] ? '.' + x[3] : ''}${x[4] ? '-' + x[4] : ''}`
     handleInputChange('cpf', formatted)
+
+    // Auto-scroll para Consentimento ao atingir 11 dígitos
+    if (clean.length === 11) {
+      handleFieldScroll('field-consentimento')
+    }
   }
 
   const handleCepChange = async (v: string) => {
@@ -443,21 +453,26 @@ export function DenunciaFormWizard({
     const formatted = cleanCep.length <= 5 ? cleanCep : `${cleanCep.slice(0, 5)}-${cleanCep.slice(5, 8)}`
     handleInputChange('cep', formatted)
 
-    if (cleanCep.length === 8 && isOnline) {
-      try {
-        const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`)
-        const data = await res.json()
-        if (!data.erro) {
-          setFormData(prev => ({
-            ...prev,
-            local: data.logradouro || prev.local,
-            bairro: data.bairro || prev.bairro,
-            cidade: data.localidade || prev.cidade,
-          }))
-          toast.success('Endereço localizado!')
+    if (cleanCep.length === 8) {
+      // Auto-scroll para Cidade
+      handleFieldScroll('field-cidade')
+      
+      if (isOnline) {
+        try {
+          const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`)
+          const data = await res.json()
+          if (!data.erro) {
+            setFormData(prev => ({
+              ...prev,
+              local: data.logradouro || prev.local,
+              bairro: data.bairro || prev.bairro,
+              cidade: data.localidade || prev.cidade,
+            }))
+            toast.success('Endereço localizado!')
+          }
+        } catch (e) {
+          console.error('Erro ao buscar CEP:', e)
         }
-      } catch (e) {
-        console.error('Erro ao buscar CEP:', e)
       }
     }
   }
@@ -468,16 +483,28 @@ export function DenunciaFormWizard({
       return
     }
 
+    // Verificar se o contexto é seguro (necessário para Geolocation API)
+    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      toast.error('Conexão Não Segura', {
+        description: 'A geolocalização automática requer uma conexão segura (HTTPS) para funcionar.'
+      })
+      return
+    }
+
     if (!navigator.geolocation) {
       toast.error('Seu navegador não suporta geolocalização.')
       return
     }
 
     setGeolocalizando(true)
-    toast.info('Buscando sua localização...', { duration: 3000 })
+    const geoToastId = toast.info('Buscando sua localização...', { 
+      description: 'Por favor, autorize o acesso se solicitado pelo seu dispositivo.',
+      duration: 5000 
+    })
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        toast.dismiss(geoToastId)
         const { latitude, longitude } = position.coords
         try {
           // Bounding Box do Mato Grosso do Sul para restringir a busca
@@ -540,14 +567,28 @@ export function DenunciaFormWizard({
         }
       },
       (error) => {
+        toast.dismiss(geoToastId)
         setGeolocalizando(false)
-        if (error.code === 1) {
-          toast.error('Acesso à localização negado.')
+        console.error('[geolocation] Erro:', error)
+        
+        if (error.code === 1) { // PERMISSION_DENIED
+          toast.error('Acesso Negado', {
+            description: 'Para iPhones: Vá em Ajustes > Privacidade > Serv. de Localização e ative para o Safari. Se o erro persistir, verifique se o site está em HTTPS.',
+            duration: 10000
+          })
+        } else if (error.code === 2) { // POSITION_UNAVAILABLE
+          toast.error('GPS Indisponível', {
+            description: 'Não foi possível obter um sinal de GPS válido. Tente novamente em um local aberto.'
+          })
+        } else if (error.code === 3) { // TIMEOUT
+          toast.error('Tempo Esgotado', {
+            description: 'A busca demorou muito. Verifique sua conexão e tente novamente.'
+          })
         } else {
-          toast.error('Falha ao obter sinal do GPS.')
+          toast.error('Falha na geolocalização.')
         }
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     )
   }
 
@@ -585,9 +626,14 @@ export function DenunciaFormWizard({
               }`}>
                 {isDone ? <Check size={18} strokeWidth={3} className="sm:w-6 sm:h-6" /> : <ActiveIcon size={isActive ? 20 : 16} className="sm:w-7 sm:h-7" />}
               </div>
-              <span className={`text-[7px] sm:text-[11px] font-black uppercase tracking-widest ${isActive ? 'text-primary' : 'text-muted-foreground/60'}`}>
+              <span className={`hidden sm:block text-[11px] font-black uppercase tracking-widest ${isActive ? 'text-primary' : 'text-muted-foreground/60'}`}>
                 {s.label}
               </span>
+              {isActive && (
+                <span className="sm:hidden text-[9px] font-black uppercase tracking-widest text-primary animate-pulse">
+                  {s.label}
+                </span>
+              )}
             </div>
           )
         })}
@@ -607,13 +653,13 @@ export function DenunciaFormWizard({
                 <div className="flex -space-x-4">
                   {categorias.slice(0, 4).map((c, i) => (
                     <div key={i} className="w-12 h-12 rounded-full border-4 border-white bg-surface flex items-center justify-center shadow-sm">
-                      <LucideIcon name={c.icon_name} size={20} className="text-primary/60" />
+                      <LucideIcon name={c.icon_name || 'Folder'} size={20} className="text-primary/60" />
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                 {categorias.map((cat) => (
                   <button
                     key={cat.id}
@@ -631,9 +677,9 @@ export function DenunciaFormWizard({
                     }`}
                   >
                     <div className="mb-2 sm:mb-6 group-hover:scale-110 transition-transform inline-block text-primary/80">
-                      <LucideIcon name={cat.icon_name} size={64} strokeWidth={1.2} className="w-8 h-8 sm:w-16 sm:h-16" />
+                      <LucideIcon name={cat.icon_name || 'Folder'} size={64} strokeWidth={1.2} className="w-8 h-8 sm:w-16 sm:h-16" />
                     </div>
-                    <h3 className="font-black text-dark text-[11px] sm:text-xl leading-tight uppercase italic mb-1 sm:mb-3">{cat.label}</h3>
+                    <h3 className="font-black text-dark text-xs sm:text-xl leading-tight uppercase italic mb-1 sm:mb-3">{cat.label}</h3>
                     <p className="hidden sm:block text-xs text-muted font-bold line-clamp-2 leading-relaxed">{cat.instrucao_publica}</p>
                     {formData.categoria_id === cat.id && (
                       <div className="absolute top-1 right-1 sm:top-4 sm:right-4 text-primary animate-bounce-subtle">
@@ -654,9 +700,9 @@ export function DenunciaFormWizard({
                 </div>
               )}
 
-              <div ref={bottomRef} className="flex justify-end pt-6">
-                <button onClick={handleNext} disabled={!formData.categoria_id} className="btn-primary h-12 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-30 disabled:grayscale">
-                  <span className="font-black uppercase tracking-widest text-[9px] sm:text-xs">Próximo: O que houve?</span>
+              <div ref={bottomRef} className="flex justify-end pt-6 pb-20 sm:pb-0">
+                <button onClick={handleNext} disabled={!formData.categoria_id} className="btn-primary w-full sm:w-auto h-14 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan transition-all disabled:opacity-30 fixed bottom-4 right-4 left-4 sm:static sm:bottom-auto sm:right-auto sm:left-auto z-40">
+                  <span className="font-black uppercase tracking-widest text-[10px] sm:text-xs">Próximo: Relato</span>
                   <ArrowRight size={18} className="sm:w-5 sm:h-5" />
                 </button>
               </div>
@@ -703,7 +749,7 @@ export function DenunciaFormWizard({
                 </div>
               </div>
 
-              <div ref={bottomRef} className="flex items-center justify-between pt-8 border-t border-border/40">
+              <div ref={bottomRef} className="flex items-center justify-between pt-8 border-t border-border/40 pb-20 sm:pb-0">
                 <button onClick={handleBack} className="group flex items-center gap-3 text-[10px] sm:text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
                   <ArrowLeft size={16} className="sm:w-5 sm:h-5" /> Voltar
                 </button>
@@ -715,9 +761,9 @@ export function DenunciaFormWizard({
                     }
                     handleNext() 
                   }} 
-                  className="btn-primary h-12 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  className="btn-primary w-full sm:w-auto h-14 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan transition-all fixed bottom-4 right-4 left-24 sm:static sm:bottom-auto sm:right-auto sm:left-auto z-40"
                 >
-                  <span className="font-black uppercase tracking-widest text-[9px] sm:text-xs">Próximo: Onde foi?</span>
+                  <span className="font-black uppercase tracking-widest text-[10px] sm:text-xs">Próximo: Local</span>
                   <ArrowRight size={18} className="sm:w-5 sm:h-5" />
                 </button>
               </div>
@@ -799,12 +845,12 @@ export function DenunciaFormWizard({
                 </div>
               </div>
 
-              <div ref={bottomRef} className="flex items-center justify-between pt-8 border-t border-border/40">
+              <div ref={bottomRef} className="flex items-center justify-between pt-8 border-t border-border/40 pb-20 sm:pb-0">
                 <button onClick={handleBack} className="group flex items-center gap-3 text-[10px] sm:text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
                   <ArrowLeft size={16} className="sm:w-5 sm:h-5" /> Voltar
                 </button>
-                <button onClick={handleNext} className="btn-primary h-12 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all">
-                  <span className="font-black uppercase tracking-widest text-[9px] sm:text-xs">Adicionar Provas</span>
+                <button onClick={handleNext} className="btn-primary w-full sm:w-auto h-14 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan transition-all fixed bottom-4 right-4 left-24 sm:static sm:bottom-auto sm:right-auto sm:left-auto z-40">
+                  <span className="font-black uppercase tracking-widest text-[10px] sm:text-xs">Próximo: Provas</span>
                   <ArrowRight size={18} className="sm:w-5 sm:h-5" />
                 </button>
               </div>
@@ -858,12 +904,12 @@ export function DenunciaFormWizard({
                 </div>
               </div>
 
-              <div ref={bottomRef} className="flex items-center justify-between pt-8 border-t border-border/40">
+              <div ref={bottomRef} className="flex items-center justify-between pt-8 border-t border-border/40 pb-20 sm:pb-0">
                 <button onClick={handleBack} className="group flex items-center gap-3 text-[10px] sm:text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
                   <ArrowLeft size={16} className="sm:w-5 sm:h-5" /> Voltar
                 </button>
-                <button onClick={handleNext} className="btn-primary h-12 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan transition-all bg-dark hover:bg-black">
-                  <span className="font-black uppercase tracking-widest text-[9px] sm:text-xs">Revisão & Identificação</span>
+                <button onClick={handleNext} className="btn-primary w-full sm:w-auto h-14 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan transition-all bg-dark hover:bg-black fixed bottom-4 right-4 left-24 sm:static sm:bottom-auto sm:right-auto sm:left-auto z-40">
+                  <span className="font-black uppercase tracking-widest text-[10px] sm:text-xs">Próximo: Revisão</span>
                   <ArrowRight size={18} className="sm:w-5 sm:h-5" />
                 </button>
               </div>
@@ -904,12 +950,12 @@ export function DenunciaFormWizard({
                 {!otpValidado && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                     <div className="space-y-2">
-                      <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">Nome Completo *</p>
+                      <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">Nome Completo *</p>
                       <input className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm w-full text-white"
                         placeholder="Seu nome" disabled={otpEnviado} value={formData.nome} onChange={(e) => handleInputChange('nome', e.target.value)} />
                     </div>
                     <div className="space-y-2">
-                      <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">E-mail *</p>
+                      <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">E-mail *</p>
                       <input type="email" className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm w-full text-white"
                         placeholder="seu@email.com" disabled={otpEnviado} value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} />
                     </div>
@@ -942,7 +988,7 @@ export function DenunciaFormWizard({
                             {loadingOtp ? <Loader2 className="animate-spin" /> : 'Verificar Identidade'}
                           </button>
                           <button onClick={() => { setOtpEnviado(false); handleInputChange('otpToken', '') }} 
-                            className="text-[9px] text-white/30 uppercase font-black hover:text-white mx-auto block pt-2 underline transition-colors">
+                            className="text-[10px] text-white/30 uppercase font-black hover:text-white mx-auto block pt-2 underline transition-colors">
                             Reenviar código
                           </button>
                         </div>
@@ -966,7 +1012,7 @@ export function DenunciaFormWizard({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                       <div className="space-y-2">
-                        <p className="text-[9px] font-black text-primary/50 uppercase tracking-[0.2em] pl-1">WhatsApp / Telefone *</p>
+                        <p className="text-[10px] font-black text-primary/50 uppercase tracking-[0.2em] pl-1">WhatsApp / Telefone *</p>
                         <input 
                           id="field-telefone"
                           className="bg-white border-2 border-primary/10 rounded-2xl h-16 p-4 text-lg font-bold w-full text-dark shadow-sm focus:border-primary transition-all"
@@ -979,7 +1025,7 @@ export function DenunciaFormWizard({
                         />
                       </div>
                       <div className="space-y-2">
-                        <p className="text-[9px] font-black text-primary/50 uppercase tracking-[0.2em] pl-1">CPF Oficial *</p>
+                        <p className="text-[10px] font-black text-primary/50 uppercase tracking-[0.2em] pl-1">CPF Oficial *</p>
                         <input 
                           id="field-cpf"
                           className="bg-white border-2 border-primary/10 rounded-2xl h-16 p-4 text-lg font-bold w-full text-dark shadow-sm focus:border-primary transition-all"
@@ -1003,9 +1049,9 @@ export function DenunciaFormWizard({
                         <Check size={16} strokeWidth={4} />
                       </div>
                       <div className="space-y-2 text-left">
-                        <p className="text-[10px] font-black text-dark uppercase tracking-widest italic">Confirmo que meu relato é verdadeiro</p>
+                        <p className="text-[10px] font-black text-dark uppercase tracking-widest italic">DECLARAÇÃO DE VERACIDADE E RESPONSABILIDADE JURÍDICA</p>
                         <p className="text-[11px] text-muted font-medium leading-relaxed italic">
-                          Estou ciente de que a má-fé ou denuncias comprovadamente falsas sujeitarão o declarante às sanções civis e penais cabíveis, conforme o Código Penal Brasileiro.
+                          Confirmo, sob as penas da lei, que os fatos aqui relatados são fidedignos e condizentes com a verdade. Declaro estar ciente de que a prestação de informações falsas ou a comunicação de crime inexistente configura o crime de **Denunciação Caluniosa (Art. 339 do Código Penal)**, além de sujeitar o declarante a sanções civis por danos morais e materiais e responsabilidades administrativas, conforme a legislação brasileira vigente.
                         </p>
                       </div>
                     </label>
@@ -1024,7 +1070,7 @@ export function DenunciaFormWizard({
                     <div className="text-left">
                       <p className="text-xs font-black uppercase tracking-widest">Visualizar Cópia Digital</p>
                       {(!validarTelefone(formData.telefone) || !validarCPF(formData.cpf)) && (
-                        <p className="text-[9px] text-red-500 font-bold uppercase italic mt-1">Insira um Telefone e CPF válidos para liberar a prévia</p>
+                        <p className="text-[10px] text-red-500 font-bold uppercase italic mt-1">Insira um Telefone e CPF válidos para liberar a prévia</p>
                       )}
                     </div>
                   </div>
@@ -1049,7 +1095,7 @@ export function DenunciaFormWizard({
                   </div>
                 )}
 
-                <div ref={bottomRef} className="flex flex-col sm:flex-row items-center justify-between pt-6 gap-6">
+                <div ref={bottomRef} className="flex flex-col sm:flex-row items-center justify-between pt-6 gap-6 pb-20 sm:pb-0">
                   <button onClick={handleBack} disabled={loading} className="group flex items-center gap-3 text-[10px] sm:text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
                     <ArrowLeft size={18} className="sm:w-5 sm:h-5" /> Voltar
                   </button>
@@ -1062,7 +1108,7 @@ export function DenunciaFormWizard({
                       handleSubmit()
                     }}
                     disabled={loading || !formData.consentimento || !otpValidado || !isOnline || !validarTelefone(formData.telefone) || !validarCPF(formData.cpf)}
-                    className="btn-primary h-14 sm:h-20 px-8 sm:px-12 rounded-xl sm:rounded-[2rem] gap-4 w-full sm:w-auto bg-secondary hover:bg-secondary-600 disabled:opacity-30 shadow-glow-green"
+                    className="btn-primary w-full sm:w-auto h-14 sm:h-20 px-8 sm:px-12 rounded-xl sm:rounded-[2rem] gap-4 bg-secondary hover:bg-secondary-600 disabled:opacity-30 shadow-glow-green fixed bottom-4 right-4 left-24 sm:static sm:bottom-auto sm:right-auto sm:left-auto z-40"
                   >
                     {loading ? <Loader2 className="animate-spin" /> : <Send size={20} className="sm:w-6 sm:h-6" />}
                     <span className="font-black uppercase tracking-[0.2em] text-[11px] sm:text-sm">

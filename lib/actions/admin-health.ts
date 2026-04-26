@@ -29,7 +29,54 @@ export async function getSystemHealthStats() {
       .select('*', { count: 'exact', head: true })
       .gte('acessado_em', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
 
-    // 4. Denuncias por Status
+    // 4. Detalhamento de Integrações por Categoria (STATUS DAS ENTREGAS)
+    const { data: catIntegrations } = await supabase
+      .from('categorias')
+      .select(`
+        id,
+        slug,
+        label,
+        integracoes_destino (
+          id,
+          tipo,
+          ativo
+        )
+      `)
+      .order('ordem', { ascending: true })
+
+    // Busca logs das últimas 24h para contar sucessos/falhas
+    const umDiaAtras = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { data: logsRecent } = await supabase
+      .from('log_integracoes')
+      .select('integracao_id, status, disparado_em')
+      .gte('disparado_em', umDiaAtras)
+
+    const detailedIntegrations = (catIntegrations || []).map(cat => {
+      const integrations = cat.integracoes_destino || []
+      const intIds = integrations.map((i: any) => i.id)
+      
+      const catLogs = (logsRecent || []).filter(l => intIds.includes(l.integracao_id))
+      const sucessos = catLogs.filter(l => l.status === 'sucesso').length
+      const falhas = catLogs.filter(l => l.status === 'falha').length
+      const ultimoDisparo = catLogs.length > 0 
+        ? catLogs.sort((a, b) => new Date(b.disparado_em).getTime() - new Date(a.disparado_em).getTime())[0].disparado_em 
+        : null
+
+      return {
+        id: cat.id,
+        categoria_id: cat.id,
+        categoria_nome: cat.label,
+        categoria_slug: cat.slug,
+        tem_email: integrations.some((i: any) => i.tipo === 'email' || i.tipo === 'ambos'),
+        tem_webhook: integrations.some((i: any) => i.tipo === 'webhook' || i.tipo === 'ambos'),
+        saudavel: falhas === 0,
+        sucessos,
+        falhas,
+        ultimo_disparo: ultimoDisparo
+      }
+    })
+
+    // 5. Denuncias por Status
     const { data: denunciasStatus } = await supabase
       .from('denuncias')
       .select('status')
@@ -46,6 +93,7 @@ export async function getSystemHealthStats() {
       },
       integrationHealth: {
         failedCount: failedIntegrations || 0,
+        detailed: detailedIntegrations
       },
       securityPulse: {
         blockedCount: blockedUsers || 0,

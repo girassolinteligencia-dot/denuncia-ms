@@ -67,18 +67,28 @@ const config: Config = {
         btn:  '8px',
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-jakarta)', 'system-ui', 'sans-serif'],
         display: ['var(--font-outfit)', 'system-ui', 'sans-serif'],
       },
       animation: {
-        'fade-in':     'fadeIn .2s ease-out',
-        'slide-up':    'slideUp .3s ease-out',
+        'fade-in':     'fadeIn .2s ease-out forwards',
+        'slide-up':    'slideUp .4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'pulse-soft':  'pulseSoft 2s ease-in-out infinite',
+        'pulse-slow':  'pulseSlow 3s ease-in-out infinite',
+        'marquee':     'marquee 30s linear infinite',
       },
       keyframes: {
         fadeIn:    { from: { opacity: '0' }, to: { opacity: '1' } },
-        slideUp:   { from: { opacity: '0', transform: 'translateY(8px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
-        pulseSoft: { '0%,100%': { opacity: '1' }, '50%': { opacity: '.6' } },
+        slideUp:   { 
+          from: { opacity: '0', transform: 'translateY(20px)' }, 
+          to: { opacity: '1', transform: 'translateY(0)' } 
+        },
+        pulseSoft: { '0%,100%': { opacity: '1' }, '50%': { opacity: '.7' } },
+        pulseSlow: { '0%,100%': { opacity: '1' }, '50%': { opacity: '.4' } },
+        marquee: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-100%)' }
+        }
       },
     },
   },

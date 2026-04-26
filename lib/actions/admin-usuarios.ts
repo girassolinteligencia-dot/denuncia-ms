@@ -35,11 +35,16 @@ export async function getMe() {
   const supabase = createClient(cookieStore)
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
     if (authError) {
-      console.error('[AUTH ERROR] getMe failed to get user:', authError)
+      console.warn('[AUTH] getMe user fetch failed:', authError.message)
       return { success: false, error: authError.message }
     }
-    if (!user) return { success: false, error: 'Não autenticado' }
+    
+    if (!user) {
+      console.warn('[AUTH] No user session found in getMe')
+      return { success: false, error: 'Não autenticado' }
+    }
 
     const { data: profile, error } = await supabase
       .from('profiles')
@@ -48,13 +53,14 @@ export async function getMe() {
       .single()
 
     if (error) {
-      console.error('[DB ERROR] getMe failed to fetch profile for user:', user.id, error)
-      throw error
+      console.error('[DB] Profile fetch failed for user', user.id, ':', error.message)
+      // Se não houver profile mas o user existe no Auth, pode ser um erro de sincronização
+      return { success: false, error: 'Perfil não encontrado' }
     }
     
     return { success: true, data: profile as Profile }
   } catch (err: unknown) {
-    console.error('[CRITICAL ERROR] getMe exception:', err)
+    console.error('[CRITICAL] getMe exception:', err)
     return { success: false, error: (err as Error).message }
   }
 }
@@ -84,26 +90,22 @@ export async function createUsuarioAdmin(data: {
     if (!authUser.user) throw new Error('Falha ao criar usuário no Auth')
 
     // 2. O Profile deve ser criado automaticamente por Trigger, 
-    // mas por garantia vamos forçar o update dos dados extras se necessário
+    // mas vamos forçar a criação/update com todos os campos para garantir integridade
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({ 
+      .upsert({ 
+        id: authUser.user.id,
         nome: data.nome, 
         role: data.role,
         permissoes: data.permissoes,
-        ativo: true 
+        ativo: true,
+        atualizado_em: new Date().toISOString()
       })
-      .eq('id', authUser.user.id)
 
     if (profileError) {
-      console.warn('Erro ao atualizar profile (pode não ter sido criado via trigger ainda):', profileError)
-      // Se a trigger falhou ou não existe, inserimos manualmente
-      await supabase.from('profiles').upsert({
-        id: authUser.user.id,
-        nome: data.nome,
-        role: data.role,
-        ativo: true
-      })
+      console.error('Erro ao criar/atualizar profile:', profileError)
+      // Não lançamos erro aqui para não travar a criação do Auth, 
+      // mas o log ajudará a depurar
     }
 
     let emailEnviado = true

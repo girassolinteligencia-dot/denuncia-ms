@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import React from 'react'
 import { BoletimIntelligence } from '@/components/public/boletim-intelligence'
 import { EnqueteDinamica } from '@/components/public/enquete-dinamica'
@@ -11,11 +12,11 @@ export default async function NoticiasPage() {
       <div className="container-page max-w-6xl space-y-8 sm:space-y-12">
         
         {/* Header Simplificado */}
-        <header className="space-y-3 sm:space-y-4 text-center px-4">
+        <header className="space-y-3 sm:space-y-4 text-center md:text-left px-4">
           <h1 className="text-3xl sm:text-5xl font-black text-dark tracking-tighter italic uppercase">
             Central de <span className="text-primary italic">Notícias</span>
           </h1>
-          <p className="text-xs sm:text-md text-muted max-w-xl mx-auto font-medium leading-relaxed">
+          <p className="text-xs sm:text-md text-muted max-w-xl mx-auto md:mx-0 font-medium leading-relaxed">
             Acompanhe as principais atualizações e relatórios de inteligência de Mato Grosso do Sul.
           </p>
         </header>

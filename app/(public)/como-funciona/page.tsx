@@ -23,7 +23,7 @@ export default function ComoFuncionaPage() {
     <div className="flex flex-col min-h-screen bg-surface">
       
       {/* Hero Section */}
-      <section className="relative bg-[#021691] py-20 overflow-hidden border-b border-white/5">
+      <section className="relative bg-[#021691] pt-10 pb-20 overflow-hidden border-b border-white/5">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-secondary/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4 z-0 animate-pulse"></div>
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-primary/20 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/2 z-0"></div>
         
@@ -52,7 +52,7 @@ export default function ComoFuncionaPage() {
              <img 
                src="/assets/mascote_sem_fundo.png" 
                alt="Representante Denuncia MS" 
-               className="w-full max-w-md h-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-float"
+               className="w-full max-w-2xl h-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
              />
           </div>
         </div>

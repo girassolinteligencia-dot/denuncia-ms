@@ -69,10 +69,10 @@ export async function registrarDenuncia(
     // 3. Gerar Protocolo
     const { protocolo, chaveAcesso } = await gerarProtocolo()
 
-    // 4. Buscar Categoria para o PDF
+    // 4. Buscar Categoria para o PDF e Destinatário
     const { data: catData } = await supabase
       .from('categorias')
-      .select('label')
+      .select('label, email_destino')
       .eq('id', formData.categoria_id)
       .single()
 
@@ -107,7 +107,6 @@ export async function registrarDenuncia(
     await validarOTP(emailNorm, formData.otpToken || '')
 
     // 6. Processamento em Segundo Plano (Non-blocking para o usuário)
-    // Usamos um try/catch interno para que falhas no PDF ou E-mail não cancelem o sucesso da denuncia
     try {
       // Arquivos
       if (arquivosVinculados.length > 0) {
@@ -173,13 +172,42 @@ export async function registrarDenuncia(
         })
       }
 
-      // E-mail final
+      // 1. E-mail para o CIDADÃO (Confirmando recebimento)
       sendEmail({
         to:      emailNorm,
         subject: `[DenunciaMS] Protocolo ${protocolo} — Denuncia registrada`,
         html:    gerarEmailDenunciante(protocolo, chaveAcesso, formData.nome || 'Cidadão'),
         text:    `Protocolo: ${protocolo} | Chave: ${chaveAcesso}`,
-      }).catch(e => console.error('[email] Erro:', e))
+      }).catch(e => console.error('[email] Erro ao notificar cidadão:', e))
+
+      // 2. E-mail para o ÓRGÃO DESTINATÁRIO (Se houver email_destino na categoria)
+      if (catData?.email_destino) {
+        sendEmail({
+          to:      catData.email_destino,
+          subject: `[OFICIAL] Nova Denuncia — Protocolo ${protocolo} — ${catData.label}`,
+          text:    `Uma nova denuncia foi registrada para sua área. Protocolo: ${protocolo}.\n\nO documento oficial está em anexo.`,
+          html:    `
+            <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee;">
+               <h2 style="color: #021691;">Nova Denuncia Recebida</h2>
+               <p>Prezado Responsável,</p>
+               <p>Informamos que uma nova denúncia foi registrada através da plataforma <strong>DENUNCIA MS</strong>.</p>
+               <hr />
+               <p><strong>Protocolo:</strong> ${protocolo}</p>
+               <p><strong>Categoria:</strong> ${catData.label}</p>
+               <p><strong>Título:</strong> ${formData.titulo}</p>
+               <hr />
+               <p>O relatório oficial assinado digitalmente segue em anexo para sua análise.</p>
+               <p style="font-size: 11px; color: #666;">Este é um envio automático do sistema de inteligência cívica Denuncia MS.</p>
+            </div>
+          `,
+          attachments: [
+            {
+              filename: `denuncia_${protocolo}.pdf`,
+              content:  pdfBuffer
+            }
+          ]
+        }).catch(e => console.error('[email] Erro ao notificar destinatário:', e))
+      }
 
     } catch (bgErr) {
       console.error('[denuncia] Erro em processo secundário (não crítico):', bgErr)

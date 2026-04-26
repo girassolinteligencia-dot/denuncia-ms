@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createAdminClient } from '@/lib/supabase-admin'
 
 export default async function TestErrorPage() {

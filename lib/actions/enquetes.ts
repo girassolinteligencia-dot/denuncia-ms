@@ -7,12 +7,21 @@ import { createHash } from 'crypto'
 import type { Enquete } from '@/types'
 
 /**
+ * Auxiliar para extrair IP real e gerar Hash consistente
+ */
+function getClientIpHash() {
+  const forwarded = headers().get('x-forwarded-for')
+  const ip = forwarded ? forwarded.split(',')[0].trim() : '127.0.0.1'
+  const salt = process.env.ENCRYPTION_KEY || 'denunciams-salt-2026'
+  return createHash('sha256').update(ip + salt).digest('hex')
+}
+
+/**
  * Registra um voto em uma enquete validando o IP do usuário
  */
 export async function votarEnquete(enqueteId: string, opcaoId: string) {
   const supabase = createAdminClient()
-  const ip = headers().get('x-forwarded-for') || '127.0.0.1'
-  const ipHash = createHash('sha256').update(ip + process.env.ENCRYPTION_KEY).digest('hex')
+  const ipHash = getClientIpHash()
 
   try {
     const { error } = await supabase
@@ -39,6 +48,7 @@ export async function votarEnquete(enqueteId: string, opcaoId: string) {
 export async function getEnqueteAtiva(local: 'landing' | 'noticias') {
   const supabase = createAdminClient()
   try {
+    // Busca prioritariamente a enquete mais recente que esteja ATIVA
     const { data: enquete, error } = await supabase
       .from('enquetes')
       .select(`
@@ -55,31 +65,49 @@ export async function getEnqueteAtiva(local: 'landing' | 'noticias') {
         votos:enquete_votos(opcao_id)
       `)
       .eq('local_exibicao', local)
+      .eq('ativa', true) // Filtro essencial para refletir o Admin
       .order('criado_em', { ascending: false })
       .limit(1)
       .maybeSingle()
 
     if (error) throw error
-    if (!enquete) return null
+    
+    // Se não houver ativa, busca a última encerrada para mostrar resultados históricos
+    let finalEnquete = enquete
+    if (!finalEnquete) {
+       const { data: lastOne } = await supabase
+        .from('enquetes')
+        .select(`
+          id, titulo, descricao, local_exibicao, ativa, data_expiracao,
+          limite_votos, encerrada_manualmente, criado_em,
+          opcoes:enquete_opcoes(id, texto, ordem),
+          votos:enquete_votos(opcao_id)
+        `)
+        .eq('local_exibicao', local)
+        .order('criado_em', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+       finalEnquete = lastOne
+    }
 
-    const totalVotos = enquete.votos.length
+    if (!finalEnquete) return null
+
+    const totalVotos = finalEnquete.votos?.length || 0
     
     // Determinar Status em tempo real
     let statusAtual: 'ativa' | 'encerrada' | 'expirada' | 'limite_atingido' = 'ativa'
     
-    if (enquete.encerrada_manualmente) {
+    if (finalEnquete.encerrada_manualmente || !finalEnquete.ativa) {
       statusAtual = 'encerrada'
-    } else if (enquete.data_expiracao && new Date(enquete.data_expiracao) < new Date()) {
+    } else if (finalEnquete.data_expiracao && new Date(finalEnquete.data_expiracao) < new Date()) {
       statusAtual = 'expirada'
-    } else if (enquete.limite_votos && totalVotos >= enquete.limite_votos) {
+    } else if (finalEnquete.limite_votos && totalVotos >= finalEnquete.limite_votos) {
       statusAtual = 'limite_atingido'
-    } else if (!enquete.ativa) {
-      statusAtual = 'encerrada'
     }
 
-    // Processar resultados para o Dashboard
-    const resultados = enquete.opcoes.map((opt: any) => {
-      const votosOpt = enquete.votos.filter((v: any) => v.opcao_id === opt.id).length
+    // Processar resultados
+    const resultados = finalEnquete.opcoes.map((opt: any) => {
+      const votosOpt = finalEnquete.votos.filter((v: any) => v.opcao_id === opt.id).length
       return {
         ...opt,
         votos: votosOpt,
@@ -87,18 +115,16 @@ export async function getEnqueteAtiva(local: 'landing' | 'noticias') {
       }
     })
 
-    const ip = headers().get('x-forwarded-for') || '127.0.0.1'
-    const ipHash = createHash('sha256').update(ip + (process.env.ENCRYPTION_KEY || 'default')).digest('hex')
-    
+    const ipHash = getClientIpHash()
     const { data: votoExistente } = await supabase
       .from('enquete_votos')
       .select('id')
-      .eq('enquete_id', enquete.id)
+      .eq('enquete_id', finalEnquete.id)
       .eq('ip_hash', ipHash)
       .maybeSingle()
 
     return {
-      ...enquete,
+      ...finalEnquete,
       status_atual: statusAtual,
       opcoes: resultados,
       totalVotos,

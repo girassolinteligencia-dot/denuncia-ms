@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { getConfigsByPrefix } from '@/lib/config'
 import { UnifiedConfigTabs } from '@/components/admin/config/unified-config-tabs'
 
