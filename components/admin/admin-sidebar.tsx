@@ -16,8 +16,6 @@ import {
   ShieldAlert,
   Activity,
   RefreshCw,
-  ImageIcon,
-  BarChart3,
   Share2,
   HeartPulse
 } from 'lucide-react'
@@ -61,10 +59,13 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
   
   const permissoes = userProfile?.permissoes || []
 
+  // Função robusta de verificação de acesso
   const temAcesso = (modulo: string) => {
     if (loading) return false
+    // Se for admin master ou superadmin, tem acesso a TUDO
     if (isAdminMaster) return true
-    return permissoes.includes(modulo)
+    // Caso contrário, verifica a lista de permissões específicas
+    return Array.isArray(permissoes) && permissoes.includes(modulo)
   }
 
   const handleLogout = async () => {
