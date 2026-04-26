@@ -11,11 +11,13 @@ export const metadata = {
 export default async function DenunciasAdminPage() {
   const supabase = createAdminClient()
   
-  // Busca denuncias com categoria
+  // Busca denuncias (simplificada para garantir exibição)
   const { data: denuncias, error } = await supabase
     .from('denuncias')
-    .select('id, protocolo, titulo, status, criado_em, categoria_id, cat_info:categorias(label, icon_name)')
+    .select('*')
     .order('criado_em', { ascending: false })
+
+  console.log('[admin-denuncias] Total recuperado:', denuncias?.length, 'Erro:', error)
 
   if (error) {
     return <div className="p-8 text-error">Erro ao carregar denuncias: {error.message}</div>
