@@ -32,26 +32,23 @@ export async function getImpactoStats() {
     // 2. Foco Geográfico (Município com mais denuncias)
     const { data: cidadesData } = await supabase
       .from('denuncias')
-      .select('municipio')
-      .not('municipio', 'is', null)
+      .select('municipio, cidade, local')
 
     const contagemCidades = (cidadesData || []).reduce((acc: Record<string, number>, curr) => {
-      if (curr.municipio) {
-        acc[curr.municipio] = (acc[curr.municipio] || 0) + 1
+      let city = curr.municipio || curr.cidade
+      
+      if (!city && curr.local) {
+        city = curr.local.split(',').length > 2 ? curr.local.split(',')[1].trim() : 'Não informado'
       }
+      
+      if (!city || city === '') city = 'Não informado'
+
+      acc[city] = (acc[city] || 0) + 1
       return acc
     }, {})
 
     const sortedCidades = Object.entries(contagemCidades).sort((a, b) => b[1] - a[1])
     let top3 = sortedCidades.slice(0, 3).map(([nome, count]) => ({ nome, count }))
-    
-    if (top3.length === 0) {
-      top3 = [
-        { nome: 'Campo Grande', count: 142 },
-        { nome: 'Dourados', count: 45 },
-        { nome: 'Três Lagoas', count: 32 }
-      ]
-    }
 
     // 3. Feedback Positivo (Simulado baseado em validação de e-mail / enquetes)
     // Por ser uma métrica de percepção, vamos usar um valor base real de 90% + variação
@@ -144,29 +141,17 @@ export async function getMunicipalityMapData() {
   try {
     const { data, error } = await supabase
       .from('denuncias')
-      .select('municipio')
-      .not('municipio', 'is', null)
+      .select('municipio, cidade')
 
     if (error) throw error
 
     let counts = (data || []).reduce((acc: Record<string, number>, curr) => {
-      const city = curr.municipio
+      const city = curr.municipio || curr.cidade
       if (city) {
         acc[city] = (acc[city] || 0) + 1
       }
       return acc
     }, {})
-
-    // Fallback visual se a base estiver limpa
-    if (Object.keys(counts).length === 0) {
-      counts = {
-        'Campo Grande': 142,
-        'Dourados': 45,
-        'Três Lagoas': 32,
-        'Corumbá': 18,
-        'Ponta Porã': 15
-      }
-    }
 
     return {
       success: true,
