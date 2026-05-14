@@ -213,14 +213,34 @@ export function DenunciaFormWizard({
     }, 100)
   }
 
+  const handleStepTransition = (newStep: number) => {
+    setStep(newStep)
+    setTimeout(() => {
+      let targetId = '';
+      if (newStep === 1) targetId = 'step-1-title';
+      if (newStep === 2) targetId = 'field-titulo';
+      if (newStep === 3) targetId = 'step-3-title';
+      if (newStep === 4) targetId = 'step-4-title';
+      if (newStep === 5) targetId = otpValidado ? 'field-telefone' : 'field-nome';
+
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'BUTTON') {
+          el.focus();
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 150)
+  }
+
   const handleNext = () => {
-    setStep(s => Math.min(s + 1, 5))
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    handleStepTransition(Math.min(step + 1, 5))
   }
 
   const handleBack = () => {
-    setStep(s => Math.max(s - 1, 1))
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    handleStepTransition(Math.max(step - 1, 1))
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -656,7 +676,7 @@ export function DenunciaFormWizard({
             <div className="space-y-10 animate-slide-up">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-border/40 pb-8">
                 <div className="space-y-2">
-                  <h2 className="text-3xl sm:text-4xl font-black text-dark tracking-tighter italic uppercase">Escolha a <span className="text-primary italic">Categoria</span></h2>
+                  <h2 id="step-1-title" className="text-3xl sm:text-4xl font-black text-dark tracking-tighter italic uppercase">Escolha a <span className="text-primary italic">Categoria</span></h2>
                   <p className="text-muted text-sm font-medium">Selecione o tipo de ocorrência que deseja relatar na <strong>DENUNCIA MS</strong>.</p>
                 </div>
                 <div className="flex -space-x-4">
@@ -783,7 +803,7 @@ export function DenunciaFormWizard({
             <div className="space-y-10 animate-slide-up">
               <div className="flex items-center justify-between border-b border-border/40 pb-6">
                 <div className="space-y-1">
-                  <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tighter italic uppercase">Onde aconteceu?</h2>
+                  <h2 id="step-3-title" className="text-2xl sm:text-3xl font-black text-dark tracking-tighter italic uppercase">Onde aconteceu?</h2>
                   <p className="text-muted text-sm font-medium">A localização exata agiliza a resposta.</p>
                 </div>
                 <div className="hidden sm:flex p-5 bg-primary/5 text-primary rounded-[2rem] border border-primary/10"><MapPin size={32} /></div>
@@ -870,7 +890,7 @@ export function DenunciaFormWizard({
             <div className="space-y-10 animate-slide-up">
               <div className="flex items-center justify-between border-b border-border/40 pb-6">
                 <div className="space-y-1">
-                  <h2 className="text-3xl font-black text-dark tracking-tighter italic uppercase">Provas & Evidências</h2>
+                  <h2 id="step-4-title" className="text-3xl font-black text-dark tracking-tighter italic uppercase">Provas & Evidências</h2>
                   <p className="text-muted text-sm font-medium">Anexe fotos, vídeos ou documentos.</p>
                 </div>
                 <div className="hidden sm:flex p-5 bg-primary/5 text-primary rounded-[2rem] border border-primary/10"><Paperclip size={32} /></div>
@@ -978,13 +998,25 @@ export function DenunciaFormWizard({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                     <div className="space-y-2">
                       <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">Nome Completo *</p>
-                      <input className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm w-full text-white"
-                        placeholder="Seu nome" disabled={otpEnviado} value={formData.nome} onChange={(e) => handleInputChange('nome', e.target.value)} />
+                      <input 
+                        id="field-nome"
+                        className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm w-full text-white"
+                        placeholder="Seu nome" disabled={otpEnviado} value={formData.nome} 
+                        onChange={(e) => handleInputChange('nome', e.target.value)} 
+                        onBlur={() => { if(formData.nome) handleFieldScroll('field-email') }}
+                        onKeyDown={(e) => { if(e.key === 'Enter' && formData.nome) { document.getElementById('field-email')?.focus(); handleFieldScroll('field-email'); } }}
+                      />
                     </div>
                     <div className="space-y-2">
                       <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">E-mail *</p>
-                      <input type="email" className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm w-full text-white"
-                        placeholder="seu@email.com" disabled={otpEnviado} value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} />
+                      <input 
+                        id="field-email"
+                        type="email" className="bg-white/5 border-2 border-white/10 rounded-2xl h-14 p-4 text-sm w-full text-white"
+                        placeholder="seu@email.com" disabled={otpEnviado} value={formData.email} 
+                        onChange={(e) => handleInputChange('email', e.target.value)} 
+                        onBlur={() => { if(formData.email) handleFieldScroll('btn-gerar-codigo') }}
+                        onKeyDown={(e) => { if(e.key === 'Enter' && formData.email) { document.getElementById('btn-gerar-codigo')?.focus(); handleFieldScroll('btn-gerar-codigo'); } }}
+                      />
                     </div>
                   </div>
                 )}
@@ -993,7 +1025,7 @@ export function DenunciaFormWizard({
                 {!otpValidado && (
                   <div className="pt-4 relative z-10">
                     {!otpEnviado ? (
-                      <button onClick={handleSolicitarOTP} disabled={loadingOtp || !validarEmail(formData.email) || !formData.nome || cooldown > 0 || !isOnline}
+                      <button id="btn-gerar-codigo" onClick={handleSolicitarOTP} disabled={loadingOtp || !validarEmail(formData.email) || !formData.nome || cooldown > 0 || !isOnline}
                         className="w-full h-16 bg-secondary text-white font-black uppercase text-xs tracking-[0.2em] rounded-2xl disabled:opacity-30 flex justify-center items-center gap-3 transition-all">
                         {loadingOtp ? <Loader2 size={20} className="animate-spin" /> : <Lock size={20} />}
                         {cooldown > 0 ? `Reenviar em ${cooldown}s` : 'Gerar Código de Segurança'}

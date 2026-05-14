@@ -42,7 +42,7 @@ export function PainelImpacto({ isDark = false }: { isDark?: boolean }) {
       </header>
 
       {/* Stats Rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <div className={`p-8 ${isDark ? 'bg-white/5 border border-white/10' : 'bg-dark'} text-white rounded-3xl relative overflow-hidden group shadow-glow-cyan min-h-[180px] flex flex-col justify-center`}>
            <div className="absolute top-0 right-0 p-4 text-white/5 group-hover:text-white/10 transition-colors">
               <TrendingUp size={80} />
@@ -52,17 +52,6 @@ export function PainelImpacto({ isDark = false }: { isDark?: boolean }) {
              <div className="text-5xl font-black italic animate-fade-in">{stats?.hoje}</div>
            )}
            <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold">{stats?.crescimento || '--'} em relação a ontem</p>
-        </div>
-
-        <div className={`p-8 ${isDark ? 'bg-white/5 border border-white/10' : 'bg-dark'} text-white rounded-3xl relative overflow-hidden group shadow-glow-green min-h-[180px] flex flex-col justify-center`}>
-           <div className="absolute top-0 right-0 p-4 text-white/5 group-hover:text-white/10 transition-colors">
-              <CheckCircle2 size={80} />
-           </div>
-           <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-2">Índice de Resolução</p>
-           {loading ? <Loader2 className="animate-spin text-secondary" /> : (
-             <div className="text-5xl font-black text-secondary italic animate-fade-in">{stats?.feedback}</div>
-           )}
-           <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold">Demandas resolvidas na base</p>
         </div>
 
         <div className={`p-8 ${isDark ? 'bg-white/5 border border-white/10' : 'bg-dark'} text-white rounded-3xl relative overflow-hidden group shadow-glow-cyan min-h-[180px] flex flex-col justify-center`}>
