@@ -11,6 +11,9 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import type { Denuncia, StatusDenuncia } from '@/types'
+import { reencaminharEmailDespacho } from '@/lib/actions/admin-denuncias'
+import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
 
 const STATUS_STYLE: Record<StatusDenuncia, { label: string, color: string, icon: any }> = {
   recebida: { label: 'Recebida', color: 'bg-primary-50 text-primary border-primary/20', icon: Clock },
@@ -24,6 +27,20 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
   const [denuncias] = useState(initialDenuncias)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('todos')
+  const [loadingId, setLoadingId] = useState<string | null>(null)
+
+  const handleReenviar = async (id: string) => {
+    setLoadingId(id)
+    const res = await reencaminharEmailDespacho(id)
+    if (res.success) {
+      toast.success('E-mail reencaminhado com sucesso!')
+      // Atualização otimista
+      setTimeout(() => window.location.reload(), 1000)
+    } else {
+      toast.error('Erro ao reenviar: ' + res.error)
+    }
+    setLoadingId(null)
+  }
 
   const filteredDenuncias = denuncias.filter((d: any) => {
     if (searchQuery && !d.protocolo.toLowerCase().includes(searchQuery.toLowerCase())) return false
@@ -68,7 +85,7 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
               <th className="px-6 py-5">Categoria / Título</th>
               <th className="px-6 py-5">Registrado em</th>
               <th className="px-6 py-5">Situação Atual</th>
-              <th className="px-6 py-5">Tipo</th>
+              <th className="px-6 py-5">E-mail Destino</th>
               <th className="px-6 py-5 text-right w-20">Ações</th>
             </tr>
           </thead>
@@ -104,9 +121,20 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100">
-                       IDENTIFICADA
-                    </span>
+                    {(() => {
+                      const dq = denuncia.despacho_queue?.[0]
+                      if (!dq || dq.status === 'pendente' || dq.status === 'processando') return <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100">Aguardando Envio</span>
+                      if (dq.status === 'despachado') return <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-green-50 text-green-700 border border-green-200">Entregue com Sucesso</span>
+                      return (
+                        <div className="flex items-center gap-2">
+                           <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200">Falha no Envio</span>
+                           <button onClick={() => handleReenviar(denuncia.id)} disabled={loadingId === denuncia.id} className="text-[9px] font-bold uppercase text-primary hover:underline flex items-center gap-1">
+                             {loadingId === denuncia.id ? <Loader2 size={10} className="animate-spin" /> : <Send size={10} />}
+                             Reenviar
+                           </button>
+                        </div>
+                      )
+                    })()}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <Link 

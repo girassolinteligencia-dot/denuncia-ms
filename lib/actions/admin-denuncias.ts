@@ -488,10 +488,42 @@ export async function retroGeocodeMissingCoords() {
       }
     }
 
-    revalidatePath('/admin/dashboard')
     return { success: true, processed: count }
   } catch (err: any) {
     console.error('Erro no retro-geocoding:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Reencaminha (força re-tentativa) o despacho do e-mail de uma denúncia.
+ */
+export async function reencaminharEmailDespacho(denunciaId: string) {
+  const supabase = createAdminClient()
+  
+  try {
+    const { data: item } = await supabase
+      .from('despacho_queue')
+      .select('id')
+      .eq('denuncia_id', denunciaId)
+      .limit(1)
+      .maybeSingle()
+
+    if (item) {
+      await supabase.from('despacho_queue').update({ status: 'pendente', tentativas: 0 }).eq('id', item.id)
+    } else {
+      // Se por algum bug não foi gerado o item na fila, criamos um novo
+      await supabase.from('despacho_queue').insert({ 
+        denuncia_id: denunciaId, 
+        status: 'pendente', 
+        tentativas: 0 
+      })
+    }
+
+    revalidatePath('/admin/denuncias')
+    return { success: true }
+  } catch (err: any) {
+    console.error('Erro ao reenviar e-mail de despacho:', err)
     return { success: false, error: err.message }
   }
 }
