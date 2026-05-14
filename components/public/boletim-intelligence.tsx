@@ -10,24 +10,29 @@ import {
   Loader2,
   CloudOff
 } from 'lucide-react'
-import { buscarNoticiasPublicas } from '@/lib/actions/intelligence'
+import { buscarNoticiasPublicas, buscarTendenciasReais } from '@/lib/actions/intelligence'
 import Link from 'next/link'
 
 export function BoletimIntelligence() {
   const [noticias, setNoticias] = useState<any[]>([])
+  const [tendencias, setTendencias] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [email, setEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    const loadNews = async () => {
-      const res = await buscarNoticiasPublicas()
-      if (res.success) {
-        setNoticias(res.data || [])
-      }
+    const loadData = async () => {
+      const [newsRes, trendsRes] = await Promise.all([
+        buscarNoticiasPublicas(),
+        buscarTendenciasReais()
+      ])
+      
+      if (newsRes.success) setNoticias(newsRes.data || [])
+      if (trendsRes.success) setTendencias(trendsRes.data || [])
+      
       setLoading(false)
     }
-    loadNews()
+    loadData()
   }, [])
 
   const handleSubscribe = async () => {
@@ -124,21 +129,21 @@ export function BoletimIntelligence() {
             </div>
 
             <div className="space-y-5 sm:space-y-6">
-               {[
-                 { label: 'Saúde Pública', value: '82%', color: 'bg-primary' },
-                 { label: 'Obras & Vias', value: '64%', color: 'bg-secondary' },
-                 { label: 'Segurança', value: '31%', color: 'bg-electric' }
-               ].map((item, i) => (
-                 <div key={i} className="space-y-2">
-                    <div className="flex justify-between text-[9px] font-black uppercase text-white/60 tracking-widest">
-                       <span>{item.label}</span>
-                       <span>{item.value}</span>
-                    </div>
-                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                       <div className={`h-full ${item.color} rounded-full transition-all duration-1000`} style={{ width: item.value }}></div>
-                    </div>
-                 </div>
-               ))}
+               {tendencias.length === 0 ? (
+                 <p className="text-[10px] text-white/40 font-medium italic">Dados insuficientes para gerar tendências.</p>
+               ) : (
+                 tendencias.map((item, i) => (
+                   <div key={i} className="space-y-2">
+                      <div className="flex justify-between text-[9px] font-black uppercase text-white/60 tracking-widest">
+                         <span>{item.label}</span>
+                         <span>{item.value}</span>
+                      </div>
+                      <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                         <div className={`h-full ${item.color} rounded-full transition-all duration-1000`} style={{ width: item.value }}></div>
+                      </div>
+                   </div>
+                 ))
+               )}
             </div>
 
             <div className="pt-2">

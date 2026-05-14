@@ -143,3 +143,48 @@ export async function buscarNoticiaPorSlug(slug: string) {
   return { success: true, data }
 }
 
+/**
+ * Busca a distribuição real das denúncias por categoria nos últimos 7 dias.
+ */
+export async function buscarTendenciasReais() {
+  const supabase = createAdminClient()
+  try {
+    const seteDiasAtras = new Date()
+    seteDiasAtras.setDate(seteDiasAtras.getDate() - 7)
+
+    const { data: denuncias, error } = await supabase
+      .from('denuncias')
+      .select('categorias(label)')
+      .gte('criado_em', seteDiasAtras.toISOString())
+
+    if (error) throw error
+
+    const counts: Record<string, number> = {}
+    denuncias?.forEach((d: any) => {
+      const cat = d.categorias?.label || 'Outros'
+      counts[cat] = (counts[cat] || 0) + 1
+    })
+
+    const total = denuncias?.length || 0
+    if (total === 0) {
+      // Se não houver dados, retorna um estado vazio ou placeholders realistas
+      return { success: true, data: [] }
+    }
+
+    const colors = ['bg-primary', 'bg-secondary', 'bg-electric']
+    const trends = Object.entries(counts)
+      .map(([label, count], index) => ({
+        label,
+        value: `${Math.round((count / total) * 100)}%`,
+        percentage: (count / total) * 100,
+        color: colors[index % colors.length]
+      }))
+      .sort((a, b) => b.percentage - a.percentage)
+      .slice(0, 3)
+
+    return { success: true, data: trends }
+  } catch (err: any) {
+    console.error('Erro ao buscar tendências:', err)
+    return { success: false, error: err.message }
+  }
+}
