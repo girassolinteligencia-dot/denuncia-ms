@@ -25,6 +25,11 @@ export const createClient = (cookieStore: Awaited<ReturnType<typeof cookies>>) =
           }
         },
       },
+      global: {
+        fetch: (url, options) => {
+          return fetch(url, { ...options, cache: 'no-store' })
+        }
+      }
     },
   );
 };

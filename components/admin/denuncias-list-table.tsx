@@ -22,8 +22,42 @@ const STATUS_STYLE: Record<StatusDenuncia, { label: string, color: string, icon:
 
 export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ initialDenuncias }) => {
   const [denuncias] = useState(initialDenuncias)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('todos')
+
+  const filteredDenuncias = denuncias.filter((d: any) => {
+    if (searchQuery && !d.protocolo.toLowerCase().includes(searchQuery.toLowerCase())) return false
+    if (statusFilter !== 'todos' && d.status !== statusFilter) return false
+    return true
+  })
 
   return (
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row items-center gap-3">
+         <div className="relative flex-1 sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
+            <input 
+              type="text" 
+              placeholder="Buscar por protocolo..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="input pl-10 h-10 w-full text-xs font-bold"
+            />
+         </div>
+         <select 
+           value={statusFilter}
+           onChange={(e) => setStatusFilter(e.target.value)}
+           className="input h-10 w-full sm:w-auto text-xs font-bold"
+         >
+           <option value="todos">Todos os Status</option>
+           <option value="recebida">Recebida</option>
+           <option value="em_analise">Em Análise</option>
+           <option value="encaminhada">Encaminhada</option>
+           <option value="resolvida">Resolvida</option>
+           <option value="arquivada">Arquivada</option>
+         </select>
+      </div>
+
     <div className="bg-white rounded-card shadow-card-lg border border-border overflow-hidden animate-slide-up">
       {/* Versão Desktop — Tabela */}
       <div className="hidden sm:block overflow-x-auto">
@@ -39,7 +73,7 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {denuncias.map((denuncia) => {
+            {filteredDenuncias.map((denuncia: any) => {
               const status = STATUS_STYLE[denuncia.status as StatusDenuncia] || STATUS_STYLE.recebida
               const Icon = status.icon
 
@@ -91,7 +125,7 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
 
       {/* Versão Mobile — Card List */}
       <div className="sm:hidden divide-y divide-border/50">
-        {denuncias.map((denuncia) => {
+        {filteredDenuncias.map((denuncia: any) => {
           const status = STATUS_STYLE[denuncia.status as StatusDenuncia] || STATUS_STYLE.recebida
           const Icon = status.icon
           
@@ -133,7 +167,7 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
         })}
       </div>
 
-      {denuncias.length === 0 && (
+      {filteredDenuncias.length === 0 && (
         <div className="p-12 sm:p-20 text-center space-y-4">
            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-surface rounded-full flex items-center justify-center mx-auto text-muted">
               <Search size={24} className="sm:size-32" />
@@ -143,13 +177,14 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
       )}
       
       <div className="p-4 bg-surface border-t border-border flex items-center justify-between text-[10px] font-black text-muted uppercase tracking-widest">
-         <span>Total de ocorrências: {denuncias.length}</span>
+         <span>Total de ocorrências: {filteredDenuncias.length}</span>
          <div className="flex items-center gap-4">
             <button className="opacity-50 hover:opacity-100 transition-opacity">Anterior</button>
             <span className="text-dark bg-white px-2 py-1 rounded border border-border">Página 1</span>
             <button className="opacity-50 hover:opacity-100 transition-opacity">Próximo</button>
          </div>
       </div>
+    </div>
     </div>
   )
 }

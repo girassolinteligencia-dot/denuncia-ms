@@ -125,10 +125,10 @@ function DashboardContent() {
           <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-3 sm:gap-4">
             <KPIItem title="Denuncias" value={stats.total} change="Volume Total" icon={FileText} color="text-primary" bgColor="bg-primary/10" />
             <KPIItem title="Novas" value={stats.recebida} change="Pendentes" icon={Clock} color="text-warning" bgColor="bg-yellow-50" />
-            <KPIItem title="Resolvidas" value={stats.resolvida} change="Taxa: 85%" icon={CheckCircle2} color="text-success" bgColor="bg-green-50" />
+            <KPIItem title="Resolvidas" value={stats.resolvida} change={`Taxa: ${stats.taxa_resolucao || '0%'}`} icon={CheckCircle2} color="text-success" bgColor="bg-green-50" />
             <KPIItem title="Inscritos" value={stats.newsletter} change="News" icon={Activity} color="text-secondary" bgColor="bg-secondary/10" />
             <KPIItem title="Votos" value={stats.engajamento} change="Enquetes" icon={Activity} color="text-info" bgColor="bg-blue-50" />
-            <KPIItem title="Impacto" value="100%" change="Score" icon={Activity} color="text-dark" bgColor="bg-surface" />
+            <KPIItem title="Impacto" value={stats.impacto_score || '100%'} change="Score" icon={Activity} color="text-dark" bgColor="bg-surface" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

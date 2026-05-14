@@ -157,14 +157,23 @@ export async function getDashboardStats() {
       .from('enquete_votos')
       .select('*', { count: 'exact', head: true })
 
+    const total = counts.length
+    const resolvidas = counts.filter(d => d.status === 'resolvida').length
+    const taxaResolucao = total > 0 ? Math.round((resolvidas / total) * 100) : 0
+    
+    // Impacto baseado em resoluções + engajamento
+    const impactoScore = total > 0 ? Math.min(100, taxaResolucao + Math.round(((newsletterCount || 0) + (votosCount || 0)) / 10)) : 100
+
     const stats = {
-      total: counts.length,
+      total,
       recebida: counts.filter(d => d.status === 'recebida').length,
       em_analise: counts.filter(d => d.status === 'em_analise').length,
-      resolvida: counts.filter(d => d.status === 'resolvida').length,
+      resolvida: resolvidas,
       arquivada: counts.filter(d => d.status === 'arquivada').length,
       newsletter: newsletterCount || 0,
-      engajamento: votosCount || 0
+      engajamento: votosCount || 0,
+      taxa_resolucao: `${taxaResolucao}%`,
+      impacto_score: `${impactoScore}%`
     }
 
     // Gatilho silencioso de limpeza (Lazy Cleanup)
@@ -381,18 +390,20 @@ export async function getGeographicIntelligence() {
     const { data, error } = await supabase
       .from('denuncias')
       .select('id, protocolo, titulo, status, latitude, longitude, municipio, criado_em')
-      .not('latitude', 'is', null)
-      .not('longitude', 'is', null)
       .order('criado_em', { ascending: false })
 
     if (error) throw error
 
     // Filtra e converte garantindo que sejam números válidos
     const processedData = (data || []).map(d => {
+      // Ignora vazios ou nulos reais
+      if (d.latitude === null || d.longitude === null || d.latitude === '' || d.longitude === '') return null
+
       const lat = parseFloat(String(d.latitude).trim())
       const lng = parseFloat(String(d.longitude).trim())
       
-      if (isNaN(lat) || isNaN(lng)) return null
+      // Ignora NaN e também se for exatamente (0,0) que é inválido para MS
+      if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return null
       
       return {
         ...d,
@@ -419,16 +430,22 @@ export async function retroGeocodeMissingCoords() {
   const supabase = createAdminClient()
   
   try {
-    // 1. Buscar denúncias sem coordenadas que tenham dados de endereço
-    const { data: denuncias, error } = await supabase
+    // 1. Buscar denúncias com dados de endereço
+    const { data, error } = await supabase
       .from('denuncias')
-      .select('id, local, cidade, bairro, municipio')
-      .is('latitude', null)
+      .select('id, local, cidade, bairro, municipio, latitude')
       .not('local', 'is', null)
-      .limit(15) // Limite pequeno para evitar rate limit do Nominatim em uma única requisição
+      .limit(500)
 
     if (error) throw error
-    if (!denuncias || denuncias.length === 0) return { success: true, processed: 0 }
+    if (!data || data.length === 0) return { success: true, processed: 0 }
+
+    // 2. Filtrar em memória para encontrar as que estão sem coordenadas (vazio, nulo ou NaN)
+    const denuncias = data.filter(d => {
+      return d.latitude === null || d.latitude === '' || isNaN(parseFloat(String(d.latitude)))
+    }).slice(0, 15) // Limita a 15 requisições
+
+    if (denuncias.length === 0) return { success: true, processed: 0 }
 
     let count = 0
     for (const d of denuncias) {

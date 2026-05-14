@@ -23,7 +23,9 @@ export async function getSystemConfig(chave: string) {
     }
   } catch (error) {
     console.error(`Erro ao buscar config ${chave}:`, error)
-    return { success: false, valor: false, valor_raw: '' }
+    // Default fallback to keep things running if DB is not seeded
+    const defaultValor = chave === 'sala_situacao_ativa' ? true : false
+    return { success: false, valor: defaultValor, valor_raw: '' }
   }
 }
 
@@ -35,11 +37,11 @@ export async function updateSystemConfig(chave: string, valor: boolean | string)
   try {
     const { error } = await supabase
       .from('sistema_config')
-      .update({ 
+      .upsert({ 
+        chave,
         valor: String(valor),
         atualizado_em: new Date().toISOString()
-      })
-      .eq('chave', chave)
+      }, { onConflict: 'chave' })
 
     if (error) throw error
     

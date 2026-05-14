@@ -14,6 +14,7 @@ import { ptBR } from 'date-fns/locale'
 import { useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet.heat'
+import 'leaflet/dist/leaflet.css'
 
 // Carregamento dinâmico do Leaflet para evitar erros de SSR
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
@@ -130,6 +131,7 @@ export const AdminGeoIntelligence = ({ data }: { data: GeoData[] }) => {
           </div>
 
           <select 
+            title="Filtrar por Status"
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
             className="h-10 bg-white border border-border rounded-xl px-4 text-[10px] font-black uppercase tracking-widest focus:ring-2 focus:ring-primary/20 outline-none"

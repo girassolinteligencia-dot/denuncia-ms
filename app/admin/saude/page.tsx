@@ -16,6 +16,8 @@ import { getSystemHealthStats, retryFailedIntegrations } from '@/lib/actions/adm
 import { limparArquivosOrfaos } from '@/lib/actions/cleanup'
 import { IntegrationsHealthTable } from '@/components/admin/integrations-health-table'
 
+import { SupabaseMetricsCards } from '@/components/admin/supabase-metrics-cards'
+
 export default async function AdminHealthPage() {
   const statsRes = await getSystemHealthStats()
   
@@ -41,6 +43,14 @@ export default async function AdminHealthPage() {
           <div className="w-3 h-3 rounded-full bg-accent animate-pulse shadow-glow-cyan"></div>
           <span className="text-[10px] font-black text-white/60 uppercase tracking-widest">Monitoramento em Tempo Real</span>
         </div>
+      </div>
+
+      <div className="space-y-6">
+        <div className="flex items-center gap-3 px-2">
+          <Activity className="text-accent" />
+          <h2 className="text-lg font-black text-white uppercase italic">Infraestrutura Supabase</h2>
+        </div>
+        <SupabaseMetricsCards />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

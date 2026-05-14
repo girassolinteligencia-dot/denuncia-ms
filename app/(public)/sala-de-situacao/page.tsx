@@ -3,7 +3,7 @@
 import React from 'react'
 import { ShieldCheck, BarChart3, Globe, Zap, Clock, AlertCircle } from 'lucide-react'
 import { getSystemConfig } from '@/lib/actions/admin-config'
-import { getMunicipalityMapData } from '@/lib/actions/impacto'
+import { getMunicipalityMapData, getSystemPerformanceStats } from '@/lib/actions/impacto'
 import { PainelImpacto } from '@/components/public/painel-impacto'
 import { MSMunicipalityMap } from '@/components/public/transparencia-mapa'
 import Link from 'next/link'
@@ -30,6 +30,9 @@ export default async function SalaDeSituacaoPage() {
 
   const mapDataResult = await getMunicipalityMapData()
   const mapData = mapDataResult.success ? mapDataResult.data || [] : []
+
+  const perfResult = await getSystemPerformanceStats()
+  const perfData = perfResult.data || { uptime: '99.98%', latency: '42ms', processing: '0.8s', security: 'AES-256' }
 
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30">
@@ -62,10 +65,10 @@ export default async function SalaDeSituacaoPage() {
       <main className="container-page py-12 space-y-16">
         {/* Top Stats - Visão Infra/Saúde */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-           <TechStatCard title="Uptime do Sistema" value="99.98%" subValue="Last 30 Days" icon={Zap} color="text-primary" />
-           <TechStatCard title="Latência API" value="42ms" subValue="Stable Connection" icon={Activity} color="text-secondary" />
-           <TechStatCard title="Processamento" value="0.8s" subValue="Média por Protocolo" icon={Clock} color="text-blue-500" />
-           <TechStatCard title="Segurança" value="AES-256" subValue="LGPD Protocol Active" icon={ShieldCheck} color="text-green-500" />
+           <TechStatCard title="Uptime do Sistema" value={perfData.uptime} subValue="Last 30 Days" icon={Zap} color="text-primary" />
+           <TechStatCard title="Latência API" value={perfData.latency} subValue="Stable Connection" icon={Activity} color="text-secondary" />
+           <TechStatCard title="Processamento" value={perfData.processing} subValue="Média por Protocolo" icon={Clock} color="text-blue-500" />
+           <TechStatCard title="Segurança" value={perfData.security} subValue="LGPD Protocol Active" icon={ShieldCheck} color="text-green-500" />
         </section>
 
         {/* Dashboard de Impacto (Reuso) */}

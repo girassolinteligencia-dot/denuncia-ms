@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic'
 import React from 'react'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { DenunciasListTable } from '@/components/admin/denuncias-list-table'
-import { Filter, Search as SearchIcon } from 'lucide-react'
 
 export const metadata = {
   title: 'Gestão de Denuncias | Painel Admin',
@@ -29,21 +28,6 @@ export default async function DenunciasAdminPage() {
         <div>
           <h1 className="text-2xl font-black text-dark tracking-tighter uppercase italic">Central de <span className="text-primary underline decoration-secondary decoration-4 underline-offset-4">Ocorrências</span></h1>
           <p className="text-muted text-sm font-medium">Visualize e processe as denuncias enviadas pelos cidadãos.</p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-           <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
-              <input 
-                type="text" 
-                placeholder="Buscar por protocolo..." 
-                className="input pl-10 h-10 w-64 text-xs font-bold"
-              />
-           </div>
-           <button className="btn-primary gap-2 h-10 bg-white border border-border text-dark hover:bg-surface shadow-none text-xs">
-              <Filter size={16} />
-              Filtros
-           </button>
         </div>
       </div>
 
