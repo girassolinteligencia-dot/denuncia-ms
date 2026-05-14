@@ -63,14 +63,6 @@ export default async function SalaDeSituacaoPage() {
       </header>
 
       <main className="container-page py-12 space-y-16">
-        {/* Top Stats - Visão Infra/Saúde */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-           <TechStatCard title="Uptime do Sistema" value={perfData.uptime} subValue="Last 30 Days" icon={Zap} color="text-primary" />
-           <TechStatCard title="Latência API" value={perfData.latency} subValue="Stable Connection" icon={Activity} color="text-secondary" />
-           <TechStatCard title="Processamento" value={perfData.processing} subValue="Média por Protocolo" icon={Clock} color="text-blue-500" />
-           <TechStatCard title="Segurança" value={perfData.security} subValue="LGPD Protocol Active" icon={ShieldCheck} color="text-green-500" />
-        </section>
-
         {/* Dashboard de Impacto (Reuso) */}
         <section className="space-y-8">
            <div className="flex items-center gap-4">
@@ -112,6 +104,14 @@ export default async function SalaDeSituacaoPage() {
               <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2"></div>
               <MSMunicipalityMap data={mapData} />
            </div>
+        </section>
+
+        {/* Top Stats - Visão Infra/Saúde */}
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+           <TechStatCard title="Uptime do Sistema" value={perfData.uptime} subValue="Last 30 Days" icon={Zap} color="text-primary" />
+           <TechStatCard title="Latência API" value={perfData.latency} subValue="Stable Connection" icon={Activity} color="text-secondary" />
+           <TechStatCard title="Processamento" value={perfData.processing} subValue="Média por Protocolo" icon={Clock} color="text-blue-500" />
+           <TechStatCard title="Segurança" value={perfData.security} subValue="LGPD Protocol Active" icon={ShieldCheck} color="text-green-500" />
         </section>
 
         {/* Footer Técnico */}
