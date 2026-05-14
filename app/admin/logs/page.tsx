@@ -16,33 +16,14 @@ export const metadata = {
 export default async function LogsPage() {
   const supabase = createAdminClient()
   
-  // No mundo real, buscaríamos da tabela log_auditoria
-  // Com filtragem e paginação
+  // Buscando diretamente da tabela oficial de logs
   const { data: dbLogs } = await supabase
-    .from('log_auditoria')
-    .select('*, usuario:profiles(nome)')
+    .from('logs_auditoria')
+    .select('*')
     .order('criado_em', { ascending: false })
     .limit(50)
 
-  // Fallback para demonstração se o banco estiver vazio
-  const logs = (dbLogs && dbLogs.length > 0) ? dbLogs : [
-    {
-      id: 1,
-      evento: 'CREATE_DENUNCIA',
-      descricao: 'Nova denuncia protocolada: DNS-2026-000042',
-      ip: '187.121.45.10',
-      usuario: { nome: 'Sistema (Cidadão)' },
-      criado_em: new Date().toISOString()
-    },
-    {
-      id: 2,
-      evento: 'AUTH_LOGIN',
-      descricao: 'Login administrativo realizado com sucesso',
-      ip: '177.34.12.89',
-      usuario: { nome: 'paulo@admin.ms.gov.br' },
-      criado_em: new Date(Date.now() - 3600000).toISOString()
-    }
-  ]
+  const logs = dbLogs || []
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -90,11 +71,11 @@ export default async function LogsPage() {
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${
-                      String(log.evento).startsWith('CONFIG') ? 'bg-primary-50 text-primary' : 
-                      String(log.evento).startsWith('AUTH') ? 'bg-secondary-50 text-secondary' : 
+                      String(log.acao).startsWith('CONFIG') ? 'bg-primary-50 text-primary' : 
+                      String(log.acao).startsWith('AUTH') ? 'bg-secondary-50 text-secondary' : 
                       'bg-dark text-white'
                     }`}>
-                      {log.evento}
+                      {log.acao}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -102,7 +83,7 @@ export default async function LogsPage() {
                        <div className="w-7 h-7 rounded-lg bg-surface flex items-center justify-center text-muted">
                           <User size={14} />
                        </div>
-                       <p className="text-xs font-bold text-dark">{log.usuario?.nome || 'Anônimo'}</p>
+                       <p className="text-xs font-bold text-dark">{log.usuario_id || 'Sistema'}</p>
                     </div>
                   </td>
                   <td className="px-6 py-4">

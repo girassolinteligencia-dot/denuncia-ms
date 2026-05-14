@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import React from 'react'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { UnifiedSegurancaTabs } from '@/components/admin/unified-seguranca-tabs'
+import { getSystemHealthStats } from '@/lib/actions/admin-health'
 
 export const metadata = {
   title: 'Segurança e Diagnóstico | Painel Admin',
@@ -12,16 +13,19 @@ export default async function SegurancaAdminPage() {
   
   // 1. Busca Logs de Auditoria
   const { data: logs } = await supabase
-    .from('audit_logs')
-    .select('*, usuario:usuarios(nome, email)')
+    .from('logs_auditoria')
+    .select('*')
     .order('criado_em', { ascending: false })
     .limit(100)
 
-  // 2. Health Data (Mock ou Simulação)
+  // 2. Health Data Real
+  const statsRes = await getSystemHealthStats()
+  const stats = statsRes.success ? (statsRes as any) : null
+
   const health = {
-    database: 'connected',
+    database: stats ? 'connected' : 'error',
     api: 'stable',
-    email_service: 'active',
+    email_service: stats?.integrationHealth?.failedCount > 0 ? 'warning' : 'active',
     last_check: new Date().toISOString()
   }
 
