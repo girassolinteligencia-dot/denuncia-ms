@@ -13,8 +13,17 @@ async function test() {
   
   const key = 'funcionalidade.pesquisa_satisfacao_ativa'
   console.log(`Key "${key}":`, configMap[key])
-  console.log(`Type of "${key}":`, typeof configMap[key])
-  console.log(`Condition (=== 'true'):`, configMap[key] === 'true')
+  
+  console.log('--- Testando Inserção de Voto ---')
+  const { data: voteRes, error: voteErr } = await supabase
+    .from('pesquisas_satisfacao')
+    .insert([{ voto: 'excelente', comentario: 'Teste via script' }])
+  
+  if (voteErr) {
+    console.error('Erro ao inserir voto:', voteErr)
+  } else {
+    console.log('Voto inserido com sucesso!')
+  }
 }
 
 test()

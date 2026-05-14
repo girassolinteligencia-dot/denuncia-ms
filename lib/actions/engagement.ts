@@ -8,7 +8,7 @@ export async function registrarVoto(voto: string, comentario?: string) {
   try {
     const { error } = await supabase
       .from('pesquisas_satisfacao')
-      .insert([{ voto, comentario }])
+      .insert([{ voto, comentario: comentario || null }])
 
     if (error) throw error
     return { success: true }

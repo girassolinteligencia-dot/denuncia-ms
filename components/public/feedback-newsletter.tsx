@@ -29,7 +29,7 @@ export function FeedbackNewsletter({ ativa = true, showNewsletter = true }: { at
       setEnviadoVoto(true)
       toast.success('Obrigado pelo seu feedback!')
     } else {
-      toast.error('Erro ao enviar feedback.')
+      toast.error('Erro ao enviar feedback: ' + res.error)
     }
   }
 
