@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Send
 } from 'lucide-react'
+import { saveIntegracaoDestino } from '@/lib/actions/categorias'
 import type { IntegracaoDestino, TipoIntegracao, PrioridadeEmail, MetodoWebhook, TipoAuthWebhook } from '@/types'
 
 interface Props {
@@ -40,14 +41,33 @@ export const CategoryIntegrationForm: React.FC<Props> = ({ categoriaId, initialI
   })
 
   const [activeTab, setActiveTab] = useState<'email' | 'webhook'>('email')
+  const [newEmail, setNewEmail] = useState('')
+
+  const handleAddEmail = () => {
+    if (newEmail && newEmail.includes('@')) {
+      const currentEmails = data.email_para || []
+      if (!currentEmails.includes(newEmail)) {
+        setData({ ...data, email_para: [...currentEmails, newEmail] })
+      }
+      setNewEmail('')
+    }
+  }
+
+  const handleRemoveEmail = (emailToRemove: string) => {
+    setData({ ...data, email_para: (data.email_para || []).filter(e => e !== emailToRemove) })
+  }
 
   const handleSave = async () => {
     setLoading(true)
-    // Server action logic here
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      const res = await saveIntegracaoDestino(data)
+      if (!res.success) throw new Error(res.error)
       alert('Integração de destino salva com sucesso!')
-    }, 1000)
+    } catch (err: any) {
+      alert('Erro ao salvar: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleTest = async () => {
@@ -105,15 +125,36 @@ export const CategoryIntegrationForm: React.FC<Props> = ({ categoriaId, initialI
                 <label className="label label-required">E-mails de Destino (Principal)</label>
                 <div className="space-y-2">
                   <div className="flex gap-2">
-                    <input className="input" placeholder="exemplo@orgao.ms.gov.br" />
-                    <button className="btn-primary p-2 flex items-center justify-center shrink-0">
+                    <input 
+                      className="input" 
+                      placeholder="exemplo@orgao.ms.gov.br" 
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleAddEmail()
+                        }
+                      }}
+                    />
+                    <button 
+                      type="button"
+                      onClick={handleAddEmail}
+                      className="btn-primary p-2 flex items-center justify-center shrink-0"
+                    >
                       <Plus size={20} />
                     </button>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                     <span className="badge bg-primary-100 text-primary gap-1 pl-3">
-                       ouvidoria@ms.gov.br <X size={12} className="cursor-pointer" />
-                     </span>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {(data.email_para || []).map((email) => (
+                       <span key={email} className="badge bg-primary-100 text-primary gap-1 pl-3 py-1 flex items-center rounded-full text-xs font-medium">
+                         {email} 
+                         <X size={14} className="cursor-pointer ml-1 hover:text-red-500 transition-colors" onClick={() => handleRemoveEmail(email)} />
+                       </span>
+                    ))}
+                    {(!data.email_para || data.email_para.length === 0) && (
+                      <span className="text-xs text-muted italic">Nenhum e-mail adicionado. A denúncia não será encaminhada por e-mail.</span>
+                    )}
                   </div>
                 </div>
               </div>
