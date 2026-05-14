@@ -1,4 +1,6 @@
 import React from 'react'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { PainelImpacto } from '@/components/public/painel-impacto'
 import { ShieldCheck, BarChart3, Globe, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
