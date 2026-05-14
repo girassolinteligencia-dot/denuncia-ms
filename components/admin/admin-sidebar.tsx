@@ -58,7 +58,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
   const isAdminMaster = role === 'admin' || 
                         role === 'superadmin' || 
                         role === 'administrador' ||
-                        userProfile?.email === 'girassolinteligencia@gmail.com'
+                        userProfile?.email === 'plataformainteligente@gmail.com'
   
   const permissoes = userProfile?.permissoes || []
 

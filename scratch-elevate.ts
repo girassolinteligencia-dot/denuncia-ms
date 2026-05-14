@@ -57,5 +57,5 @@ async function elevateUser(email: string) {
   }
 }
 
-const targetEmail = 'girassolinteligencia@gmail.com'
+const targetEmail = 'paulofernandogarcardoso@gmail.com'
 elevateUser(targetEmail).catch(console.error)

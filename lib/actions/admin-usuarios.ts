@@ -50,10 +50,10 @@ export async function getMe() {
       .single()
 
     // 2. Lógica de Reparo para o e-mail mestre
-    if (user.email === 'girassolinteligencia@gmail.com') {
+    if (user.email === 'plataformainteligente@gmail.com') {
       try {
         if (!profile || profile.role !== 'superadmin' || !profile.permissoes?.includes('usuarios')) {
-          console.log('[REPAIR] Tentando elevar privilégios para girassolinteligencia@gmail.com')
+          console.log('[REPAIR] Tentando elevar privilégios para plataformainteligente@gmail.com')
           const adminSupabase = createAdminClient()
           
           // 1. Garantir Buckets de Storage
@@ -112,9 +112,9 @@ export async function getMe() {
         data: { 
           id: user.id, 
           nome: user.user_metadata?.nome || 'Usuário', 
-          role: (user.email === 'girassolinteligencia@gmail.com' ? 'superadmin' : 'user') as any,
+          role: (user.email === 'plataformainteligente@gmail.com' ? 'superadmin' : 'user') as any,
           email: user.email,
-          permissoes: user.email === 'girassolinteligencia@gmail.com' ? ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"] : []
+          permissoes: user.email === 'plataformainteligente@gmail.com' ? ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"] : []
         } as any 
       }
     }

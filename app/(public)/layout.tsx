@@ -145,7 +145,7 @@ export default async function PublicLayout({
 
             <div className="pt-4 sm:pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
                <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-widest font-bold max-w-[280px] md:max-w-none mx-auto md:mx-0">
-                  ® {new Date().getFullYear()} {appName} — Governança e Inteligência Cívica | Produzido por Girassol Inteligência ®
+                  ® {new Date().getFullYear()} {appName} — Governança e Inteligência Cívica | Produzido por Plataforma Inteligente ®
                </p>
                <div className="flex gap-4">
                   <div className="h-1.5 w-10 bg-primary rounded-full"></div>

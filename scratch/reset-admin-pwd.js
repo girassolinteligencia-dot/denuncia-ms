@@ -6,7 +6,7 @@ const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function resetPassword() {
-  const email = 'girassolinteligencia@gmail.com'
+  const email = 'plataformainteligente@gmail.com'
   const newPassword = 'Admin@MS2026'
 
   // Primeiro pegar o ID do usuário
