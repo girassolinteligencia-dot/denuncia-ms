@@ -10,7 +10,7 @@ import {
 import { getImpactoStats } from '@/lib/actions/impacto'
 
 export function PainelImpacto({ isDark = false }: { isDark?: boolean }) {
-  const [stats, setStats] = useState<{ hoje: number; feedback: string; cidade: string; crescimento: string } | null>(null)
+  const [stats, setStats] = useState<{ hoje: number; feedback: string; topCidades?: { nome: string, count: number }[]; crescimento: string } | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -69,11 +69,20 @@ export function PainelImpacto({ isDark = false }: { isDark?: boolean }) {
            <div className="absolute top-0 right-0 p-4 text-white/5 group-hover:text-white/10 transition-colors">
               <ShieldAlert size={80} />
            </div>
-           <p className="text-[10px] font-black uppercase tracking-widest text-electric mb-2">Foco Geográfico</p>
+           <p className="text-[10px] font-black uppercase tracking-widest text-electric mb-4">Foco Geográfico (Top 3)</p>
            {loading ? <Loader2 className="animate-spin text-electric" /> : (
-             <div className="text-2xl font-black uppercase tracking-tight italic animate-fade-in truncate">{stats?.cidade}</div>
+             <div className="flex flex-col gap-2 animate-fade-in relative z-10">
+               {stats?.topCidades?.map((cidade, i) => (
+                 <div key={i} className="flex justify-between items-center text-xs md:text-sm font-bold border-b border-white/10 pb-2 last:border-0 last:pb-0">
+                    <span className="uppercase truncate pr-2">
+                       <span className="text-electric mr-2">{i+1}º</span>{cidade.nome}
+                    </span>
+                    <span className="text-white/50">{cidade.count} <span className="text-[8px]">den.</span></span>
+                 </div>
+               ))}
+             </div>
            )}
-           <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold">Concentração atual de demandas</p>
+           <p className="text-[9px] text-white/40 mt-6 leading-relaxed uppercase font-bold relative z-10">Monitorando 79 municípios</p>
         </div>
       </div>
     </div>

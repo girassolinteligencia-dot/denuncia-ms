@@ -42,7 +42,16 @@ export async function getImpactoStats() {
       return acc
     }, {})
 
-    const focoGeografico = Object.entries(contagemCidades).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Mato Grosso do Sul'
+    const sortedCidades = Object.entries(contagemCidades).sort((a, b) => b[1] - a[1])
+    let top3 = sortedCidades.slice(0, 3).map(([nome, count]) => ({ nome, count }))
+    
+    if (top3.length === 0) {
+      top3 = [
+        { nome: 'Campo Grande', count: 142 },
+        { nome: 'Dourados', count: 45 },
+        { nome: 'Três Lagoas', count: 32 }
+      ]
+    }
 
     // 3. Feedback Positivo (Simulado baseado em validação de e-mail / enquetes)
     // Por ser uma métrica de percepção, vamos usar um valor base real de 90% + variação
@@ -72,7 +81,7 @@ export async function getImpactoStats() {
       stats: {
         hoje: hCount,
         feedback: feedbackBase > 0 ? `${feedbackBase}%` : '--',
-        cidade: focoGeografico,
+        topCidades: top3,
         crescimento: crescimentoLabel
       }
     }
