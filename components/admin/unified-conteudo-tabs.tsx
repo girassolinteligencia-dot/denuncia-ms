@@ -14,12 +14,16 @@ export function UnifiedConteudoTabs({
   initialNews, 
   initialBanners, 
   initialEnquetes,
-  satisfacaoAtiva
+  satisfacaoAtiva,
+  boletimAtivo,
+  feedbackStats
 }: { 
   initialNews: any[], 
   initialBanners: any[],
   initialEnquetes: any[],
-  satisfacaoAtiva: boolean
+  satisfacaoAtiva: boolean,
+  boletimAtivo: boolean,
+  feedbackStats: any
 }) {
   const [activeTab, setActiveTab] = useState('noticias')
 
@@ -58,7 +62,7 @@ export function UnifiedConteudoTabs({
               <h2 className="text-xl font-black text-dark uppercase italic tracking-tight mb-2">Portal de Notícias</h2>
               <p className="text-sm text-muted font-medium">Publique atualizações, resultados de fiscalizações e informativos para a população.</p>
             </div>
-            <NewsManager initialNoticias={initialNews} />
+            <NewsManager initialNoticias={initialNews} boletimAtivo={boletimAtivo} />
           </div>
         )}
 
@@ -78,7 +82,7 @@ export function UnifiedConteudoTabs({
               <h2 className="text-xl font-black text-dark uppercase italic tracking-tight mb-2">Escuta Ativa</h2>
               <p className="text-sm text-muted font-medium">Crie enquetes rápidas e gerencie a pesquisa de satisfação por emojis.</p>
             </div>
-            <EnquetesManager initialEnquetes={initialEnquetes} satisfacaoAtiva={satisfacaoAtiva} />
+            <EnquetesManager initialEnquetes={initialEnquetes} satisfacaoAtiva={satisfacaoAtiva} feedbackStats={feedbackStats} />
           </div>
         )}
       </div>

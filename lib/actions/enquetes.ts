@@ -300,3 +300,25 @@ export async function setPesquisaSatisfacaoAtiva(ativa: boolean) {
     return { success: false, error: (err as Error).message }
   }
 }
+export async function setBoletimAtivo(ativa: boolean) {
+  const supabase = createAdminClient()
+  try {
+    const { error } = await supabase
+      .from('plataforma_config')
+      .upsert({ 
+        chave: 'funcionalidade.boletim_ativo', 
+        valor: ativa,
+        atualizado_em: new Date().toISOString()
+      }, { onConflict: 'chave' })
+
+    if (error) throw error
+    
+    revalidatePath('/noticias')
+    revalidatePath('/admin/conteudo')
+    
+    return { success: true }
+  } catch (err: any) {
+    console.error('[enquetes] Erro ao alterar status do boletim:', err)
+    return { success: false, error: err.message }
+  }
+}

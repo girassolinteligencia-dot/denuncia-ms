@@ -19,8 +19,24 @@ export default async function ConteudoAdminPage() {
   // 3. Busca Enquetes
   const { data: enquetes } = await supabase.from('enquetes').select('*, opcoes:enquete_opcoes(*), votos:enquete_votos(opcao_id)')
 
-  // 4. Busca Satisfação Toggle
-  const { data: config } = await supabase.from('plataforma_config').select('valor').eq('chave', 'funcionalidade.pesquisa_satisfacao_ativa').maybeSingle()
+  // 4. Busca Configurações de Funcionalidades
+  const { data: configs } = await supabase.from('plataforma_config').select('chave, valor').in('chave', ['funcionalidade.pesquisa_satisfacao_ativa', 'funcionalidade.boletim_ativo'])
+  const configMap = (configs || []).reduce((acc: any, cur: any) => {
+    acc[cur.chave] = cur.valor
+    return acc
+  }, {})
+
+  const satisfacaoAtiva = configMap['funcionalidade.pesquisa_satisfacao_ativa'] === 'true' || configMap['funcionalidade.pesquisa_satisfacao_ativa'] === true
+  const boletimAtivo = configMap['funcionalidade.boletim_ativo'] === 'true' || configMap['funcionalidade.boletim_ativo'] === true
+
+
+  // 5. Busca Estatísticas da Pesquisa de Satisfação Global
+  const { data: feedbackData } = await supabase.from('pesquisas_satisfacao').select('voto')
+  const feedbackStats = (feedbackData || []).reduce((acc: any, cur: any) => {
+    acc[cur.voto] = (acc[cur.voto] || 0) + 1
+    return acc
+  }, { ruim: 0, regular: 0, bom: 0, excelente: 0 })
+  feedbackStats.total = (feedbackData || []).length
 
   const processedEnquetes = (enquetes || []).map(e => ({
     ...e,
@@ -48,7 +64,9 @@ export default async function ConteudoAdminPage() {
         initialNews={news || []} 
         initialBanners={banners || []} 
         initialEnquetes={processedEnquetes}
-        satisfacaoAtiva={config?.valor === 'true'}
+        satisfacaoAtiva={satisfacaoAtiva}
+        boletimAtivo={boletimAtivo}
+        feedbackStats={feedbackStats}
       />
     </div>
   )

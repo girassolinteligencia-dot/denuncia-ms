@@ -20,8 +20,12 @@ import { upsertNoticia, deleteNoticia } from '@/lib/actions/admin-conteudo'
 import { gerarSugestoesDeNoticias, aprovarNoticia } from '@/lib/actions/intelligence'
 import { X, Save, Upload, CheckCircle2 as CheckCircle } from 'lucide-react'
 
-export const NewsManager: React.FC<{ initialNoticias: Noticia[] }> = ({ initialNoticias }) => {
+import { setBoletimAtivo } from '@/lib/actions/enquetes'
+import { ToggleLeft, ToggleRight } from 'lucide-react'
+
+export const NewsManager: React.FC<{ initialNoticias: Noticia[], boletimAtivo: boolean }> = ({ initialNoticias, boletimAtivo }) => {
   const [noticias, setNoticias] = useState<Noticia[]>(initialNoticias)
+  const [isBoletimAtivo, setIsBoletimAtivo] = useState(boletimAtivo)
   const [generating, setGenerating] = useState(false)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -119,6 +123,23 @@ export const NewsManager: React.FC<{ initialNoticias: Noticia[] }> = ({ initialN
     }
   }
 
+  const handleToggleBoletim = async () => {
+    setLoading(true)
+    try {
+      const res = await setBoletimAtivo(!isBoletimAtivo)
+      if (res.success) {
+        setIsBoletimAtivo(!isBoletimAtivo)
+        toast.success(isBoletimAtivo ? 'Boletim desativado para o público' : 'Boletim ativado para o público')
+      } else {
+        toast.error('Erro ao alterar status: ' + res.error)
+      }
+    } catch (err: any) {
+      toast.error('Erro de conexão')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleApprove = async (id: string) => {
     setLoading(true)
     try {
@@ -154,18 +175,29 @@ export const NewsManager: React.FC<{ initialNoticias: Noticia[] }> = ({ initialN
                   O sistema anonimiza os dados e cria rascunhos jornalísticos prontos para serem revisados e publicados.
                </p>
             </div>
-            <button 
-              onClick={handleGenerateRobotNews}
-              disabled={generating}
-              className="px-8 h-16 bg-primary hover:bg-primary-dark text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs flex items-center gap-3 transition-all active:scale-95 disabled:opacity-50"
-            >
-               {generating ? (
-                 <Loader2 size={24} className="animate-spin" />
-               ) : (
-                 <Sparkles size={24} />
-               )}
-               {generating ? 'Gerando Análise...' : 'Gerar Boletim do Dia'}
-            </button>
+            <div className="flex flex-col gap-3">
+               <button 
+                 onClick={handleGenerateRobotNews}
+                 disabled={generating}
+                 className="px-8 h-16 bg-primary hover:bg-primary-dark text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs flex items-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+               >
+                  {generating ? (
+                    <Loader2 size={24} className="animate-spin" />
+                  ) : (
+                    <Sparkles size={24} />
+                  )}
+                  {generating ? 'Gerando Análise...' : 'Gerar Boletim do Dia'}
+               </button>
+               
+               <button 
+                 onClick={handleToggleBoletim}
+                 disabled={loading}
+                 className={`px-8 h-12 rounded-xl font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center gap-2 transition-all border ${isBoletimAtivo ? 'bg-secondary/20 border-secondary/30 text-secondary' : 'bg-white/5 border-white/10 text-white/40'}`}
+               >
+                  {isBoletimAtivo ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+                  Visualização: {isBoletimAtivo ? 'Público ON' : 'Público OFF'}
+               </button>
+            </div>
          </div>
       </div>
 

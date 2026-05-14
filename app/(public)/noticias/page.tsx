@@ -3,8 +3,13 @@ import React from 'react'
 import { BoletimIntelligence } from '@/components/public/boletim-intelligence'
 import { EnqueteDinamica } from '@/components/public/enquete-dinamica'
 import { getEnqueteAtiva } from '@/lib/actions/enquetes'
+import { createAdminClient } from '@/lib/supabase-admin'
 
 export default async function NoticiasPage() {
+  const supabase = createAdminClient()
+  const { data: config } = await supabase.from('plataforma_config').select('valor').eq('chave', 'funcionalidade.boletim_ativo').maybeSingle()
+  const boletimAtivo = config?.valor === 'true' || config?.valor === true
+
   const enqueteNoticias = await getEnqueteAtiva('noticias')
 
   return (
@@ -22,7 +27,7 @@ export default async function NoticiasPage() {
         </header>
 
         {/* Boletim e Inteligência (Live Feed + Tendências) */}
-        <BoletimIntelligence />
+        {boletimAtivo && <BoletimIntelligence />}
       </div>
 
       {/* Seção de Enquete Específica para Notícias */}
