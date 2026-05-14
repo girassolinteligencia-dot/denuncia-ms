@@ -281,11 +281,12 @@ export async function atualizarEnquete(id: string, updates: {
 export async function setPesquisaSatisfacaoAtiva(ativa: boolean) {
   const supabase = createAdminClient()
   try {
+    console.log(`Alterando Pesquisa de Satisfação para: ${ativa}`)
     const { error } = await supabase
       .from('plataforma_config')
       .upsert({ 
         chave: 'funcionalidade.pesquisa_satisfacao_ativa', 
-        valor: ativa ? '"true"' : '"false"',
+        valor: ativa, // Salva como boolean no JSONB
         atualizado_em: new Date().toISOString()
       }, { onConflict: 'chave' })
 

@@ -22,7 +22,7 @@ export default async function PublicHomePage() {
   
   // Busca configurações do Módulo 0
   const { data: configs } = await supabase.from('plataforma_config').select('chave, valor')
-  const configMap = (configs || []).reduce((acc: Record<string, string>, cur) => {
+  const configMap = (configs || []).reduce((acc: Record<string, any>, cur) => {
     acc[cur.chave] = cur.valor
     return acc
   }, {})
@@ -250,7 +250,7 @@ export default async function PublicHomePage() {
       )}
 
       <FeedbackNewsletter 
-        ativa={configMap['funcionalidade.pesquisa_satisfacao_ativa'] === 'true'} 
+        ativa={configMap['funcionalidade.pesquisa_satisfacao_ativa'] === true || configMap['funcionalidade.pesquisa_satisfacao_ativa'] === 'true'} 
         showNewsletter={false}
       />
     </div>

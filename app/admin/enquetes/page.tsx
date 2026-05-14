@@ -41,7 +41,7 @@ export default async function EnquetesAdminPage() {
     }))
   }))
 
-  const satisfacaoAtiva = config?.valor === 'true'
+  const satisfacaoAtiva = config?.valor === true || config?.valor === 'true'
 
   return (
     <div className="space-y-8 animate-fade-in">
