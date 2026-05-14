@@ -8,10 +8,12 @@ import { setPesquisaSatisfacaoAtiva, criarEnquete, deletarEnquete, atualizarEnqu
 
 export function EnquetesManager({ 
   initialEnquetes, 
-  satisfacaoAtiva 
+  satisfacaoAtiva,
+  feedbackStats
 }: { 
   initialEnquetes: any[], 
-  satisfacaoAtiva: boolean 
+  satisfacaoAtiva: boolean,
+  feedbackStats: any
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -75,6 +77,22 @@ export function EnquetesManager({
         </button>
       </div>
 
+      {/* DASHBOARD DE SATISFAÇÃO */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {[
+          { id: 'ruim', label: 'Ruim', icon: '😞', color: 'bg-red-50 text-red-600' },
+          { id: 'regular', label: 'Regular', icon: '😐', color: 'bg-amber-50 text-amber-600' },
+          { id: 'bom', label: 'Bom', icon: '🙂', color: 'bg-blue-50 text-blue-600' },
+          { id: 'excelente', label: 'Ótimo', icon: '😍', color: 'bg-emerald-50 text-emerald-600' },
+          { id: 'total', label: 'Total', icon: '📊', color: 'bg-dark text-white' },
+        ].map((stat) => (
+          <div key={stat.id} className={`${stat.color} p-6 rounded-[2rem] border border-black/5 flex flex-col items-center justify-center gap-2 shadow-sm`}>
+            <span className="text-2xl">{stat.icon}</span>
+            <p className="text-2xl font-black tracking-tighter">{feedbackStats[stat.id] || 0}</p>
+            <p className="text-[8px] font-black uppercase tracking-widest opacity-60">{stat.label}</p>
+          </div>
+        ))}
+      </div>
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-black text-dark tracking-tighter uppercase italic">Enquetes <span className="text-primary">Parametrizáveis</span></h2>
         <button 

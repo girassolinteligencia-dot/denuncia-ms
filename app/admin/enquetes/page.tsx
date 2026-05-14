@@ -27,6 +27,18 @@ export default async function EnquetesAdminPage() {
     .eq('chave', 'funcionalidade.pesquisa_satisfacao_ativa')
     .maybeSingle()
 
+  // 3. Busca Estatísticas da Pesquisa de Satisfação Global
+  const { data: feedbackData } = await supabase
+    .from('pesquisas_satisfacao')
+    .select('voto')
+
+  // Agrupar votos por tipo
+  const feedbackStats = (feedbackData || []).reduce((acc: any, cur: any) => {
+    acc[cur.voto] = (acc[cur.voto] || 0) + 1
+    return acc
+  }, { ruim: 0, regular: 0, bom: 0, excelente: 0 })
+  feedbackStats.total = (feedbackData || []).length
+
   if (error) {
     return <div className="p-8 text-error">Erro ao carregar enquetes: {error.message}</div>
   }
@@ -57,6 +69,7 @@ export default async function EnquetesAdminPage() {
       <EnquetesManager 
         initialEnquetes={processedEnquetes} 
         satisfacaoAtiva={satisfacaoAtiva} 
+        feedbackStats={feedbackStats}
       />
     </div>
   )

@@ -7,6 +7,7 @@ import Link from 'next/link'
 
 import { getMunicipalityMapData } from '@/lib/actions/impacto'
 import { MSMunicipalityMap } from '@/components/public/transparencia-mapa'
+import { FeedbackNewsletter } from '@/components/public/feedback-newsletter'
 
 export const metadata = {
   title: 'Transparência e Impacto | DENUNCIA MS',
@@ -89,6 +90,9 @@ export default async function TransparenciaPage() {
           </div>
         </div>
       </section>
+
+      {/* Pesquisa de Satisfação */}
+      <FeedbackNewsletter showNewsletter={false} />
     </div>
   )
 }
