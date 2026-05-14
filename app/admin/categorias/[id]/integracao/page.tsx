@@ -15,12 +15,14 @@ export default async function CategoryIntegracaoPage({ params }: { params: { id:
     .eq('id', params.id)
     .single()
 
-  // Busca a integração existente se houver
-  const { data: integracao } = await supabase
+  // Busca a integração existente se houver (de forma segura contra o bug de duplicatas)
+  const { data: integracoes } = await supabase
     .from('integracoes_destino')
     .select('*')
     .eq('categoria_id', params.id)
-    .single()
+    .limit(1)
+
+  const integracao = integracoes && integracoes.length > 0 ? integracoes[0] : null
 
   return (
     <div className="space-y-8 animate-fade-in">

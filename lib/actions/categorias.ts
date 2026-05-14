@@ -33,15 +33,21 @@ export async function saveIntegracaoDestino(data: any) {
     data.webhook_auth_dados = await encryptData(data.webhook_auth_dados)
   }
 
-  const { data: existing } = await supabase
+  const { data: existings } = await supabase
     .from('integracoes_destino')
     .select('id')
     .eq('categoria_id', data.categoria_id)
-    .limit(1)
-    .single()
 
-  if (existing && !data.id) {
-    data.id = existing.id
+  if (existings && existings.length > 0) {
+    // Auto-repair: apagar duplicatas se o bug anterior as gerou
+    if (existings.length > 1) {
+      const idsToDelete = existings.slice(1).map(e => e.id)
+      await supabase.from('integracoes_destino').delete().in('id', idsToDelete)
+    }
+    
+    if (!data.id) {
+      data.id = existings[0].id
+    }
   }
 
   const { error } = await supabase
