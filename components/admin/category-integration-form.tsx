@@ -27,7 +27,7 @@ export const CategoryIntegrationForm: React.FC<Props> = ({ categoriaId, initialI
   
   const [data, setData] = useState<Partial<IntegracaoDestino>>(initialIntegracao || {
     categoria_id: categoriaId,
-    tipo: 'both' as any, // 'both' doesn't exist in types, should be 'ambos' or logic
+    tipo: 'ambos',
     ativo: true,
     email_para: [],
     email_cc: [],

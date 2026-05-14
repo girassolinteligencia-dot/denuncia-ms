@@ -33,6 +33,17 @@ export async function saveIntegracaoDestino(data: any) {
     data.webhook_auth_dados = await encryptData(data.webhook_auth_dados)
   }
 
+  const { data: existing } = await supabase
+    .from('integracoes_destino')
+    .select('id')
+    .eq('categoria_id', data.categoria_id)
+    .limit(1)
+    .single()
+
+  if (existing && !data.id) {
+    data.id = existing.id
+  }
+
   const { error } = await supabase
     .from('integracoes_destino')
     .upsert(data)
