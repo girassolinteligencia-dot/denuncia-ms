@@ -27,7 +27,7 @@ export default async function NoticiasPage() {
         </header>
 
         {/* Boletim e Inteligência (Live Feed + Tendências) */}
-        {boletimAtivo && <BoletimIntelligence />}
+        <BoletimIntelligence />
       </div>
 
       {/* Seção de Enquete Específica para Notícias */}

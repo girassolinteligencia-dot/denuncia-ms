@@ -16,6 +16,7 @@ export function UnifiedConteudoTabs({
   initialEnquetes,
   satisfacaoAtiva,
   boletimAtivo,
+  newsletterAtiva,
   feedbackStats
 }: { 
   initialNews: any[], 
@@ -23,6 +24,7 @@ export function UnifiedConteudoTabs({
   initialEnquetes: any[],
   satisfacaoAtiva: boolean,
   boletimAtivo: boolean,
+  newsletterAtiva: boolean,
   feedbackStats: any
 }) {
   const [activeTab, setActiveTab] = useState('noticias')
@@ -82,7 +84,12 @@ export function UnifiedConteudoTabs({
               <h2 className="text-xl font-black text-dark uppercase italic tracking-tight mb-2">Escuta Ativa</h2>
               <p className="text-sm text-muted font-medium">Crie enquetes rápidas e gerencie a pesquisa de satisfação por emojis.</p>
             </div>
-            <EnquetesManager initialEnquetes={initialEnquetes} satisfacaoAtiva={satisfacaoAtiva} feedbackStats={feedbackStats} />
+            <EnquetesManager 
+              initialEnquetes={initialEnquetes} 
+              satisfacaoAtiva={satisfacaoAtiva} 
+              newsletterAtiva={newsletterAtiva}
+              feedbackStats={feedbackStats} 
+            />
           </div>
         )}
       </div>

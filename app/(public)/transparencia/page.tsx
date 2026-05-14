@@ -5,6 +5,7 @@ import { PainelImpacto } from '@/components/public/painel-impacto'
 import { ShieldCheck, BarChart3, Globe, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
+import { createAdminClient } from '@/lib/supabase-admin'
 import { getMunicipalityMapData } from '@/lib/actions/impacto'
 import { MSMunicipalityMap } from '@/components/public/transparencia-mapa'
 import { FeedbackNewsletter } from '@/components/public/feedback-newsletter'
@@ -15,8 +16,16 @@ export const metadata = {
 }
 
 export default async function TransparenciaPage() {
+  const supabase = createAdminClient()
   const mapDataResult = await getMunicipalityMapData()
   const mapData = mapDataResult.success ? mapDataResult.data || [] : []
+
+  const { data: configs } = await supabase.from('plataforma_config').select('chave, valor')
+  const configMap = (configs || []).reduce((acc: Record<string, any>, cur) => {
+    acc[cur.chave] = cur.valor
+    return acc
+  }, {})
+
 
   return (
     <div className="min-h-screen bg-surface">
@@ -91,8 +100,11 @@ export default async function TransparenciaPage() {
         </div>
       </section>
 
-      {/* Pesquisa de Satisfação */}
-      <FeedbackNewsletter showNewsletter={false} />
+      {/* Pesquisa de Satisfação e Newsletter */}
+      <FeedbackNewsletter 
+        ativa={configMap['funcionalidade.pesquisa_satisfacao_ativa'] === true || configMap['funcionalidade.pesquisa_satisfacao_ativa'] === 'true'} 
+        showNewsletter={configMap['funcionalidade.newsletter_ativa'] === true || configMap['funcionalidade.newsletter_ativa'] === 'true'}
+      />
     </div>
   )
 }

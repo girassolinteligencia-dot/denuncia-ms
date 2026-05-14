@@ -4,20 +4,23 @@ import React, { useState } from 'react'
 import { Plus, Trash2, ToggleLeft, ToggleRight, Loader2, Lock, Timer, Target } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { setPesquisaSatisfacaoAtiva, criarEnquete, deletarEnquete, atualizarEnquete } from '@/lib/actions/enquetes'
+import { setPesquisaSatisfacaoAtiva, criarEnquete, deletarEnquete, atualizarEnquete, setNewsletterAtiva } from '@/lib/actions/enquetes'
 
 export function EnquetesManager({ 
   initialEnquetes, 
   satisfacaoAtiva,
+  newsletterAtiva,
   feedbackStats
 }: { 
   initialEnquetes: any[], 
   satisfacaoAtiva: boolean,
+  newsletterAtiva: boolean,
   feedbackStats: any
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [isSatisfacaoAtiva, setIsSatisfacaoAtiva] = useState(satisfacaoAtiva)
+  const [isNewsletterAtiva, setIsNewsletterAtiva] = useState(newsletterAtiva)
   const [showNovoForm, setShowNovoForm] = useState(false)
   const [enqueteParaEditar, setEnqueteParaEditar] = useState<any>(null)
 
@@ -59,22 +62,48 @@ export function EnquetesManager({
     }
   }
 
+  const handleToggleNewsletter = async () => {
+    setLoading(true)
+    const res = await setNewsletterAtiva(!isNewsletterAtiva)
+    setLoading(false)
+    if (res.success) {
+      setIsNewsletterAtiva(!isNewsletterAtiva)
+      toast.success(`Inscrição por e-mail ${!isNewsletterAtiva ? 'ativada' : 'desativada'}!`)
+    } else {
+      toast.error('Erro: ' + res.error)
+    }
+  }
+
   return (
     <div className="space-y-8">
       {/* CARD DE CONTROLE GLOBAL */}
-      <div className="bg-dark rounded-[2rem] p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
-        <div className="space-y-1 text-center md:text-left">
-          <h2 className="text-xl font-black uppercase tracking-tight italic text-secondary">Pesquisa de Satisfação Global</h2>
-          <p className="text-white/50 text-sm font-medium">Habilitar ou desabilitar o modal de emojis (Ruim/Ótimo) na Landing Page.</p>
+      <div className="bg-dark rounded-[2rem] p-8 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl">
+        <div className="space-y-4 max-w-xl text-center md:text-left">
+          <h2 className="text-xl font-black uppercase tracking-tight italic text-secondary">Controles de Engajamento</h2>
+          <p className="text-white/50 text-sm font-medium leading-relaxed">
+            Gerencie a visibilidade das ferramentas de interação na Landing Page e na página de Transparência.
+          </p>
         </div>
-        <button 
-          onClick={handleToggleSatisfacao}
-          disabled={loading}
-          className={`flex items-center gap-3 px-8 h-14 rounded-2xl font-black uppercase text-xs tracking-widest transition-all ${isSatisfacaoAtiva ? 'bg-secondary text-dark' : 'bg-white/10 text-white/40'}`}
-        >
-          {loading ? <Loader2 className="animate-spin" /> : isSatisfacaoAtiva ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
-          {isSatisfacaoAtiva ? 'Ativado' : 'Desativado'}
-        </button>
+        
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+          <button 
+            onClick={handleToggleSatisfacao}
+            disabled={loading}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${isSatisfacaoAtiva ? 'bg-secondary text-dark shadow-glow-green' : 'bg-white/10 text-white/40'}`}
+          >
+            {loading ? <Loader2 className="animate-spin" /> : isSatisfacaoAtiva ? <ToggleRight size={22} /> : <ToggleLeft size={22} />}
+            Satisfação: {isSatisfacaoAtiva ? 'ON' : 'OFF'}
+          </button>
+
+          <button 
+            onClick={handleToggleNewsletter}
+            disabled={loading}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${isNewsletterAtiva ? 'bg-primary text-white shadow-glow-cyan' : 'bg-white/10 text-white/40'}`}
+          >
+            {loading ? <Loader2 className="animate-spin" /> : isNewsletterAtiva ? <ToggleRight size={22} /> : <ToggleLeft size={22} />}
+            E-mail (Newsletter): {isNewsletterAtiva ? 'ON' : 'OFF'}
+          </button>
+        </div>
       </div>
 
       {/* DASHBOARD DE SATISFAÇÃO */}

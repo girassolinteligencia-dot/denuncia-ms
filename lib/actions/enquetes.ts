@@ -322,3 +322,27 @@ export async function setBoletimAtivo(ativa: boolean) {
     return { success: false, error: err.message }
   }
 }
+
+export async function setNewsletterAtiva(ativa: boolean) {
+  const supabase = createAdminClient()
+  try {
+    const { error } = await supabase
+      .from('plataforma_config')
+      .upsert({ 
+        chave: 'funcionalidade.newsletter_ativa', 
+        valor: ativa,
+        atualizado_em: new Date().toISOString()
+      }, { onConflict: 'chave' })
+
+    if (error) throw error
+    
+    revalidatePath('/')
+    revalidatePath('/transparencia')
+    revalidatePath('/admin/conteudo')
+    
+    return { success: true }
+  } catch (err: any) {
+    console.error('[enquetes] Erro ao alterar status da newsletter:', err)
+    return { success: false, error: err.message }
+  }
+}

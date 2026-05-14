@@ -251,7 +251,7 @@ export default async function PublicHomePage() {
 
       <FeedbackNewsletter 
         ativa={configMap['funcionalidade.pesquisa_satisfacao_ativa'] === true || configMap['funcionalidade.pesquisa_satisfacao_ativa'] === 'true'} 
-        showNewsletter={false}
+        showNewsletter={configMap['funcionalidade.newsletter_ativa'] === true || configMap['funcionalidade.newsletter_ativa'] === 'true'}
       />
     </div>
   )
