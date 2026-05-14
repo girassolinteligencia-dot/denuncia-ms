@@ -175,29 +175,18 @@ export const NewsManager: React.FC<{ initialNoticias: Noticia[], boletimAtivo: b
                   O sistema anonimiza os dados e cria rascunhos jornalísticos prontos para serem revisados e publicados.
                </p>
             </div>
-            <div className="flex flex-col gap-3">
-               <button 
-                 onClick={handleGenerateRobotNews}
-                 disabled={generating}
-                 className="px-8 h-16 bg-primary hover:bg-primary-dark text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs flex items-center gap-3 transition-all active:scale-95 disabled:opacity-50"
-               >
-                  {generating ? (
-                    <Loader2 size={24} className="animate-spin" />
-                  ) : (
-                    <Sparkles size={24} />
-                  )}
-                  {generating ? 'Gerando Análise...' : 'Gerar Boletim do Dia'}
-               </button>
-               
-               <button 
-                 onClick={handleToggleBoletim}
-                 disabled={loading}
-                 className={`px-8 h-12 rounded-xl font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center gap-2 transition-all border ${isBoletimAtivo ? 'bg-secondary/20 border-secondary/30 text-secondary' : 'bg-white/5 border-white/10 text-white/40'}`}
-               >
-                  {isBoletimAtivo ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
-                  Visualização: {isBoletimAtivo ? 'Público ON' : 'Público OFF'}
-               </button>
-            </div>
+            <button 
+              onClick={handleGenerateRobotNews}
+              disabled={generating}
+              className="px-8 h-16 bg-primary hover:bg-primary-dark text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs flex items-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+            >
+               {generating ? (
+                 <Loader2 size={24} className="animate-spin" />
+               ) : (
+                 <Sparkles size={24} />
+               )}
+               {generating ? 'Gerando Análise...' : 'Gerar Boletim do Dia'}
+            </button>
          </div>
       </div>
 
