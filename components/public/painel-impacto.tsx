@@ -58,11 +58,11 @@ export function PainelImpacto({ isDark = false }: { isDark?: boolean }) {
            <div className="absolute top-0 right-0 p-4 text-white/5 group-hover:text-white/10 transition-colors">
               <CheckCircle2 size={80} />
            </div>
-           <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-2">Feedback Positivo</p>
+           <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-2">Índice de Resolução</p>
            {loading ? <Loader2 className="animate-spin text-secondary" /> : (
              <div className="text-5xl font-black text-secondary italic animate-fade-in">{stats?.feedback}</div>
            )}
-           <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold">Da comunidade sul-mato-grossense</p>
+           <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold">Demandas resolvidas na base</p>
         </div>
 
         <div className={`p-8 ${isDark ? 'bg-white/5 border border-white/10' : 'bg-dark'} text-white rounded-3xl relative overflow-hidden group shadow-glow-cyan min-h-[180px] flex flex-col justify-center`}>

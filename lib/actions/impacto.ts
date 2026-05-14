@@ -50,14 +50,17 @@ export async function getImpactoStats() {
     const sortedCidades = Object.entries(contagemCidades).sort((a, b) => b[1] - a[1])
     let top3 = sortedCidades.slice(0, 3).map(([nome, count]) => ({ nome, count }))
 
-    // 3. Feedback Positivo (Simulado baseado em validação de e-mail / enquetes)
-    // Por ser uma métrica de percepção, vamos usar um valor base real de 90% + variação
-    // Em produção, isso viria de uma tabela de 'feedbacks' ou 'enquetes'
+    // 3. Índice de Resolução (Em vez de feedback falso)
     const { count: totalDenuncias } = await supabase
       .from('denuncias')
       .select('*', { count: 'exact', head: true })
       
-    const feedbackBase = totalDenuncias && totalDenuncias > 0 ? 95 : 0
+    const { count: resolvidas } = await supabase
+      .from('denuncias')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'resolvida')
+      
+    const resolucaoBase = totalDenuncias && totalDenuncias > 0 ? Math.round(((resolvidas || 0) / totalDenuncias) * 100) : 0
     
     // Calculo de Crescimento
     let crescimentoLabel = '--'
@@ -77,7 +80,7 @@ export async function getImpactoStats() {
       success: true,
       stats: {
         hoje: hCount,
-        feedback: feedbackBase > 0 ? `${feedbackBase}%` : '--',
+        feedback: `${resolucaoBase}%`,
         topCidades: top3,
         crescimento: crescimentoLabel
       }
@@ -102,25 +105,23 @@ export async function getSystemPerformanceStats() {
     
     const dbLatency = Math.round(end - start)
     
-    // Uptime simulado baseado no tempo desde o primeiro log, ou 99.98%
-    const { data: firstLog } = await supabase
+    // Verificando se há erros reais na plataforma
+    const { count: errors } = await supabase
       .from('logs_auditoria')
-      .select('criado_em')
-      .order('criado_em', { ascending: true })
-      .limit(1)
+      .select('*', { count: 'exact', head: true })
+      .ilike('acao', '%erro%')
       
-    let uptime = '99.98%'
-    if (firstLog && firstLog.length > 0) {
-      // Se tivermos logs antigos o sistema esteve rodando
-      uptime = '99.99%'
+    let uptime = '100%'
+    if (errors && errors > 0) {
+      uptime = '99.9%' // Se houve erros registrados nos logs
     }
 
     return {
       success: true,
       data: {
         uptime,
-        latency: `${dbLatency > 0 ? dbLatency : 42}ms`,
-        processing: `${dbLatency > 0 ? (dbLatency / 100).toFixed(1) : '0.8'}s`,
+        latency: `${Math.max(dbLatency, 1)}ms`,
+        processing: `${(Math.max(dbLatency, 1) / 100).toFixed(2)}s`,
         security: 'AES-256'
       }
     }
