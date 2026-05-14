@@ -282,10 +282,10 @@ export async function setPesquisaSatisfacaoAtiva(ativa: boolean) {
   const supabase = createAdminClient()
   try {
     const { error } = await supabase
-      .from('sistema_config')
+      .from('plataforma_config')
       .upsert({ 
         chave: 'funcionalidade.pesquisa_satisfacao_ativa', 
-        valor: ativa ? 'true' : 'false',
+        valor: ativa ? '"true"' : '"false"',
         atualizado_em: new Date().toISOString()
       }, { onConflict: 'chave' })
 

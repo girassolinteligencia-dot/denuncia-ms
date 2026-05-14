@@ -52,6 +52,8 @@ export function EnquetesManager({
     if (res.success) {
       setIsSatisfacaoAtiva(!isSatisfacaoAtiva)
       toast.success(`Pesquisa de satisfação ${!isSatisfacaoAtiva ? 'ativada' : 'desativada'}!`)
+    } else {
+      toast.error('Erro: ' + res.error)
     }
   }
 
