@@ -283,8 +283,11 @@ export async function setPesquisaSatisfacaoAtiva(ativa: boolean) {
   try {
     const { error } = await supabase
       .from('sistema_config')
-      .update({ valor: ativa ? 'true' : 'false' })
-      .eq('chave', 'funcionalidade.pesquisa_satisfacao_ativa')
+      .upsert({ 
+        chave: 'funcionalidade.pesquisa_satisfacao_ativa', 
+        valor: ativa ? 'true' : 'false',
+        atualizado_em: new Date().toISOString()
+      }, { onConflict: 'chave' })
 
     if (error) throw error
     
