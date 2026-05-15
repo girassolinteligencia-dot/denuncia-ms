@@ -115,6 +115,7 @@ export async function getDenunciaDetalhes(id: string) {
         municipio,
         data_ocorrido, 
         status, 
+        chave_acesso,
         criado_em, 
         atualizado_em,
         categorias(label, icon_name), 

@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 import React from 'react'
 import { getDenunciaDetalhes } from '@/lib/actions/admin-denuncias'
+import { getMe } from '@/lib/actions/admin-usuarios'
 import { 
   ChevronLeft, 
   MapPin, 
@@ -23,7 +24,12 @@ export const metadata = {
 }
 
 export default async function DetalheDenunciaPage({ params }: { params: { id: string } }) {
-  const result = await getDenunciaDetalhes(params.id)
+  const [result, me] = await Promise.all([
+    getDenunciaDetalhes(params.id),
+    getMe()
+  ])
+
+  const isSuperAdmin = me.success && (me.data?.role === 'superadmin' || me.data?.role === 'admin')
 
   if (!result.success || !result.data) {
     return <div className="p-8 text-error">Erro ao carregar detalhes: {result.error}</div>
@@ -182,6 +188,28 @@ export default async function DetalheDenunciaPage({ params }: { params: { id: st
                  )}
               </div>
            </div>
+
+           {/* Chave de Acesso (Apenas Superadmin) */}
+           {isSuperAdmin && (
+              <div className="bg-amber-50 rounded-card border border-amber-200 p-6 shadow-sm">
+                 <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-amber-500 rounded-lg text-white">
+                       <Lock size={16} />
+                    </div>
+                    <div>
+                       <h3 className="text-[10px] font-black text-amber-900 uppercase tracking-widest leading-none">Chave de Acesso (Recuperação)</h3>
+                       <p className="text-[9px] text-amber-700 font-bold mt-1">Visível apenas para administradores mestres</p>
+                    </div>
+                 </div>
+                 <div className="flex items-center justify-between bg-white border border-amber-200 p-4 rounded-xl">
+                    <code className="text-xl font-black text-amber-600 tracking-[0.2em]">{denuncia.chave_acesso || 'N/A'}</code>
+                    <span className="text-[8px] font-black text-amber-400 uppercase tracking-widest">Protocolo: {denuncia.protocolo}</span>
+                 </div>
+                 <p className="text-[10px] text-amber-800/60 mt-3 font-medium italic">
+                    * Utilize esta chave para auxiliar o cidadão caso ele tenha perdido o acesso ao acompanhamento.
+                 </p>
+              </div>
+           )}
 
            {/* Timeline Simplificada */}
            <div className="bg-white rounded-card border border-border p-6 shadow-card">
