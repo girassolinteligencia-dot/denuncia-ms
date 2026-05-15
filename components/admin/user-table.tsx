@@ -140,7 +140,7 @@ export const UserTable: React.FC<{ initialUsers: Profile[], currentUser: Profile
                    </td>
                   <td className="px-6 py-5 text-right">
                     {/* Trava de Segurança: Apenas Superadmin exclui outro Superadmin */}
-                    {(user.role !== 'superadmin' || currentUser?.role === 'superadmin') && (
+                    {(user.role?.toLowerCase() !== 'superadmin' || currentUser?.role?.toLowerCase() === 'superadmin') && (
                       <button 
                         onClick={() => handleDelete(user.id)}
                         disabled={loading === user.id}
@@ -172,7 +172,7 @@ export const UserTable: React.FC<{ initialUsers: Profile[], currentUser: Profile
                   </div>
                 </div>
                   {/* Trava de Segurança Mobile */}
-                  {(user.role !== 'superadmin' || currentUser?.role === 'superadmin') && (
+                  {(user.role?.toLowerCase() !== 'superadmin' || currentUser?.role?.toLowerCase() === 'superadmin') && (
                     <button 
                       onClick={() => handleDelete(user.id)}
                       disabled={loading === user.id}

@@ -226,7 +226,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
                 {/* Apenas Superadmin pode atribuir cargo de Superadmin ou Admin Master a outros */}
                 {(['superadmin', 'admin', 'moderador', 'comunicador'] as UserRole[])
                   .filter(r => {
-                    if (r === 'superadmin') return currentUser?.role === 'superadmin'
+                    if (r === 'superadmin') return currentUser?.role?.toLowerCase() === 'superadmin'
                     return true
                   })
                   .map((r) => (

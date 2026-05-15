@@ -118,7 +118,7 @@ export async function getMe() {
         data: { 
           id: user.id, 
           nome: user.user_metadata?.nome || 'Usuário', 
-          role: (masterEmails.includes(user.email || '') ? 'superadmin' : 'user') as any,
+          role: (masterEmails.includes(user.email || '') ? 'admin' : 'user') as any,
           email: user.email,
           permissoes: masterEmails.includes(user.email || '') ? ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"] : []
         } as any 
@@ -148,7 +148,7 @@ export async function createUsuarioAdmin(data: {
   const { data: currentProfile } = await supabase.from('profiles').select('role').eq('id', currentUser?.id).single()
 
   // Trava de Segurança: Apenas Superadmin cria outro Superadmin
-  if (data.role === 'superadmin' && currentProfile?.role !== 'superadmin') {
+  if (data.role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
     return { success: false, error: 'Apenas Super Administradores podem criar outros Super Administradores.' }
   }
 
@@ -275,12 +275,12 @@ export async function updateUsuarioAdmin(id: string, data: {
 
   // Trava de Segurança: Apenas Superadmin edita outro Superadmin
   const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', id).single()
-  if (targetProfile?.role === 'superadmin' && currentProfile?.role !== 'superadmin') {
+  if (targetProfile?.role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
     return { success: false, error: 'Apenas Super Administradores podem editar perfis de Super Administrador.' }
   }
 
   // Trava de Segurança: Apenas Superadmin pode elevar alguém a Superadmin
-  if (data.role === 'superadmin' && currentProfile?.role !== 'superadmin') {
+  if (data.role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
     return { success: false, error: 'Você não tem permissão para elevar usuários ao cargo de Super Administrador.' }
   }
 
@@ -313,12 +313,12 @@ export async function updateUsuarioRole(id: string, role: UserRole) {
 
   // Trava de Segurança: Apenas Superadmin edita outro Superadmin
   const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', id).single()
-  if (targetProfile?.role === 'superadmin' && currentProfile?.role !== 'superadmin') {
+  if (targetProfile?.role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
     return { success: false, error: 'Apenas Super Administradores podem editar perfis de Super Administrador.' }
   }
 
   // Trava de Segurança: Apenas Superadmin pode elevar alguém a Superadmin
-  if (role === 'superadmin' && currentProfile?.role !== 'superadmin') {
+  if (role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
     return { success: false, error: 'Você não tem permissão para elevar usuários ao cargo de Super Administrador.' }
   }
 
@@ -348,7 +348,7 @@ export async function deleteUsuario(id: string) {
 
   // Trava de Segurança: Apenas Superadmin deleta outro Superadmin
   const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', id).single()
-  if (targetProfile?.role === 'superadmin' && currentProfile?.role !== 'superadmin') {
+  if (targetProfile?.role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
     return { success: false, error: 'Acesso Negado: Apenas Super Administradores podem excluir outros Super Administradores.' }
   }
 
