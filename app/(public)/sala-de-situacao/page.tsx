@@ -8,7 +8,11 @@ import { getPublicIntelligenceData } from '@/lib/actions/public-intelligence'
 import { MSMunicipalityMap } from '@/components/public/transparencia-mapa'
 import Link from 'next/link'
 
-export default async function SalaDeSituacaoPage() {
+export default async function SalaDeSituacaoPage({
+  searchParams
+}: {
+  searchParams?: { periodo?: string }
+}) {
   const isEnabled = await getSystemConfig('sala_situacao_ativa')
   
   if (!isEnabled.valor) {
@@ -28,8 +32,10 @@ export default async function SalaDeSituacaoPage() {
     )
   }
 
+  const periodoParam = searchParams?.periodo || 'todas'
+
   const [mapDataResult, impactStats, intelResult] = await Promise.all([
-    getMunicipalityMapData(),
+    getMunicipalityMapData(periodoParam),
     getImpactoStats(),
     getPublicIntelligenceData()
   ])
@@ -139,10 +145,13 @@ export default async function SalaDeSituacaoPage() {
                  <Globe className="text-secondary" size={18} />
                  <h2 className="text-xs font-black text-white uppercase tracking-widest italic">Inteligência Territorial MS</h2>
               </div>
-              <div className="flex items-center gap-3">
-                 <div className="flex items-center gap-2 text-[9px] font-bold text-white/40 uppercase"><span className="w-2 h-2 rounded-full bg-red-500"></span> Alta</div>
-                 <div className="flex items-center gap-2 text-[9px] font-bold text-white/40 uppercase"><span className="w-2 h-2 rounded-full bg-yellow-500"></span> Média</div>
-                 <div className="flex items-center gap-2 text-[9px] font-bold text-white/40 uppercase"><span className="w-2 h-2 rounded-full bg-blue-500"></span> Baixa</div>
+              
+              {/* FILTRO DE PERÍODO (Links para o próprio Server Component) */}
+              <div className="flex items-center bg-black/40 border border-white/10 rounded-full p-1">
+                 <Link href="?periodo=hoje" className={`text-[8px] font-bold uppercase px-3 py-1 rounded-full transition-colors ${periodoParam === 'hoje' ? 'bg-primary text-white' : 'text-white/40 hover:text-white'}`}>Hoje</Link>
+                 <Link href="?periodo=semana" className={`text-[8px] font-bold uppercase px-3 py-1 rounded-full transition-colors ${periodoParam === 'semana' ? 'bg-primary text-white' : 'text-white/40 hover:text-white'}`}>Últ. Semana</Link>
+                 <Link href="?periodo=mes" className={`text-[8px] font-bold uppercase px-3 py-1 rounded-full transition-colors ${periodoParam === 'mes' ? 'bg-primary text-white' : 'text-white/40 hover:text-white'}`}>Últ. Mês</Link>
+                 <Link href="?periodo=todas" className={`text-[8px] font-bold uppercase px-3 py-1 rounded-full transition-colors ${periodoParam === 'todas' ? 'bg-primary text-white' : 'text-white/40 hover:text-white'}`}>Todas</Link>
               </div>
            </div>
            

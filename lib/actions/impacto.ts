@@ -146,12 +146,29 @@ export async function getSystemPerformanceStats() {
 /**
  * Busca dados agregados por município para o mapa de transparência
  */
-export async function getMunicipalityMapData() {
+export async function getMunicipalityMapData(periodo?: string) {
   const supabase = createAdminClient()
   try {
-    const { data, error } = await supabase
-      .from('denuncias')
-      .select('municipio, cidade')
+    let query = supabase.from('denuncias').select('municipio, cidade')
+
+    if (periodo && periodo !== 'todas') {
+      const msOffsetHours = 4;
+      const nowUTC = new Date();
+      const msTime = new Date(nowUTC.getTime() - msOffsetHours * 60 * 60 * 1000);
+      msTime.setUTCHours(0, 0, 0, 0);
+      
+      let dateFilter = new Date(msTime.getTime() + msOffsetHours * 60 * 60 * 1000); // Hoje
+      
+      if (periodo === 'semana') {
+        dateFilter = new Date(dateFilter.getTime() - 7 * 24 * 60 * 60 * 1000);
+      } else if (periodo === 'mes') {
+        dateFilter = new Date(dateFilter.getTime() - 30 * 24 * 60 * 60 * 1000);
+      }
+      
+      query = query.gte('criado_em', dateFilter.toISOString());
+    }
+
+    const { data, error } = await query
 
     if (error) throw error
 
