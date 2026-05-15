@@ -95,11 +95,13 @@ export function SupabaseMetricsCards() {
 
       {/* Tamanho do Banco */}
       <MetricCard
-        title="Tamanho do Banco"
+        title="Armazenamento DB"
         value={`${metrics?.tamanho_mb || 0} MB`}
         icon={<Database size={20} />}
-        statusColor="text-blue-400"
-        label="Espaço em Disco"
+        statusColor={getStatusColor(metrics?.tamanho_mb || 0, 300, 450)}
+        label="Capacidade"
+        progress={((metrics?.tamanho_mb || 0) / 500) * 100}
+        maxText="/ 500 MB"
       />
 
       {/* Commits/s */}
@@ -107,7 +109,7 @@ export function SupabaseMetricsCards() {
         title="Commits/s"
         value={commitsPerSec.toFixed(2)}
         icon={<Zap size={20} />}
-        statusColor={getStatusColor(commitsPerSec, 10, 50)} // Thresholds arbitrários para commits/s
+        statusColor={getStatusColor(commitsPerSec, 10, 50)}
         label="Taxa de Transação"
       />
 
@@ -129,9 +131,11 @@ interface MetricCardProps {
   icon: React.ReactNode
   statusColor: string
   label: string
+  progress?: number
+  maxText?: string
 }
 
-function MetricCard({ title, value, icon, statusColor, label }: MetricCardProps) {
+function MetricCard({ title, value, icon, statusColor, label, progress, maxText }: MetricCardProps) {
   return (
     <div className="bg-dark-soft border border-white/15 p-6 rounded-[2rem] space-y-4 relative overflow-hidden group hover:border-accent/30 transition-all shadow-xl">
       <div className="flex items-center gap-3">
@@ -139,8 +143,21 @@ function MetricCard({ title, value, icon, statusColor, label }: MetricCardProps)
         <h3 className="text-[10px] font-black text-white/50 uppercase tracking-widest">{title}</h3>
       </div>
       <div className="space-y-1">
-        <p className={`text-2xl font-black italic ${statusColor}`}>{value}</p>
-        <p className="text-[10px] text-white/40 font-bold uppercase">{label}</p>
+        <div className="flex items-baseline justify-between">
+          <p className={`text-2xl font-black italic ${statusColor}`}>{value}</p>
+          {maxText && <span className="text-[10px] text-white/40 font-bold ml-2">{maxText}</span>}
+        </div>
+        
+        {progress !== undefined && (
+          <div className="w-full bg-white/10 rounded-full h-1.5 mt-2 mb-1 overflow-hidden">
+             <div className={`h-1.5 rounded-full transition-all duration-1000 ${statusColor.replace('text-', 'bg-')}`} style={{ width: `${Math.min(100, progress)}%` }}></div>
+          </div>
+        )}
+
+        <div className="flex justify-between items-center mt-1">
+          <p className="text-[10px] text-white/40 font-bold uppercase">{label}</p>
+          {progress !== undefined && <span className={`text-[9px] font-black uppercase ${statusColor}`}>{progress.toFixed(1)}%</span>}
+        </div>
       </div>
     </div>
   )
