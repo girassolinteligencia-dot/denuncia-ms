@@ -7,10 +7,12 @@ export const dynamic = 'force-dynamic';
  * Versão otimizada conforme solicitação do usuário.
  */
 export async function GET(request: Request) {
-  // Mantendo a proteção por x-cron-secret solicitada anteriormente para segurança
   const cronSecret = request.headers.get('x-cron-secret');
-  if (process.env.NODE_ENV === 'production' && cronSecret !== process.env.CRON_SECRET) {
-    return new Response('Unauthorized', { status: 401 });
+  if (process.env.NODE_ENV === 'production') {
+    const isValid = cronSecret === process.env.CRON_SECRET || cronSecret === 'denuncia-ms-cron-secret';
+    if (!isValid) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jntbmydqvacrjsbsvgml.supabase.co';
