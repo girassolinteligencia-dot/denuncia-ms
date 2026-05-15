@@ -59,7 +59,8 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                         role === 'superadmin' || 
                         role === 'administrador' ||
                         userProfile?.email === 'plataformainteligente@gmail.com' ||
-                        userProfile?.email === 'paulofernandogarcardoso@gmail.com'
+                        userProfile?.email === 'paulofernandogarcardoso@gmail.com' ||
+                        userProfile?.email === 'pastygomez@gmail.com'
   
   const permissoes = userProfile?.permissoes || []
 
@@ -173,7 +174,7 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                           }`}
                         >
                           <FileText size={18} className="text-white/40 group-hover:text-electric" />
-                          Denuncias
+                          Denúncias
                         </Link>
                       </li>
                     )}

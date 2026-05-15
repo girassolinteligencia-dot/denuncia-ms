@@ -123,7 +123,7 @@ function DashboardContent() {
         <>
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-3 sm:gap-4">
-            <KPIItem title="Denuncias" value={stats.total} change="Volume Total" icon={FileText} color="text-primary" bgColor="bg-primary/10" />
+            <KPIItem title="Denúncias" value={stats.total} change="Volume Total" icon={FileText} color="text-primary" bgColor="bg-primary/10" />
             <KPIItem title="Novas" value={stats.recebida} change="Pendentes" icon={Clock} color="text-warning" bgColor="bg-yellow-50" />
             <KPIItem title="Resolvidas" value={stats.resolvida} change={`Taxa: ${stats.taxa_resolucao || '0%'}`} icon={CheckCircle2} color="text-success" bgColor="bg-green-50" />
             <KPIItem title="Inscritos" value={stats.newsletter} change="News" icon={Activity} color="text-secondary" bgColor="bg-secondary/10" />

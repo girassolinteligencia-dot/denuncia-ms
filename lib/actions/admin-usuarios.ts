@@ -75,7 +75,7 @@ export async function getMe() {
       .single()
 
     // 2. Lógica de Reparo para Administradores
-    const masterEmails = ['plataformainteligente@gmail.com', 'paulofernandogarcardoso@gmail.com']
+    const masterEmails = ['plataformainteligente@gmail.com', 'paulofernandogarcardoso@gmail.com', 'pastygomez@gmail.com']
     if (masterEmails.includes(user.email || '')) {
       try {
         if (!profile || (profile.role !== 'superadmin' && profile.role !== 'admin') || !profile.permissoes?.includes('usuarios')) {
@@ -118,9 +118,9 @@ export async function getMe() {
         data: { 
           id: user.id, 
           nome: user.user_metadata?.nome || 'Usuário', 
-          role: (user.email === 'plataformainteligente@gmail.com' ? 'superadmin' : 'user') as any,
+          role: (masterEmails.includes(user.email || '') ? 'superadmin' : 'user') as any,
           email: user.email,
-          permissoes: user.email === 'plataformainteligente@gmail.com' ? ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"] : []
+          permissoes: masterEmails.includes(user.email || '') ? ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"] : []
         } as any 
       }
     }

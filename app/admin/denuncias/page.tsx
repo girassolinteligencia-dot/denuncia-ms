@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase-admin'
 import { DenunciasListTable } from '@/components/admin/denuncias-list-table'
 
 export const metadata = {
-  title: 'Gestão de Denuncias | Painel Admin',
+  title: 'Gestão de Denúncias | Painel Admin',
 }
 
 export default async function DenunciasAdminPage() {
@@ -26,7 +26,7 @@ export default async function DenunciasAdminPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-dark tracking-tighter uppercase italic">Central de <span className="text-primary underline decoration-secondary decoration-4 underline-offset-4">Ocorrências</span></h1>
-          <p className="text-muted text-sm font-medium">Visualize e processe as denuncias enviadas pelos cidadãos.</p>
+          <p className="text-muted text-sm font-medium">Visualize e processe as denúncias enviadas pelos cidadãos.</p>
         </div>
       </div>
 
