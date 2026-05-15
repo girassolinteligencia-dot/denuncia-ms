@@ -56,6 +56,43 @@ export async function updateDenunciaStatus(id: string, novoStatus: StatusDenunci
 }
 
 /**
+ * Atualiza o status de várias denuncias em lote e registra no log de auditoria
+ */
+export async function updateDenunciasStatusBatch(ids: string[], novoStatus: StatusDenuncia) {
+  const supabase = createAdminClient()
+
+  try {
+    const { error } = await supabase
+      .from('denuncias')
+      .update({
+        status: novoStatus,
+        atualizado_em: new Date().toISOString()
+      })
+      .in('id', ids)
+
+    if (error) throw error
+
+    // Registrar logs em lote
+    const logs = ids.map(id => ({
+      acao: 'UPDATE_STATUS_BATCH',
+      tabela: 'denuncias',
+      registro_id: id,
+      valor_novo: { status: novoStatus },
+      ip: 'ADMIN_PANEL'
+    }))
+
+    await supabase.from('log_auditoria').insert(logs)
+
+    revalidatePath('/admin/denuncias')
+    
+    return { success: true }
+  } catch (err: any) {
+    console.error('Erro ao atualizar status em lote:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+/**
  * Busca detalhes completos da denuncia incluindo arquivos, categoria e identidade descriptografada.
  */
 export async function getDenunciaDetalhes(id: string) {

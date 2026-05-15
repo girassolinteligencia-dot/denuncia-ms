@@ -7,11 +7,12 @@ import {
   Send, 
   CheckCircle2, 
   AlertTriangle,
-  ChevronRight
+  ChevronRight,
+  CheckSquare
 } from 'lucide-react'
 import Link from 'next/link'
 import type { Denuncia, StatusDenuncia } from '@/types'
-import { reencaminharEmailDespacho } from '@/lib/actions/admin-denuncias'
+import { reencaminharEmailDespacho, updateDenunciasStatusBatch } from '@/lib/actions/admin-denuncias'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
@@ -28,18 +29,46 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('todos')
   const [loadingId, setLoadingId] = useState<string | null>(null)
+  
+  // Selection state for batch actions
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [batchLoading, setBatchLoading] = useState(false)
 
   const handleReenviar = async (id: string) => {
     setLoadingId(id)
     const res = await reencaminharEmailDespacho(id)
     if (res.success) {
       toast.success('E-mail reencaminhado com sucesso!')
-      // Atualização otimista
       setTimeout(() => window.location.reload(), 1000)
     } else {
       toast.error('Erro ao reenviar: ' + res.error)
     }
     setLoadingId(null)
+  }
+
+  const handleBatchUpdate = async (novoStatus: StatusDenuncia) => {
+    if (selectedIds.length === 0) return
+    setBatchLoading(true)
+    const res = await updateDenunciasStatusBatch(selectedIds, novoStatus)
+    if (res.success) {
+      toast.success(`Status de ${selectedIds.length} registros atualizados para ${STATUS_STYLE[novoStatus].label}!`)
+      setTimeout(() => window.location.reload(), 1000)
+    } else {
+      toast.error('Erro na atualização em lote: ' + res.error)
+      setBatchLoading(false)
+    }
+  }
+
+  const toggleSelectAll = (filtered: any[]) => {
+    if (selectedIds.length === filtered.length) {
+      setSelectedIds([])
+    } else {
+      setSelectedIds(filtered.map(d => d.id))
+    }
+  }
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   }
 
   const filteredDenuncias = denuncias.filter((d: any) => {
@@ -50,29 +79,57 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row items-center gap-3">
-         <div className="relative flex-1 sm:max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
-            <input 
-              type="text" 
-              placeholder="Buscar por protocolo..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="input pl-10 h-10 w-full text-xs font-bold"
-            />
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto flex-1">
+           <div className="relative flex-1 sm:max-w-xs w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
+              <input 
+                type="text" 
+                placeholder="Buscar por protocolo..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input pl-10 h-10 w-full text-xs font-bold"
+              />
+           </div>
+           <select 
+             value={statusFilter}
+             onChange={(e) => setStatusFilter(e.target.value)}
+             className="input h-10 w-full sm:w-auto text-xs font-bold"
+           >
+             <option value="todos">Todos os Status</option>
+             <option value="recebida">Recebida</option>
+             <option value="em_analise">Em Análise</option>
+             <option value="encaminhada">Encaminhada</option>
+             <option value="resolvida">Resolvida</option>
+             <option value="arquivada">Arquivada</option>
+           </select>
          </div>
-         <select 
-           value={statusFilter}
-           onChange={(e) => setStatusFilter(e.target.value)}
-           className="input h-10 w-full sm:w-auto text-xs font-bold"
-         >
-           <option value="todos">Todos os Status</option>
-           <option value="recebida">Recebida</option>
-           <option value="em_analise">Em Análise</option>
-           <option value="encaminhada">Encaminhada</option>
-           <option value="resolvida">Resolvida</option>
-           <option value="arquivada">Arquivada</option>
-         </select>
+
+         {/* BATCH ACTIONS BAR */}
+         {selectedIds.length > 0 && (
+           <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 px-4 py-2 rounded-xl animate-fade-in w-full sm:w-auto justify-center sm:justify-end">
+             <span className="text-[10px] font-black text-primary uppercase tracking-widest mr-2 flex items-center gap-1">
+                <CheckSquare size={14} />
+                {selectedIds.length} sel.
+             </span>
+             <button 
+               onClick={() => handleBatchUpdate('encaminhada')}
+               disabled={batchLoading}
+               className="text-[9px] font-bold uppercase bg-secondary/10 hover:bg-secondary border border-secondary/20 hover:border-secondary text-secondary hover:text-white transition-all px-3 py-1.5 rounded-lg flex items-center gap-1"
+             >
+               {batchLoading ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+               Encaminhar
+             </button>
+             <button 
+               onClick={() => handleBatchUpdate('arquivada')}
+               disabled={batchLoading}
+               className="text-[9px] font-bold uppercase bg-surface hover:bg-muted border border-border text-muted hover:text-white transition-all px-3 py-1.5 rounded-lg flex items-center gap-1"
+             >
+               {batchLoading ? <Loader2 size={12} className="animate-spin" /> : <AlertTriangle size={12} />}
+               Arquivar
+             </button>
+           </div>
+         )}
       </div>
 
     <div className="bg-white rounded-card shadow-card-lg border border-border overflow-hidden animate-slide-up">
@@ -81,6 +138,14 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-surface text-[10px] font-black text-muted uppercase tracking-widest border-b border-border">
+              <th className="px-4 py-5 w-10 text-center">
+                 <input 
+                   type="checkbox" 
+                   className="rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                   checked={selectedIds.length > 0 && selectedIds.length === filteredDenuncias.length}
+                   onChange={() => toggleSelectAll(filteredDenuncias)}
+                 />
+              </th>
               <th className="px-6 py-5">Protocolo</th>
               <th className="px-6 py-5">Categoria / Título</th>
               <th className="px-6 py-5">Registrado em</th>
@@ -93,9 +158,18 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
             {filteredDenuncias.map((denuncia: any) => {
               const status = STATUS_STYLE[denuncia.status as StatusDenuncia] || STATUS_STYLE.recebida
               const Icon = status.icon
+              const isSelected = selectedIds.includes(denuncia.id)
 
               return (
-                <tr key={denuncia.id} className="hover:bg-primary-50/20 transition-colors group">
+                <tr key={denuncia.id} className={`hover:bg-primary-50/20 transition-colors group ${isSelected ? 'bg-primary/5' : ''}`}>
+                  <td className="px-4 py-4 text-center">
+                     <input 
+                       type="checkbox" 
+                       className="rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                       checked={isSelected}
+                       onChange={() => toggleSelectOne(denuncia.id)}
+                     />
+                  </td>
                   <td className="px-6 py-4">
                     <span className="text-sm font-black text-dark tracking-tight uppercase group-hover:text-primary transition-colors">
                       {denuncia.protocolo}
@@ -156,41 +230,46 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
         {filteredDenuncias.map((denuncia: any) => {
           const status = STATUS_STYLE[denuncia.status as StatusDenuncia] || STATUS_STYLE.recebida
           const Icon = status.icon
+          const isSelected = selectedIds.includes(denuncia.id)
           
           return (
-            <Link 
-              key={denuncia.id}
-              href={`/admin/denuncias/${denuncia.id}`}
-              className="flex flex-col p-5 hover:bg-surface transition-colors gap-3"
-            >
-              <div className="flex items-center justify-between">
+            <div key={denuncia.id} className={`flex flex-col p-5 hover:bg-surface transition-colors gap-3 ${isSelected ? 'bg-primary/5' : ''}`}>
+              <div className="flex items-center justify-between mb-2">
+                 <input 
+                   type="checkbox" 
+                   className="rounded border-border text-primary focus:ring-primary w-5 h-5 cursor-pointer"
+                   checked={isSelected}
+                   onChange={() => toggleSelectOne(denuncia.id)}
+                 />
+                 <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-tighter ${status.color}`}>
+                    <Icon size={10} />
+                    {status.label}
+                 </div>
+              </div>
+              <Link href={`/admin/denuncias/${denuncia.id}`} className="flex flex-col gap-3">
                 <span className="text-xs font-black text-primary tracking-tight uppercase">
                   {denuncia.protocolo}
                 </span>
-                <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-tighter ${status.color}`}>
-                   <Icon size={10} />
-                   {status.label}
+
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-muted uppercase tracking-wider">
+                    {(denuncia.cat_info || denuncia.categorias)?.icon_name} {(denuncia.cat_info || denuncia.categorias)?.label}
+                  </p>
+                  <h4 className="text-sm font-bold text-dark leading-snug line-clamp-2">
+                    {denuncia.titulo}
+                  </h4>
                 </div>
-              </div>
 
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-muted uppercase tracking-wider">
-                  {(denuncia.cat_info || denuncia.categorias)?.icon_name} {(denuncia.cat_info || denuncia.categorias)?.label}
-                </p>
-                <h4 className="text-sm font-bold text-dark leading-snug line-clamp-2">
-                  {denuncia.titulo}
-                </h4>
-              </div>
-
-              <div className="flex items-center justify-between pt-1">
-                 <span className="text-[10px] font-bold text-muted/60 uppercase">
-                    {new Date(denuncia.criado_em).toLocaleDateString()}
-                 </span>
-                 <span className="text-[8px] font-black px-1.5 py-0.5 rounded border bg-amber-50 text-amber-700 border-amber-100">
-                    IDENTIFICADA
-                 </span>
-              </div>
-            </Link>
+                <div className="flex items-center justify-between pt-1">
+                   <span className="text-[10px] font-bold text-muted/60 uppercase">
+                      {new Date(denuncia.criado_em).toLocaleDateString()}
+                   </span>
+                   <span className="text-[8px] font-black px-1.5 py-0.5 rounded border bg-amber-50 text-amber-700 border-amber-100">
+                      IDENTIFICADA
+                   </span>
+                </div>
+              </Link>
+            </div>
           )
         })}
       </div>
