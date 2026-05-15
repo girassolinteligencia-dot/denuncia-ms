@@ -12,13 +12,38 @@ export async function getUsuarios() {
   const supabase = createAdminClient()
 
   try {
-    const { data: usuarios, error } = await supabase
+    // 1. Buscar perfis
+    const { data: profiles, error: profileError } = await supabase
       .from('profiles')
       .select('id, nome, role, criado_em, permissoes, ativo')
       .order('criado_em', { ascending: false })
 
-    if (error) throw error
-    return { success: true, data: usuarios as Profile[] }
+    if (profileError) throw profileError
+
+    // 2. Buscar usuários do Auth para obter e-mails (Admin API)
+    const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers()
+    
+    if (authError) {
+      console.warn('Erro ao buscar e-mails do Auth:', authError.message)
+      return { success: true, data: profiles as Profile[] }
+    }
+
+    // 3. Mesclar dados: Base em authUsers para garantir que ninguém fique de fora
+    const mergedUsers = authUsers.map(authUser => {
+      const profile = profiles.find(p => p.id === authUser.id)
+      return {
+        id: authUser.id,
+        nome: profile?.nome || authUser.user_metadata?.nome || 'Usuário Sem Perfil',
+        role: profile?.role || 'user',
+        email: authUser.email || '',
+        permissoes: profile?.permissoes || [],
+        ativo: profile?.ativo ?? true,
+        criado_em: profile?.criado_em || authUser.created_at,
+        atualizado_em: profile?.atualizado_em || authUser.updated_at
+      }
+    })
+
+    return { success: true, data: mergedUsers as Profile[] }
   } catch (err: unknown) {
     console.error('Erro ao buscar usuários:', err)
     return { success: false, error: (err as Error).message }
@@ -49,40 +74,21 @@ export async function getMe() {
       .eq('id', user.id)
       .single()
 
-    // 2. Lógica de Reparo para o e-mail mestre
-    if (user.email === 'plataformainteligente@gmail.com') {
+    // 2. Lógica de Reparo para Administradores
+    const masterEmails = ['plataformainteligente@gmail.com', 'paulofernandogarcardoso@gmail.com']
+    if (masterEmails.includes(user.email || '')) {
       try {
-        if (!profile || profile.role !== 'superadmin' || !profile.permissoes?.includes('usuarios')) {
-          console.log('[REPAIR] Tentando elevar privilégios para plataformainteligente@gmail.com')
+        if (!profile || (profile.role !== 'superadmin' && profile.role !== 'admin') || !profile.permissoes?.includes('usuarios')) {
+          console.log(`[REPAIR] Tentando elevar/corrigir privilégios para ${user.email}`)
           const adminSupabase = createAdminClient()
           
-          // 1. Garantir Buckets de Storage
-          const buckets = ['banners', 'noticias', 'config', 'denuncias', 'relatos-oficiais']
-          for (const b of buckets) {
-            const { data: existing } = await adminSupabase.storage.getBucket(b)
-            if (!existing) {
-              await adminSupabase.storage.createBucket(b, { public: true })
-              console.log(`[REPAIR] Bucket '${b}' criado.`)
-            }
-          }
-
-          // 2. Garantir Tabelas Críticas (Banners, Noticias, Enquetes)
-          // Usamos RPC para rodar SQL se existir, ou tentamos um insert bobo para testar
-          try {
-            await adminSupabase.from('banners').select('id').limit(1)
-            await adminSupabase.from('noticias').select('id').limit(1)
-            await adminSupabase.from('enquetes').select('id').limit(1)
-          } catch (e) {
-            console.warn('[REPAIR] Erro ao validar tabelas:', e)
-          }
-
-          // 3. Garantir Perfil de Superadmin
+          // Garantir Perfil de Administrador
           await adminSupabase
             .from('profiles')
             .upsert({
               id: user.id,
-              nome: profile?.nome || 'Super Administrador',
-              role: 'superadmin',
+              nome: profile?.nome || user.user_metadata?.nome || 'Administrador',
+              role: (profile?.role === 'admin' || profile?.role === 'superadmin') ? profile.role : 'admin',
               permissoes: ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"],
               ativo: true,
               atualizado_em: new Date().toISOString()
@@ -179,8 +185,7 @@ export async function createUsuarioAdmin(data: {
 
     if (profileError) {
       console.error('Erro ao criar/atualizar profile:', profileError)
-      // Não lançamos erro aqui para não travar a criação do Auth, 
-      // mas o log ajudará a depurar
+      throw new Error(`Falha ao configurar perfil do usuário: ${profileError.message}`)
     }
 
     let emailEnviado = true
