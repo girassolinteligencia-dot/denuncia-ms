@@ -49,8 +49,8 @@ export async function getImpactoStats() {
       
       if (!city || city === '') city = 'Não informado'
       
-      // Normalizar para evitar duplicidade (ex: "CAMPO GRANDE" e "Campo Grande")
-      city = city.trim().toUpperCase()
+      // Normalizar para evitar duplicidade (ex: "SÃO PAULO" e "SAO PAULO")
+      city = city.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase()
 
       acc[city] = (acc[city] || 0) + 1
       return acc
@@ -155,10 +155,10 @@ export async function getMunicipalityMapData() {
 
     if (error) throw error
 
-    let counts = (data || []).reduce((acc: Record<string, number>, curr) => {
+    const counts = (data || []).reduce((acc: Record<string, number>, curr) => {
       let city = curr.municipio || curr.cidade
       if (city) {
-        city = city.trim().toUpperCase()
+        city = city.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase()
         acc[city] = (acc[city] || 0) + 1
       }
       return acc
