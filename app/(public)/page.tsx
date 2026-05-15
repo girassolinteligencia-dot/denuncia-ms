@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 import React from 'react'
+import Image from 'next/image'
 import { createAdminClient } from '@/lib/supabase-admin'
 import Link from 'next/link'
 import { LucideIcon } from '@/components/ui/lucide-icon'
@@ -58,14 +59,17 @@ export default async function PublicHomePage() {
           <div className="max-w-5xl mx-auto text-center space-y-12">
             
             {/* MASCOTE HERO CENTRALIZADO */}
-            <div className="flex flex-col items-center justify-center space-y-12 sm:space-y-16 animate-fade-in relative">
+            <div className="flex flex-col items-center justify-center space-y-12 sm:space-y-16 animate-fade-in relative -mt-4 lg:-mt-8">
               <div className="relative group">
                 {/* Glow expandido para o novo tamanho */}
                 <div className="absolute -inset-20 bg-primary/20 rounded-full blur-[120px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
-                <img 
+                <Image 
                   src="/assets/mascote_sem_fundo.png" 
                   alt="Mascote Bruno Ortiz" 
-                  className="w-72 h-72 sm:w-[480px] sm:h-[480px] lg:w-[630px] lg:h-[630px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-10"
+                  width={540}
+                  height={540}
+                  priority
+                  className="w-64 h-64 sm:w-[400px] sm:h-[400px] lg:w-[540px] lg:h-[540px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-10"
                 />
               </div>
             </div>

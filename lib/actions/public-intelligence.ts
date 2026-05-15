@@ -1,10 +1,12 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase-admin'
+import { unstable_noStore as noStore } from 'next/cache'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 export async function getPublicIntelligenceData() {
+  noStore()
   const supabase = createAdminClient()
 
   try {
@@ -38,10 +40,12 @@ export async function getPublicIntelligenceData() {
 
     // 2. Ranking de Assuntos / Categorias (Top 5)
     // Contagem simplificada (numa aplicação enorme usaríamos uma View ou RPC)
-    const { data: catData } = await supabase
+    const { data: catData, error } = await supabase
       .from('denuncias')
-      .select('categorias ( label, slug, integracoes_destino ( tipo, orgao ) )')
+      .select('categorias ( label, slug )')
       .gte('criado_em', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Últimos 30 dias
+
+    if (error) console.error('Erro ao buscar dados das categorias:', error)
 
     const categoryCount: Record<string, number> = {}
     const organCount: Record<string, number> = {}

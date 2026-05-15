@@ -8,14 +8,14 @@ interface CityData {
 }
 
 const CITIES_COORDS: Record<string, { x: number, y: number }> = {
-  'Campo Grande': { x: 182.8, y: 236.7 },
-  'Dourados':     { x: 172.9, y: 352.8 },
-  'Três Lagoas':  { x: 335.9, y: 259.4 },
-  'Corumbá':      { x: 24.5,  y: 143.6 },
-  'Ponta Porã':   { x: 124.8, y: 373.1 },
-  'Coxim':        { x: 175.0, y: 110.9 },
-  'Naviraí':      { x: 204.7, y: 407.6 },
-  'Bonito':       { x: 85.4,  y: 281.2 },
+  'CAMPO GRANDE': { x: 182.8, y: 236.7 },
+  'DOURADOS':     { x: 172.9, y: 352.8 },
+  'TRES LAGOAS':  { x: 335.9, y: 259.4 },
+  'CORUMBA':      { x: 24.5,  y: 143.6 },
+  'PONTA PORA':   { x: 124.8, y: 373.1 },
+  'COXIM':        { x: 175.0, y: 110.9 },
+  'NAVIRAI':      { x: 204.7, y: 407.6 },
+  'BONITO':       { x: 85.4,  y: 281.2 },
 }
 
 export const MSMunicipalityMap = ({ data }: { data: CityData[] }) => {

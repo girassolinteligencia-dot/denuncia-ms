@@ -2,8 +2,10 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase-admin'
+import { unstable_noStore as noStore } from 'next/cache'
 
 export async function getImpactoStats() {
+  noStore()
   const supabase = createAdminClient()
 
   try {
@@ -101,6 +103,7 @@ export async function getImpactoStats() {
 }
 
 export async function getSystemPerformanceStats() {
+  noStore()
   const supabase = createAdminClient()
   try {
     // Busca os últimos 50 logs de sistema para simular latência
@@ -147,6 +150,7 @@ export async function getSystemPerformanceStats() {
  * Busca dados agregados por município para o mapa de transparência
  */
 export async function getMunicipalityMapData(periodo?: string) {
+  noStore()
   const supabase = createAdminClient()
   try {
     let query = supabase.from('denuncias').select('municipio, cidade')

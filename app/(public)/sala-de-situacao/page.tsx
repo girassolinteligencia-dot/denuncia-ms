@@ -1,10 +1,13 @@
-'use server'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 import React from 'react'
 import { ShieldCheck, BarChart3, Globe, Zap, Shield, Flame, Activity } from 'lucide-react'
 import { getSystemConfig } from '@/lib/actions/admin-config'
-import { getMunicipalityMapData, getImpactoStats } from '@/lib/actions/impacto'
+import { getImpactoStats } from '@/lib/actions/impacto'
 import { getPublicIntelligenceData } from '@/lib/actions/public-intelligence'
+import { getGeographicIntelligence } from '@/lib/actions/admin-denuncias'
+import { GeoData } from '@/components/public/sala-situacao-map'
 import { MSMunicipalityMap } from '@/components/public/transparencia-mapa'
 import Link from 'next/link'
 
@@ -23,7 +26,7 @@ export default async function SalaDeSituacaoPage({
         </div>
         <h1 className="text-3xl font-black text-white tracking-tighter uppercase italic mb-4">Acesso Restrito</h1>
         <p className="text-white/50 max-w-md font-medium leading-relaxed">
-          A Sala de Gestão técnica está temporariamente em manutenção ou o acesso público foi desabilitado.
+          A Sala de Situação técnica está temporariamente em manutenção ou o acesso público foi desabilitado.
         </p>
         <Link href="/" className="mt-12 text-[10px] font-black text-primary uppercase tracking-[0.3em] hover:opacity-70 transition-opacity">
           Voltar para Início
@@ -34,14 +37,41 @@ export default async function SalaDeSituacaoPage({
 
   const periodoParam = searchParams?.periodo || 'todas'
 
-  const [mapDataResult, impactStats, intelResult] = await Promise.all([
-    getMunicipalityMapData(periodoParam),
+  const [geoResult, impactStats, intelResult] = await Promise.all([
+    getGeographicIntelligence(),
     getImpactoStats(),
     getPublicIntelligenceData()
   ])
 
-  const mapData = mapDataResult.success ? mapDataResult.data || [] : []
-  const impactData = (impactStats.success ? impactStats.stats : { hoje: 0, ontem: 0, mes: 0 }) as any
+  let mapData = geoResult.success ? geoResult.data || [] : []
+  
+  // Filtrar mapa por período, se aplicável
+  if (periodoParam === 'hoje') {
+    const hojeStr = new Date(new Date().setHours(0,0,0,0)).toISOString()
+    mapData = mapData.filter((d: GeoData) => d.criado_em >= hojeStr)
+  } else if (periodoParam === 'semana') {
+    const semanaAtras = new Date()
+    semanaAtras.setDate(semanaAtras.getDate() - 7)
+    mapData = mapData.filter((d: GeoData) => d.criado_em >= semanaAtras.toISOString())
+  } else if (periodoParam === 'mes') {
+    const mesAtras = new Date()
+    mesAtras.setMonth(mesAtras.getMonth() - 1)
+    mapData = mapData.filter((d: GeoData) => d.criado_em >= mesAtras.toISOString())
+  }
+
+  const cityCounts = mapData.reduce((acc: Record<string, number>, curr: GeoData) => {
+    let city = curr.municipio
+    if (city) {
+      city = city.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase()
+      acc[city] = (acc[city] || 0) + 1
+    }
+    return acc
+  }, {})
+
+  const mapDataFormatted = Object.entries(cityCounts).map(([name, count]) => ({ name, count: count as number }))
+
+
+  const impactData = (impactStats.success ? impactStats.stats : { hoje: 0, ontem: 0, mes: 0 }) as { hoje: number, ontem: number, mes: number }
   const intel = intelResult.success ? intelResult.data : { liveFeed: [], topTrends: [], topOrgans: [], privacyShield: 0 }
 
   return (
@@ -54,7 +84,7 @@ export default async function SalaDeSituacaoPage({
                 <Zap size={16} className="fill-primary" />
              </div>
              <div>
-                <h1 className="text-base font-black tracking-tighter uppercase italic leading-none">Sala de <span className="text-primary italic">Gestão</span></h1>
+                <h1 className="text-base font-black tracking-tighter uppercase italic leading-none">Sala de <span className="text-primary italic">Situação</span></h1>
                 <p className="text-[7px] font-black uppercase tracking-[0.4em] text-white/40 mt-1">CCOM - Mato Grosso do Sul</p>
              </div>
           </div>
@@ -156,7 +186,7 @@ export default async function SalaDeSituacaoPage({
            </div>
            
            <div className="flex-1 rounded-2xl overflow-hidden border border-white/5 relative z-10 min-h-[300px]">
-              <MSMunicipalityMap data={mapData} />
+              <MSMunicipalityMap data={mapDataFormatted} />
            </div>
         </section>
 
@@ -176,11 +206,11 @@ export default async function SalaDeSituacaoPage({
                  </div>
                  <div className="bg-black/20 rounded-xl p-3 border border-white/5 text-center">
                     <p className="text-[9px] font-bold text-white/40 uppercase tracking-wider mb-1">Ontem</p>
-                    <p className="text-2xl font-black italic text-white/70">{(impactData as any)?.ontem || 0}</p>
+                    <p className="text-2xl font-black italic text-white/70">{impactData?.ontem || 0}</p>
                  </div>
                  <div className="bg-primary/20 rounded-xl p-3 border border-primary/30 text-center col-span-2">
                     <p className="text-[9px] font-bold text-primary uppercase tracking-wider mb-1">Acumulado do Mês</p>
-                    <p className="text-3xl font-black italic text-white">{(impactData as any)?.mes || 0}</p>
+                    <p className="text-3xl font-black italic text-white">{impactData?.mes || 0}</p>
                  </div>
               </div>
            </div>

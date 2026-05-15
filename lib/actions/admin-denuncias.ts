@@ -1,7 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase-admin'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, unstable_noStore as noStore } from 'next/cache'
 import type { StatusDenuncia } from '@/types'
 import { decryptData } from '@/lib/encrypt'
 
@@ -422,6 +422,7 @@ export async function getProtocolEvolutionData() {
  * Busca todas as denuncias com coordenadas para o mapa de inteligência
  */
 export async function getGeographicIntelligence() {
+  noStore()
   const supabase = createAdminClient()
   try {
     const { data, error } = await supabase

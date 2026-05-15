@@ -167,7 +167,10 @@ export const AdminGeoIntelligence = ({ data }: { data: GeoData[] }) => {
       <div className="relative w-full h-[400px] sm:h-[600px] rounded-3xl overflow-hidden border border-border shadow-2xl bg-slate-100">
         <MapContainer 
           center={[-20.4697, -54.6201]} // Centro do MS (Campo Grande)
-          zoom={7} 
+          zoom={7}
+          minZoom={4}
+          maxBounds={[[5.27, -73.99], [-33.75, -34.79]]} // Brasil bounds
+          maxBoundsViscosity={1.0}
           scrollWheelZoom={true}
           style={{ height: '100%', width: '100%' }}
           className="z-0"
