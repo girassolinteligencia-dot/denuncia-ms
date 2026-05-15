@@ -208,13 +208,13 @@ export async function getRecentActivities() {
 }
 
 /**
- * Executa a limpeza de anexos com mais de 30 dias (LGPD/Economia)
+ * Executa a limpeza de anexos com mais de 3 dias (LGPD/Economia)
  * Mantém os PDFs oficiais intactos.
  */
 export async function limparArquivosAntigos() {
   const supabase = createAdminClient()
   const dataLimite = new Date()
-  dataLimite.setDate(dataLimite.getDate() - 30)
+  dataLimite.setDate(dataLimite.getDate() - 3)
 
   try {
     // 1. Buscar arquivos de denuncias criadas há mais de 30 dias

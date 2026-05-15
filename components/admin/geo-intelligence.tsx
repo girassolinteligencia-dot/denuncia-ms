@@ -6,7 +6,8 @@ import {
   MapPin, 
   Flame, 
   Maximize2, 
-  Layers
+  Layers,
+  AlertTriangle
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -144,6 +145,23 @@ export const AdminGeoIntelligence = ({ data }: { data: GeoData[] }) => {
           </select>
         </div>
       </div>
+
+      {filteredData.length === 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row items-start gap-4 animate-fade-in shadow-sm">
+           <div className="bg-amber-100 text-amber-600 p-2 rounded-xl shrink-0">
+             <AlertTriangle size={24} />
+           </div>
+           <div>
+             <h4 className="text-sm font-black text-amber-900 uppercase tracking-tighter italic">Nenhuma coordenada geolocalizada no sistema</h4>
+             <p className="text-xs font-medium text-amber-800 leading-relaxed mt-1">
+               O painel está 100% funcional, porém as denúncias atuais não possuem as marcações de GPS (Latitude/Longitude) no banco de dados. 
+             </p>
+             <p className="text-xs font-bold text-amber-900 leading-relaxed mt-1 border-l-2 border-amber-300 pl-3">
+               <strong>Solução Rápida:</strong> Vá até a aba &quot;Governança&quot; no dashboard e clique no botão <span className="underline">&quot;Sincronizar Coordenadas Antigas&quot;</span>. O sistema fará a varredura dos endereços escritos pelo usuário e tentará gerar os pontos no mapa de forma autônoma.
+             </p>
+           </div>
+        </div>
+      )}
 
       {/* Container do Mapa */}
       <div className="relative w-full h-[400px] sm:h-[600px] rounded-3xl overflow-hidden border border-border shadow-2xl bg-slate-100">

@@ -19,6 +19,7 @@ export interface EmailTemplateData {
   // Arquivos
   totalArquivos: number
   criado_em: string
+  baseUrl?: string
 }
 
 export function gerarEmailOrgao(d: EmailTemplateData): string {
@@ -50,6 +51,7 @@ export function gerarEmailOrgao(d: EmailTemplateData): string {
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
           <td>
+            <img src="${d.baseUrl || 'https://denuncia-ms.vercel.app'}/assets/logo.png" alt="DENUNCIA MS" style="height: 40px; margin-bottom: 8px; display: block;" />
             <p style="margin:0;color:#ffffff;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;opacity:0.7">Plataforma Oficial</p>
             <h1 style="margin:4px 0 0;color:#ffffff;font-size:26px;font-weight:900;letter-spacing:-0.5px">DENUNCIA MS</h1>
           </td>

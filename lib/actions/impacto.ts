@@ -7,21 +7,27 @@ export async function getImpactoStats() {
   const supabase = createAdminClient()
 
   try {
-    // 1. Denuncias Hoje (desde 00:00 do dia atual)
-    const hoje = new Date()
-    hoje.setHours(0, 0, 0, 0)
+    // 1. Denuncias Hoje (desde 00:00 do dia atual em GMT-4, ajustado para UTC)
+    const msOffsetHours = 4;
+    const nowUTC = new Date();
     
-    const ontem = new Date(hoje)
-    ontem.setDate(ontem.getDate() - 1)
+    // Calcula a hora atual equivalente no MS
+    const msTime = new Date(nowUTC.getTime() - msOffsetHours * 60 * 60 * 1000);
+    // Define a meia-noite (00:00:00) na data do MS
+    msTime.setUTCHours(0, 0, 0, 0);
+    
+    // Converte essa meia-noite local de volta para o horário UTC (+4h)
+    const hoje = new Date(msTime.getTime() + msOffsetHours * 60 * 60 * 1000);
+    
+    // Ontem é exatamente 24 horas antes de "hoje"
+    const ontem = new Date(hoje.getTime() - 24 * 60 * 60 * 1000);
     
     const { count: denunciasHoje } = await supabase
       .from('denuncias')
       .select('*', { count: 'exact', head: true })
       .gte('criado_em', hoje.toISOString())
       
-    // Denuncias Ontem (desde 00:00 de ontem até 23:59 de ontem)
-    const fimOntem = new Date(hoje)
-    fimOntem.setMilliseconds(fimOntem.getMilliseconds() - 1)
+    // Denuncias Ontem (desde 00:00 de ontem até 23:59:59 de ontem)
     
     const { count: denunciasOntem } = await supabase
       .from('denuncias')

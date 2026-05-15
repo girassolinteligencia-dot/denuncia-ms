@@ -14,6 +14,7 @@ interface PDFData {
   email?: string
   telefone?: string
   orgao_nome: string
+  arquivos?: { url: string, type: string, name: string }[]
 }
 
 /**
@@ -97,6 +98,36 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
   doc.setTextColor(150, 150, 150)
   const rodapeLines = doc.splitTextToSize(rodape, 180)
   doc.text(rodapeLines, 15, y)
+
+  // Adicionando anexos de imagem como novas páginas
+  if (data.arquivos && data.arquivos.length > 0) {
+    const imagens = data.arquivos.filter(a => a.type.startsWith('image/'))
+    
+    for (const img of imagens) {
+      try {
+        const response = await fetch(img.url)
+        if (response.ok) {
+          const buffer = await response.arrayBuffer()
+          const base64 = Buffer.from(buffer).toString('base64')
+          
+          doc.addPage()
+          doc.setFillColor(primaryColor)
+          doc.rect(0, 0, 210, 20, 'F')
+          doc.setTextColor(255, 255, 255)
+          doc.setFontSize(14)
+          doc.setFont('helvetica', 'bold')
+          doc.text(`ANEXO: ${img.name}`, 15, 13)
+
+          const imgType = img.type.split('/')[1].toUpperCase()
+          // Dimensions for A4: 210x297mm. Safe margins: 15mm.
+          // Max width: 180mm. Max height: 250mm
+          doc.addImage(base64, imgType === 'JPEG' ? 'JPEG' : 'PNG', 15, 30, 180, 0)
+        }
+      } catch (err) {
+        console.warn(`[pdf] Falha ao adicionar imagem ${img.name} no PDF:`, err)
+      }
+    }
+  }
 
   // Retorna como buffer
   const arrayBuffer = doc.output('arraybuffer')

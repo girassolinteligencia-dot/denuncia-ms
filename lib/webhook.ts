@@ -129,7 +129,10 @@ export async function processarFilaDespacho(limite = 10) {
         })
       }
 
-      // Adicionar arquivos originais
+      // Adicionar arquivos originais (respeitando limite de tamanho de email ~25MB)
+      let totalSizeMB = (item.pdf_base64?.length || 0) / 1024 / 1024;
+      const MAX_SIZE_MB = 25;
+
       if (anexos && anexos.length > 0) {
         for (const anexo of anexos) {
           try {
@@ -139,10 +142,17 @@ export async function processarFilaDespacho(limite = 10) {
             
             if (!dlErr && fileBuf) {
               const arrayBuffer = await fileBuf.arrayBuffer()
-              emailAttachments.push({
-                filename: anexo.bucket_path.split('_').slice(1).join('_') || anexo.bucket_path,
-                content: Buffer.from(arrayBuffer)
-              })
+              const fileSizeMB = arrayBuffer.byteLength / 1024 / 1024;
+              
+              if (totalSizeMB + fileSizeMB <= MAX_SIZE_MB) {
+                totalSizeMB += fileSizeMB;
+                emailAttachments.push({
+                  filename: anexo.bucket_path.split('_').slice(1).join('_') || anexo.bucket_path,
+                  content: Buffer.from(arrayBuffer)
+                })
+              } else {
+                console.warn(`[despacho] Anexo ${anexo.bucket_path} ignorado: excede o limite de tamanho do email.`);
+              }
             }
           } catch (e) {
             console.error(`Erro ao baixar anexo ${anexo.bucket_path}:`, e)

@@ -7,7 +7,7 @@ import { sendEmail } from '@/lib/email'
 import { validarOTP, verificarOTP } from './auth'
 import { createHash } from 'crypto'
 import { encryptData } from '@/lib/encrypt'
-import { gerarEmailDenunciante } from '@/lib/email-template'
+import { gerarEmailDenunciante, gerarEmailOrgao } from '@/lib/email-template'
 
 export async function uploadArquivoDenuncia(name: string, type: string, contentBase64: string) {
   const supabase = createAdminClient()
@@ -151,7 +151,8 @@ export async function registrarDenuncia(
         local:         localCompleto,
         data_ocorrido: formData.data_ocorrido || '',
         criado_em:     denuncia.criado_em,
-        orgao_nome:    'Denuncia MS'
+        orgao_nome:    'Denuncia MS',
+        arquivos:      arquivosVinculados
       })
 
       const pdfPath = `oficial_${protocolo}.pdf`
@@ -193,16 +194,32 @@ export async function registrarDenuncia(
           }
         ]
 
-        // Tenta baixar e anexar cada arquivo vinculado (se não for muito grande)
+        const MAX_EMAIL_SIZE_BYTES = 20 * 1024 * 1024 // 20 MB limite
+        let currentSize = pdfBuffer.length
+
+        // Tenta baixar e anexar cada arquivo vinculado respeitando limite
         for (const f of arquivosVinculados) {
           try {
+            if (currentSize + f.size > MAX_EMAIL_SIZE_BYTES) {
+              console.warn(`[email] Anexo ${f.name} ignorado. Limite de 20MB atingido.`)
+              continue
+            }
+
             const fileRes = await fetch(f.url)
             if (fileRes.ok) {
               const arrayBuffer = await fileRes.arrayBuffer()
+              const contentBuffer = Buffer.from(arrayBuffer)
+              
+              if (currentSize + contentBuffer.length > MAX_EMAIL_SIZE_BYTES) {
+                console.warn(`[email] Anexo ${f.name} ignorado após download. Limite atingido.`)
+                continue
+              }
+
               emailAttachments.push({
                 filename: f.name,
-                content: Buffer.from(arrayBuffer)
+                content: contentBuffer
               })
+              currentSize += contentBuffer.length
             }
           } catch (e) {
             console.warn(`[email] Erro ao baixar anexo ${f.name} para o email:`, e)
@@ -213,20 +230,22 @@ export async function registrarDenuncia(
           to:      catData.email_destino,
           subject: `[OFICIAL] Nova Denúncia — Protocolo ${protocolo} — ${catData.label}`,
           text:    `Uma nova denúncia foi registrada para sua área. Protocolo: ${protocolo}.\n\nOs documentos e provas seguem em anexo.`,
-          html:    `
-            <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee;">
-               <h2 style="color: #021691;">Nova Denúncia Recebida</h2>
-               <p>Prezado Responsável,</p>
-               <p>Informamos que uma nova denúncia foi registrada através da plataforma <strong>DENUNCIA MS</strong>.</p>
-               <hr />
-               <p><strong>Protocolo:</strong> ${protocolo}</p>
-               <p><strong>Categoria:</strong> ${catData.label}</p>
-               <p><strong>Título:</strong> ${formData.titulo}</p>
-               <hr />
-               <p>O relatório oficial e todos os anexos de prova (fotos/documentos) seguem anexados a este e-mail.</p>
-               <p style="font-size: 11px; color: #666;">Este é um envio automático do sistema de inteligência cívica Denuncia MS.</p>
-            </div>
-          `,
+          html: gerarEmailOrgao({
+            protocolo,
+            categoria: catData.label,
+            orgao: catData.label,
+            titulo: formData.titulo,
+            descricao: formData.descricao_original,
+            local: localCompleto,
+            data_ocorrido: formData.data_ocorrido || new Date().toISOString(),
+            nome: formData.nome,
+            email: emailNorm,
+            telefone: formData.telefone,
+            cpf: formData.cpf,
+            totalArquivos: arquivosVinculados.length,
+            criado_em: denuncia.criado_em,
+            baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://denuncia-ms.vercel.app'
+          }),
           attachments: emailAttachments
         }).catch(e => console.error('[email] Erro ao notificar destinatário:', e))
       }

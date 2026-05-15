@@ -31,6 +31,7 @@ export function EmailPreview(props: Props) {
     cpf: props.cpf || '(Seu CPF)',
     totalArquivos: props.totalArquivos,
     criado_em: new Date().toISOString(),
+    baseUrl: typeof window !== 'undefined' ? window.location.origin : '',
   })
 
   return (

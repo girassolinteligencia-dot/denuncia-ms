@@ -211,9 +211,16 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
     
     setLoading(true)
     
+    // Clean email_destino to remove empty strings or extra commas
+    const cleanedEmailDestino = editingCat.email_destino
+      ? editingCat.email_destino.split(',').map(e => e.trim()).filter(Boolean).join(',')
+      : ''
+      
+    const catToSave = { ...editingCat, email_destino: cleanedEmailDestino }
+    
     try {
-      if (!editingCat.id || editingCat.id === '') {
-        const result = await createCategoria(editingCat)
+      if (!catToSave.id || catToSave.id === '') {
+        const result = await createCategoria(catToSave)
         if (result.success && result.data) {
           setCategorias(prev => [...prev, result.data as Categoria].sort((a, b) => a.ordem - b.ordem))
           setEditingCat(null)
@@ -222,9 +229,9 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
           toast.error(result.error || 'Erro ao criar categoria')
         }
       } else {
-        const result = await updateCategoria(editingCat.id, editingCat)
+        const result = await updateCategoria(catToSave.id, catToSave)
         if (result.success) {
-          setCategorias(prev => prev.map(c => c.id === editingCat.id ? editingCat : c))
+          setCategorias(prev => prev.map(c => c.id === catToSave.id ? catToSave : c))
           setEditingCat(null)
           toast.success('Categoria parametrizada com sucesso!')
         } else {
@@ -385,19 +392,72 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
                 </div>
 
                 <div>
-                   <label className="label">E-mail de Destino (Parametrização)</label>
-                   <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
-                      <input 
-                        type="email"
-                        className="input pl-10 h-11" 
-                        placeholder="destino@orgao.ms.gov.br"
-                        value={editingCat.email_destino || ''} 
-                        onChange={e => setEditingCat({...editingCat, email_destino: e.target.value})}
-                      />
-                   </div>
+                   <label className="label">E-mails de Destino (Parametrização)</label>
+                   {(() => {
+                      const emails = editingCat.email_destino 
+                        ? editingCat.email_destino.split(',').map(e => e.trim()) 
+                        : [''];
+
+                      if (emails.length === 0) emails.push('');
+
+                      return (
+                        <div className="space-y-3">
+                          {emails.map((email, idx) => (
+                            <div key={idx} className="relative flex items-center gap-2">
+                              <div className="relative flex-1">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
+                                <input 
+                                  type="email"
+                                  className="input pl-10 h-11" 
+                                  placeholder="destino@orgao.ms.gov.br"
+                                  value={email} 
+                                  onChange={e => {
+                                    const val = e.target.value.replace(/,/g, '');
+                                    const newArray = [...emails];
+                                    newArray[idx] = val;
+                                    setEditingCat({
+                                      ...editingCat, 
+                                      email_destino: newArray.join(',')
+                                    });
+                                  }}
+                                />
+                              </div>
+                              {emails.length > 1 && (
+                                <button 
+                                  type="button"
+                                  onClick={() => {
+                                    const newArray = emails.filter((_, i) => i !== idx);
+                                    setEditingCat({
+                                      ...editingCat, 
+                                      email_destino: newArray.join(',')
+                                    });
+                                  }}
+                                  className="p-2 text-error hover:bg-red-50 rounded-lg shrink-0 transition-colors"
+                                  title="Remover e-mail"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newArray = [...emails, ''];
+                              setEditingCat({
+                                ...editingCat, 
+                                email_destino: newArray.join(',')
+                              });
+                            }}
+                            className="text-xs text-primary font-bold flex items-center gap-1 hover:underline mt-2"
+                          >
+                            <Plus size={14} /> Adicionar outro e-mail
+                          </button>
+                        </div>
+                      )
+                   })()}
                    <p className="text-[9px] text-muted mt-2 font-medium italic">
-                      Se vazio, as denuncias desta categoria irão para o e-mail principal da plataforma.
+                      As denúncias desta categoria serão enviadas para todos os e-mails acima. Se vazio, irão para o e-mail principal.
                    </p>
                 </div>
 

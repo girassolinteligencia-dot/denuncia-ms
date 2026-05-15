@@ -27,12 +27,12 @@ export async function limparArquivosOrfaos() {
     if (dbErr) throw dbErr
     const registeredPaths = new Set(dbFiles?.map(f => f.bucket_path) || [])
 
-    // 3. Identificar órfãos antigos (> 24h)
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    // 3. Identificar órfãos antigos (> 3 dias)
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
     const orphans = storageFiles.filter(file => {
       const isRegistered = registeredPaths.has(file.name)
       const createdAt = file.created_at ? new Date(file.created_at) : new Date()
-      const isOld = createdAt < twentyFourHoursAgo
+      const isOld = createdAt < threeDaysAgo
       // Ignorar arquivos de sistema ou pastas
       return !isRegistered && isOld && file.name !== '.emptyFolderPlaceholder'
     })
