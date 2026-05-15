@@ -14,19 +14,28 @@ import {
   Edit2,
   RefreshCw
 } from 'lucide-react'
-import type { Noticia } from '@/types'
+import { getMe } from '@/lib/actions/admin-usuarios'
+import type { Noticia, Profile } from '@/types'
 import { toast } from 'sonner'
 import { upsertNoticia, deleteNoticia } from '@/lib/actions/admin-conteudo'
 import { gerarSugestoesDeNoticias, aprovarNoticia } from '@/lib/actions/intelligence'
 import { X, Save, Upload, CheckCircle2 as CheckCircle } from 'lucide-react'
 
 import { setBoletimAtivo } from '@/lib/actions/enquetes'
-import { ToggleLeft, ToggleRight } from 'lucide-react'
 
 export const NewsManager: React.FC<{ initialNoticias: Noticia[], boletimAtivo: boolean }> = ({ initialNoticias, boletimAtivo }) => {
   const [noticias, setNoticias] = useState<Noticia[]>(initialNoticias)
   const [isBoletimAtivo, setIsBoletimAtivo] = useState(boletimAtivo)
   const [generating, setGenerating] = useState(false)
+  const [profile, setProfile] = React.useState<Profile | null>(null)
+
+  React.useEffect(() => {
+    getMe().then(res => {
+      if (res.success && res.data) {
+        setProfile(res.data)
+      }
+    })
+  }, [])
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingNoticia, setEditingNoticia] = useState<Partial<Noticia> | null>(null)
@@ -237,7 +246,7 @@ export const NewsManager: React.FC<{ initialNoticias: Noticia[], boletimAtivo: b
                  </div>
                  <div className="flex items-center gap-1">
                    <User size={14} />
-                   Paulo Admin
+                   {profile?.nome || 'Administrador'}
                  </div>
               </div>
             </div>

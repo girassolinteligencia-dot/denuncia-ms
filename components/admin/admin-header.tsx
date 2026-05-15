@@ -1,13 +1,31 @@
 'use client'
 
 import React from 'react'
-import { Bell, Search, Menu } from 'lucide-react'
+import { Bell, Search, Menu, Loader2 } from 'lucide-react'
+import { getMe } from '@/lib/actions/admin-usuarios'
+import type { Profile } from '@/types'
 
 interface AdminHeaderProps {
   onMenuClick?: () => void
 }
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({ onMenuClick }) => {
+  const [profile, setProfile] = React.useState<Profile | null>(null)
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    getMe().then(res => {
+      if (res.success && res.data) {
+        setProfile(res.data)
+      }
+      setLoading(false)
+    })
+  }, [])
+
+  const initials = profile?.nome 
+    ? profile.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : '??'
+
   return (
     <header className="h-16 sm:h-20 bg-dark/95 backdrop-blur-xl border-b border-white/5 px-3 sm:px-8 flex items-center justify-between sticky top-0 z-50 w-full shadow-lg">
       <div className="flex items-center gap-2 sm:gap-6 flex-1 max-w-2xl min-w-0">
@@ -44,10 +62,12 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ onMenuClick }) => {
 
         <button className="flex items-center gap-2 sm:gap-3 hover:bg-white/5 p-1 rounded-xl transition-all group shrink-0">
           <div className="w-7 h-7 sm:w-10 sm:h-10 bg-gradient-neon rounded-lg sm:rounded-xl flex items-center justify-center font-black text-white text-[10px] sm:text-sm shadow-glow-cyan">
-            PA
+            {loading ? <Loader2 size={14} className="animate-spin" /> : initials}
           </div>
           <div className="hidden lg:block text-left">
-            <p className="text-xs sm:text-sm font-black text-white tracking-tight group-hover:text-electric truncate max-w-[80px] sm:max-w-none">Paulo Admin</p>
+            <p className="text-xs sm:text-sm font-black text-white tracking-tight group-hover:text-electric truncate max-w-[80px] sm:max-w-none">
+              {loading ? 'Carregando...' : (profile?.nome || 'Usuário')}
+            </p>
           </div>
         </button>
       </div>

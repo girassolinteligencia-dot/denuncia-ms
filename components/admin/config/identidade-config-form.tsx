@@ -7,6 +7,8 @@ import { toast } from 'sonner'
 import { savePlatformConfigs } from '@/lib/actions/config'
 import { uploadArquivo } from '@/lib/storage'
 import { SaveActionFooter } from '@/components/admin/save-action-footer'
+import { getMe } from '@/lib/actions/admin-usuarios'
+import type { Profile } from '@/types'
 
 interface PlataformaConfigData {
   'identidade.nome': string
@@ -31,6 +33,15 @@ export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialDa
     'cores.secundaria': initialData['cores.secundaria'] || '#F5C800',
   })
   const [isDirty, setIsDirty] = useState(false)
+  const [profile, setProfile] = useState<Profile | null>(null)
+
+  useEffect(() => {
+    getMe().then(res => {
+      if (res.success && res.data) {
+        setProfile(res.data)
+      }
+    })
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -368,7 +379,7 @@ export const IdentidadeConfigForm: React.FC<{ initialData: any }> = ({ initialDa
       </div>
 
       <div className="flex items-center justify-between pt-8 border-t border-border">
-         <p className="text-xs text-muted italic">Última atualização: {new Date().toLocaleDateString()} por Paulo Administrativo</p>
+         <p className="text-xs text-muted italic">Última atualização: {new Date().toLocaleDateString()} por {profile?.nome || 'Administrador'}</p>
          <button 
           type="submit" 
           disabled={loading}
