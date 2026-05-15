@@ -245,6 +245,15 @@ export async function createUsuarioAdmin(data: {
 export async function toggleUsuarioStatus(id: string, currentStatus: boolean) {
   const supabase = createAdminClient()
 
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+  const { data: currentProfile } = await supabase.from('profiles').select('role').eq('id', currentUser?.id).single()
+
+  // Trava de Segurança: Apenas Superadmin altera status de outro Superadmin
+  const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', id).single()
+  if (targetProfile?.role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
+    return { success: false, error: 'Acesso Negado: Apenas Super Administradores podem suspender ou reativar outros Super Administradores.' }
+  }
+
   try {
     const { error } = await supabase
       .from('profiles')

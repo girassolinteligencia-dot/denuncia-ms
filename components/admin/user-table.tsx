@@ -109,9 +109,9 @@ export const UserTable: React.FC<{ initialUsers: Profile[], currentUser: Profile
                   <td className="px-6 py-5">
                      <button 
                       onClick={() => handleEdit(user)}
-                      disabled={loading === user.id || !user.ativo}
-                      className="flex items-center gap-2 hover:bg-surface p-2 rounded-lg transition-all disabled:opacity-50"
-                      title="Clique para configurar permissões"
+                      disabled={loading === user.id || !user.ativo || (user.role?.toLowerCase() === 'superadmin' && currentUser?.role?.toLowerCase() !== 'superadmin')}
+                      className="flex items-center gap-2 hover:bg-surface p-2 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                      title={user.role?.toLowerCase() === 'superadmin' && currentUser?.role?.toLowerCase() !== 'superadmin' ? "Apenas Superadmins podem editar este perfil" : "Clique para configurar permissões"}
                      >
                         <Shield size={14} className={user.role === 'admin' ? 'text-secondary' : 'text-primary'} />
                         <span className={`text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'text-secondary' : 'text-dark'}`}>
@@ -122,16 +122,16 @@ export const UserTable: React.FC<{ initialUsers: Profile[], currentUser: Profile
                      </button>
                   </td>
                    <td className="px-6 py-5">
-                      <button 
-                       onClick={() => handleToggleStatus(user.id, user.ativo ?? true)}
-                       disabled={loading === user.id}
-                       className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all active:scale-95 cursor-pointer shadow-sm ${
-                         user.ativo 
-                         ? 'border-green-100 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-400' 
-                         : 'border-red-200 bg-red-100 text-red-800 hover:bg-red-200 hover:border-red-500'
-                       }`}
-                       title={user.ativo ? "Clique para suspender acesso" : "Clique para reativar acesso"}
-                      >
+                       <button 
+                        onClick={() => handleToggleStatus(user.id, user.ativo ?? true)}
+                        disabled={loading === user.id || (user.role?.toLowerCase() === 'superadmin' && currentUser?.role?.toLowerCase() !== 'superadmin')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all active:scale-95 shadow-sm ${
+                          user.ativo 
+                          ? 'border-green-100 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-400' 
+                          : 'border-red-200 bg-red-100 text-red-800 hover:bg-red-200 hover:border-red-500'
+                        } ${(user.role?.toLowerCase() === 'superadmin' && currentUser?.role?.toLowerCase() !== 'superadmin') ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
+                        title={(user.role?.toLowerCase() === 'superadmin' && currentUser?.role?.toLowerCase() !== 'superadmin') ? "Apenas Superadmins podem alterar este status" : (user.ativo ? "Clique para suspender acesso" : "Clique para reativar acesso")}
+                       >
                          {user.ativo ? <Power size={14} className="animate-pulse-slow" /> : <PowerOff size={14} />}
                          <span className="text-[10px] font-black uppercase tracking-widest">
                             {user.ativo ? 'Ativo' : 'Suspenso'}
@@ -204,7 +204,8 @@ export const UserTable: React.FC<{ initialUsers: Profile[], currentUser: Profile
                 
                 <button 
                   onClick={() => handleEdit(user)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary border border-primary/10 rounded-lg text-[9px] font-black uppercase tracking-widest ml-auto"
+                  disabled={user.role?.toLowerCase() === 'superadmin' && currentUser?.role?.toLowerCase() !== 'superadmin'}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary border border-primary/10 rounded-lg text-[9px] font-black uppercase tracking-widest ml-auto disabled:opacity-30"
                 >
                    <Edit2 size={12} /> Editar
                 </button>
