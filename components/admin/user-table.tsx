@@ -14,7 +14,7 @@ import type { Profile } from '@/types'
 import { deleteUsuario, toggleUsuarioStatus } from '@/lib/actions/admin-usuarios'
 import { CreateUserModal } from './create-user-modal'
 
-export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers }) => {
+export const UserTable: React.FC<{ initialUsers: Profile[], currentUser: Profile | null }> = ({ initialUsers, currentUser }) => {
   const [usuarios, setUsuarios] = useState<Profile[]>(initialUsers)
   const [loading, setLoading] = useState<string | null>(null)
   const [modalAberto, setModalAberto] = useState(false)
@@ -139,14 +139,17 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
                       </button>
                    </td>
                   <td className="px-6 py-5 text-right">
-                    <button 
-                      onClick={() => handleDelete(user.id)}
-                      disabled={loading === user.id}
-                      className="p-2 text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" 
-                      title="Excluir Definitivamente"
-                    >
-                      {loading === user.id ? <RefreshCw className="animate-spin" size={16} /> : <Trash2 size={16} />}
-                    </button>
+                    {/* Trava de Segurança: Apenas Superadmin exclui outro Superadmin */}
+                    {(user.role !== 'superadmin' || currentUser?.role === 'superadmin') && (
+                      <button 
+                        onClick={() => handleDelete(user.id)}
+                        disabled={loading === user.id}
+                        className="p-2 text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" 
+                        title="Excluir Definitivamente"
+                      >
+                        {loading === user.id ? <RefreshCw className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -168,14 +171,17 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
                     <p className="text-[10px] text-muted font-mono">{user.email || 'N/A'}</p>
                   </div>
                 </div>
-                <button 
-                  onClick={() => handleDelete(user.id)}
-                  disabled={loading === user.id}
-                  className="p-2 text-muted hover:text-red-600"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
+                  {/* Trava de Segurança Mobile */}
+                  {(user.role !== 'superadmin' || currentUser?.role === 'superadmin') && (
+                    <button 
+                      onClick={() => handleDelete(user.id)}
+                      disabled={loading === user.id}
+                      className="p-2 text-muted hover:text-red-600"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
+                </div>
 
               <div className="flex flex-wrap items-center gap-2">
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface rounded-lg border border-border">
@@ -212,6 +218,7 @@ export const UserTable: React.FC<{ initialUsers: Profile[] }> = ({ initialUsers 
         isOpen={modalAberto} 
         onClose={() => setModalAberto(false)}
         userToEdit={usuarioParaEditar}
+        currentUser={currentUser}
         onSuccess={() => {
           window.location.reload()
         }}

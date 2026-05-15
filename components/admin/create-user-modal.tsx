@@ -11,9 +11,10 @@ interface CreateUserModalProps {
   onClose: () => void
   onSuccess: () => void
   userToEdit?: Profile | null
+  currentUser: Profile | null
 }
 
-export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClose, onSuccess, userToEdit }) => {
+export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClose, onSuccess, userToEdit, currentUser }) => {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     nome: '',
@@ -222,22 +223,29 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
             
             <div className="bg-surface p-4 rounded-2xl space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {(['admin', 'moderador', 'comunicador'] as UserRole[]).map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => handleRoleChange(r)}
-                    className={`py-3 rounded-xl border-2 text-[9px] font-black uppercase tracking-tight transition-all ${
-                      formData.role === r 
-                      ? 'bg-primary border-primary text-white shadow-md' 
-                      : 'bg-white border-border text-muted hover:border-primary/30'
-                    }`}
-                  >
-                    {r === 'admin' ? 'Administrador Master' : 
-                     r === 'moderador' ? 'Analista de Ouvidoria' : 
-                     r === 'comunicador' ? 'Gestor de Comunicação' : r}
-                  </button>
-                ))}
+                {/* Apenas Superadmin pode atribuir cargo de Superadmin ou Admin Master a outros */}
+                {(['superadmin', 'admin', 'moderador', 'comunicador'] as UserRole[])
+                  .filter(r => {
+                    if (r === 'superadmin') return currentUser?.role === 'superadmin'
+                    return true
+                  })
+                  .map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => handleRoleChange(r)}
+                      className={`py-3 rounded-xl border-2 text-[9px] font-black uppercase tracking-tight transition-all ${
+                        formData.role === r 
+                        ? 'bg-primary border-primary text-white shadow-md' 
+                        : 'bg-white border-border text-muted hover:border-primary/30'
+                      }`}
+                    >
+                      {r === 'superadmin' ? 'Super Administrador' :
+                       r === 'admin' ? 'Administrador Master' : 
+                       r === 'moderador' ? 'Analista de Ouvidoria' : 
+                       r === 'comunicador' ? 'Gestor de Comunicação' : r}
+                    </button>
+                  ))}
               </div>
 
               <div className="pt-2">

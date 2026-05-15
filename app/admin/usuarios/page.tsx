@@ -31,7 +31,7 @@ export default async function UsuariosPage() {
       </div>
 
       {/* Tabela de Usuários Reais */}
-      <UserTable initialUsers={usuarios || []} />
+      <UserTable initialUsers={usuarios || []} currentUser={me.data || null} />
 
       {/* Info Contextual */}
       <div className="bg-dark rounded-3xl p-8 text-white relative overflow-hidden">

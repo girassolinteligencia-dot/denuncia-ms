@@ -144,6 +144,14 @@ export async function createUsuarioAdmin(data: {
 }) {
   const supabase = createAdminClient()
 
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+  const { data: currentProfile } = await supabase.from('profiles').select('role').eq('id', currentUser?.id).single()
+
+  // Trava de Segurança: Apenas Superadmin cria outro Superadmin
+  if (data.role === 'superadmin' && currentProfile?.role !== 'superadmin') {
+    return { success: false, error: 'Apenas Super Administradores podem criar outros Super Administradores.' }
+  }
+
   try {
     // 1. Criar no Auth do Supabase com senha definida e e-mail já confirmado
     let authUserRes = await supabase.auth.admin.createUser({
@@ -262,6 +270,20 @@ export async function updateUsuarioAdmin(id: string, data: {
 }) {
   const supabase = createAdminClient()
 
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+  const { data: currentProfile } = await supabase.from('profiles').select('role').eq('id', currentUser?.id).single()
+
+  // Trava de Segurança: Apenas Superadmin edita outro Superadmin
+  const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', id).single()
+  if (targetProfile?.role === 'superadmin' && currentProfile?.role !== 'superadmin') {
+    return { success: false, error: 'Apenas Super Administradores podem editar perfis de Super Administrador.' }
+  }
+
+  // Trava de Segurança: Apenas Superadmin pode elevar alguém a Superadmin
+  if (data.role === 'superadmin' && currentProfile?.role !== 'superadmin') {
+    return { success: false, error: 'Você não tem permissão para elevar usuários ao cargo de Super Administrador.' }
+  }
+
   try {
     const { error } = await supabase
       .from('profiles')
@@ -286,6 +308,20 @@ export async function updateUsuarioAdmin(id: string, data: {
 export async function updateUsuarioRole(id: string, role: UserRole) {
   const supabase = createAdminClient()
 
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+  const { data: currentProfile } = await supabase.from('profiles').select('role').eq('id', currentUser?.id).single()
+
+  // Trava de Segurança: Apenas Superadmin edita outro Superadmin
+  const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', id).single()
+  if (targetProfile?.role === 'superadmin' && currentProfile?.role !== 'superadmin') {
+    return { success: false, error: 'Apenas Super Administradores podem editar perfis de Super Administrador.' }
+  }
+
+  // Trava de Segurança: Apenas Superadmin pode elevar alguém a Superadmin
+  if (role === 'superadmin' && currentProfile?.role !== 'superadmin') {
+    return { success: false, error: 'Você não tem permissão para elevar usuários ao cargo de Super Administrador.' }
+  }
+
   try {
     const { error } = await supabase
       .from('profiles')
@@ -306,6 +342,15 @@ export async function updateUsuarioRole(id: string, role: UserRole) {
  */
 export async function deleteUsuario(id: string) {
   const supabase = createAdminClient()
+
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+  const { data: currentProfile } = await supabase.from('profiles').select('role').eq('id', currentUser?.id).single()
+
+  // Trava de Segurança: Apenas Superadmin deleta outro Superadmin
+  const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', id).single()
+  if (targetProfile?.role === 'superadmin' && currentProfile?.role !== 'superadmin') {
+    return { success: false, error: 'Acesso Negado: Apenas Super Administradores podem excluir outros Super Administradores.' }
+  }
 
   try {
     // 1. Deletar do Auth (Service Role permite isso)
