@@ -86,7 +86,23 @@
 - Se aparecer erro 'column X does not exist' no PostgREST: executar NOTIFY pgrst, 'reload schema' no SQL Editor
 
 
+### 22/05/2026 — Implementação de Anonimato & Controle de Acesso
+- [x] **Coluna `permite_anonimato`**: Adicionada a tabela `categorias` via migration 20260521_add_permite_anonimato.sql
+- [x] **Commit 79199b7**: `feat: implement anonymous donations & access control` — 23 arquivos alterados
+- [x] **Schema Sincronizado**: Todas as 4 migrations aplicadas com sucesso
+  - 20260422_create_identidades_and_chave.sql — Tabela `identidades` (PII criptografada)
+  - 20260423_sistema_enquetes.sql — Enquetes parametrizáveis
+  - 20260423_production_readiness.sql — Tabelas de despacho, PDF e blacklist
+  - 20260521_add_permite_anonimato.sql — Suporte a denúncias anônimas por categoria
+- [x] **Build**: Compilado com sucesso, 44 rotas disponíveis
+- [x] **Servidor**: Localhost rodando em porta 3001 sem erros críticos
+- [x] **Arquivos Novos**: 
+  - lib/admin-access.ts — Controle de acesso centralizado por role
+  - components/admin/geo-heatmap-layer.tsx — Mapa de calor geográfico
+- [x] **Status**: 100% implementado e sincronizado
+
+
 ## SCHEMA REAL DA TABELA categorias
-- NÃO tem coluna email_destino
-- Colunas: id, slug, label, bloco, icon_name, instrucao_publica, aviso_legal, template_descricao, ativo, ordem, criado_em, atualizado_em, destaque, ordem_destaque, alerta_urgencia, exige_local, exige_data, numeros_emergencia
+- Colunas: id, slug, label, bloco, icon_name, instrucao_publica, aviso_legal, template_descricao, ativo, permite_anonimato, ordem, criado_em, atualizado_em, destaque, ordem_destaque, alerta_urgencia, exige_local, exige_data, numeros_emergencia
+- **NOVO (22/05)**: permite_anonimato boolean DEFAULT false
 - IconPicker usa position:fixed para escapar de containers com overflow-y-auto
