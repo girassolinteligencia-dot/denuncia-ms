@@ -76,8 +76,6 @@ export default async function DenunciarPage() {
         }>
           <DenunciaFormWizard 
             categorias={categorias} 
-            campos={campos} 
-            politicasArquivo={politicasArquivo} 
           />
         </Suspense>
       </div>

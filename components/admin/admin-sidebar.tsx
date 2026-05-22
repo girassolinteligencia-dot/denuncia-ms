@@ -22,6 +22,7 @@ import {
 
 import { logout } from '@/lib/actions/auth'
 import { getMe } from '@/lib/actions/admin-usuarios'
+import { hasAdminPermission, isFullAdminEmail, isFullAdminRole, normalizeRole } from '@/lib/admin-access'
 import type { Profile } from '@/types'
 
 export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> = ({ isOpen, onClose }) => {
@@ -54,23 +55,13 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
   }, [])
 
   // Normaliza o cargo para facilitar a checagem
-  const role = userProfile?.role?.toLowerCase() || ''
-  const isAdminMaster = role === 'admin' || 
-                        role === 'superadmin' || 
-                        role === 'administrador' ||
-                        userProfile?.email === 'plataformainteligente@gmail.com' ||
-                        userProfile?.email === 'paulofernandogarcardoso@gmail.com' ||
-                        userProfile?.email === 'pastygomez@gmail.com'
-  
-  const permissoes = userProfile?.permissoes || []
+  const role = normalizeRole(userProfile?.role)
+  const isAdminMaster = isFullAdminRole(role) || isFullAdminEmail(userProfile?.email)
 
   // Função robusta de verificação de acesso
   const temAcesso = (modulo: string) => {
     if (loading) return false
-    // Se for admin master ou superadmin, tem acesso a TUDO
-    if (isAdminMaster) return true
-    // Caso contrário, verifica a lista de permissões específicas
-    return Array.isArray(permissoes) && permissoes.includes(modulo)
+    return hasAdminPermission(userProfile, modulo)
   }
 
   const handleLogout = async () => {

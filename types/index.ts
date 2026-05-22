@@ -81,6 +81,7 @@ export interface Categoria {
   template_descricao: { topico: string; placeholder: string }[]
   email_destino?: string
   ativo: boolean
+  permite_anonimato: boolean
   ordem: number
   criado_em: string
   atualizado_em: string
@@ -96,12 +97,21 @@ export interface IntegracaoDestino {
   categoria_id: string
   tipo: TipoIntegracao
   email_para: string[] | null
+  email_cc: string[] | null
+  email_bcc: string[] | null
+  email_assunto_template: string | null
+  prioridade: PrioridadeEmail
   webhook_url: string | null
   webhook_metodo: MetodoWebhook
+  webhook_headers: Record<string, string> | null
   webhook_auth_tipo: TipoAuthWebhook
-  webhook_auth_dados: unknown | null
+  webhook_auth_dados: string | null
+  webhook_body_template: string | null
+  webhook_timeout: number
   webhook_retry_max: number
   ativo: boolean
+  criado_em?: string
+  atualizado_em?: string
 }
 
 export type StatusDenuncia =
@@ -118,7 +128,7 @@ export interface Denuncia {
   categoria_id: string
   titulo: string
   descricao_original: string
-  documento_final: string
+  documento_final?: string
   local: string | null
   cep: string | null
   numero: string | null
@@ -132,10 +142,13 @@ export interface Denuncia {
   longitude?: number | null
   municipio?: string | null
   arquivos?: ArquivoDenuncia[]
-  // Virtual fields — populated server-side by getDenunciaDetalhes (decrypted PII)
+  arquivos_denuncia?: ArquivoDenuncia[]
+  // Virtual fields — populated server-side by getDenunciaDetalhes
+  categorias?: { label: string; icon_name: string | null } | null
   denunciante_nome?: string | null
   denunciante_email?: string | null
   denunciante_telefone?: string | null
+  anonima?: boolean
 }
 
 export interface ArquivoDenuncia {
@@ -208,6 +221,8 @@ export interface LogAuditoria {
   valor_anterior: unknown | null
   valor_novo: unknown | null
   criado_em: string
+  // Virtual: populado por getRecentActivities via join lateral
+  usuario?: { id: string; nome: string } | null
 }
 
 export interface AuditIdentidade {
@@ -238,6 +253,7 @@ export interface SubmitDenunciaRequest {
   latitude?: number | null
   longitude?: number | null
   municipio?: string | null
+  is_anonima?: boolean
 }
 
 export interface ConsultaProtocoloResponse {

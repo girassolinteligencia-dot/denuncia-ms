@@ -12,9 +12,6 @@ import {
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-import { useMap } from 'react-leaflet'
-import L from 'leaflet'
-import 'leaflet.heat'
 import 'leaflet/dist/leaflet.css'
 
 // Carregamento dinâmico do Leaflet para evitar erros de SSR
@@ -22,6 +19,7 @@ const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapCo
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
+const HeatmapLayer = dynamic(() => import('./geo-heatmap-layer').then(mod => mod.HeatmapLayer), { ssr: false })
 
 interface GeoData {
   id: string
@@ -32,29 +30,6 @@ interface GeoData {
   lng: number
   municipio: string
   criado_em: string
-}
-
-// Subcomponente para renderizar a camada de calor
-const HeatmapLayer = ({ points }: { points: [number, number, number][] }) => {
-  const map = useMap()
-
-  useEffect(() => {
-    if (!map || !points.length) return
-    
-    // @ts-expect-error - leaflet.heat adiciona heatLayer ao objeto L
-    const layer = L.heatLayer(points, {
-      radius: 25,
-      blur: 15,
-      maxZoom: 17,
-      gradient: { 0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1: 'red' }
-    }).addTo(map)
-
-    return () => {
-      map.removeLayer(layer)
-    }
-  }, [map, points])
-
-  return null
 }
 
 export const AdminGeoIntelligence = ({ data }: { data: GeoData[] }) => {

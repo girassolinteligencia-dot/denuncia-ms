@@ -159,10 +159,16 @@ export async function getDenunciaDetalhes(id: string) {
       }
     }
 
+    // Normaliza join: Supabase pode retornar array mesmo em relação 1:1
+    const categoriasNormalizada = Array.isArray(data.categorias)
+      ? data.categorias[0] || null
+      : data.categorias
+
     return {
       success: true,
       data: {
         ...data,
+        categorias: categoriasNormalizada,
         denunciante_nome,
         denunciante_email,
         denunciante_telefone,
@@ -233,12 +239,24 @@ export async function getRecentActivities() {
   try {
     const { data, error } = await supabase
       .from('log_auditoria')
-      .select('*, usuario:profiles(nome)')
+      .select('*')
       .order('criado_em', { ascending: false })
       .limit(6)
 
     if (error) throw error
-    return { success: true, data }
+
+    const usuarioIds = Array.from(new Set((data || []).map((item: any) => item.usuario_id).filter(Boolean)))
+    const { data: profiles } = usuarioIds.length > 0
+      ? await supabase.from('profiles').select('id, nome').in('id', usuarioIds)
+      : { data: [] }
+
+    const profileMap = new Map((profiles || []).map((profile: any) => [profile.id, profile]))
+    const mergedData = (data || []).map((item: any) => ({
+      ...item,
+      usuario: item.usuario_id ? profileMap.get(item.usuario_id) || null : null,
+    }))
+
+    return { success: true, data: mergedData }
   } catch (err: any) {
     console.error('Erro ao buscar atividades:', err)
     return { success: false, error: err.message }

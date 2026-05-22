@@ -41,8 +41,8 @@ export async function gerarSugestoesDeNoticias() {
       return acc
     }, { categorias: {}, municipios: {}, recentes: [] })
 
-    const categoriaTop = Object.entries(analise.categorias).sort((a: any, b: any) => b[1] - a[1])[0]
-    const municipioTop = Object.entries(analise.municipios).sort((a: any, b: any) => b[1] - a[1])[0]
+    const categoriaTop = (Object.entries(analise.categorias) as [string, number][]).sort((a, b) => b[1] - a[1])[0]
+    const municipioTop = (Object.entries(analise.municipios) as [string, number][]).sort((a, b) => b[1] - a[1])[0]
 
     // 3. Gerar Notícia Baseada em Contexto Real
     // Simulando o raciocínio da IA com base nos dados reais

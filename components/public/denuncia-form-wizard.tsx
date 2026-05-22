@@ -47,6 +47,7 @@ interface Categoria {
   instrucao_publica: string | null
   aviso_legal: string | null
   template_descricao: { topico: string; placeholder: string }[]
+  permite_anonimato?: boolean
 }
 
 interface ArquivoAnexo {
@@ -78,6 +79,7 @@ interface DenunciaFormData {
   arquivos: ArquivoAnexo[]
   consentimento: boolean
   otpToken: string
+  is_anonima?: boolean
 }
 
 // Funções de Validação
@@ -152,6 +154,7 @@ export function DenunciaFormWizard({
     arquivos: [],
     consentimento: false,
     otpToken: '',
+    is_anonima: false,
   })
 
   // Monitorar Conectividade
@@ -381,9 +384,11 @@ export function DenunciaFormWizard({
       return
     }
 
-    if (!formData.telefone || !formData.cpf) {
-      toast.error('Telefone e CPF são obrigatórios para a identificação oficial.')
-      return
+    if (!formData.is_anonima) {
+      if (!formData.telefone || !formData.cpf) {
+        toast.error('Telefone e CPF são obrigatórios para a identificação oficial.')
+        return
+      }
     }
 
     const arquivosProntos = formData.arquivos.filter(a => a.status === 'sucesso')
@@ -993,8 +998,24 @@ export function DenunciaFormWizard({
                   </div>
                 )}
 
+                {/* FASE DE OPÇÃO POR ANONIMATO */}
+                {currentCategory?.permite_anonimato && (
+                  <label className={`flex items-start gap-4 p-6 rounded-2xl border-2 cursor-pointer transition-all ${formData.is_anonima ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-border/50'} relative z-10 mb-6`}>
+                    <input type="checkbox" className="hidden" checked={formData.is_anonima} onChange={(e) => handleInputChange('is_anonima', e.target.checked)} />
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border-2 mt-1 transition-all ${formData.is_anonima ? 'bg-primary border-primary text-white' : 'bg-white border-border/60 text-transparent'}`}>
+                      <Check size={16} strokeWidth={4} />
+                    </div>
+                    <div className="space-y-2 text-left">
+                      <p className="text-[12px] font-black text-dark uppercase tracking-widest italic">Denúncia Anônima</p>
+                      <p className="text-[11px] text-muted font-medium leading-relaxed italic">
+                        Desejo fazer esta denúncia de forma anônima. Não fornecerei meus dados, mas abro mão de receber o acompanhamento por e-mail.
+                      </p>
+                    </div>
+                  </label>
+                )}
+
                 {/* FASE 1: NOME E EMAIL */}
-                {!otpValidado && (
+                {!formData.is_anonima && !otpValidado && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                     <div className="space-y-2">
                       <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">Nome Completo *</p>
@@ -1022,7 +1043,7 @@ export function DenunciaFormWizard({
                 )}
 
                 {/* FASE 2: CÓDIGO OTP */}
-                {!otpValidado && (
+                {!formData.is_anonima && !otpValidado && (
                   <div className="pt-4 relative z-10">
                     {!otpEnviado ? (
                       <button id="btn-gerar-codigo" onClick={handleSolicitarOTP} disabled={loadingOtp || !validarEmail(formData.email) || !formData.nome || cooldown > 0 || !isOnline}
@@ -1057,7 +1078,7 @@ export function DenunciaFormWizard({
                 )}
 
                 {/* FASE 3: IDENTIFICAÇÃO FINAL (CPF E WHATSAPP) */}
-                {otpValidado && (
+                {(!formData.is_anonima && otpValidado) && (
                   <div className="space-y-8 animate-slide-up">
                     <div className="bg-primary/5 border border-primary/10 p-6 rounded-[2rem] space-y-4">
                       <div className="flex items-center gap-2 text-primary">
@@ -1097,9 +1118,11 @@ export function DenunciaFormWizard({
                         />
                       </div>
                     </div>
+                  </div>
+                )}
 
-                    {/* TERMO DE RESPONSABILIDADE JURÍDICA */}
-                    <label id="field-consentimento" className={`flex items-start gap-4 p-6 rounded-2xl border-2 cursor-pointer transition-all ${formData.consentimento ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-border/50'}`}>
+                {/* TERMO DE RESPONSABILIDADE JURÍDICA */}
+                <label id="field-consentimento" className={`flex items-start gap-4 p-6 rounded-2xl border-2 cursor-pointer transition-all ${formData.consentimento ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-border/50'}`}>
                       <input type="checkbox" className="hidden" checked={formData.consentimento} onChange={(e) => {
                         handleInputChange('consentimento', e.target.checked)
                         if(e.target.checked) handleFieldScroll()
@@ -1113,22 +1136,20 @@ export function DenunciaFormWizard({
                           Confirmo, sob as penas da lei, que os fatos aqui relatados são fidedignos e condizentes com a verdade. Declaro estar ciente de que a prestação de informações falsas ou a comunicação de crime inexistente configura o crime de **Denunciação Caluniosa (Art. 339 do Código Penal)**, além de sujeitar o declarante a sanções civis por danos morais e materiais e responsabilidades administrativas, conforme a legislação brasileira vigente.
                         </p>
                       </div>
-                    </label>
-                  </div>
-                )}
+                </label>
               </div>
 
               <div className="space-y-6">
                 <button 
                   onClick={() => setPreviewAberto(!previewAberto)} 
-                  disabled={!validarTelefone(formData.telefone) || !validarCPF(formData.cpf)}
+                  disabled={!formData.is_anonima && (!validarTelefone(formData.telefone) || !validarCPF(formData.cpf))}
                   className="w-full p-6 bg-surface border-2 border-border/50 rounded-3xl flex items-center justify-between group hover:border-primary/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <div className="flex items-center gap-4">
-                    <FileText className={(!validarTelefone(formData.telefone) || !validarCPF(formData.cpf)) ? 'text-muted' : 'text-primary'} size={24} />
+                    <FileText className={(!formData.is_anonima && (!validarTelefone(formData.telefone) || !validarCPF(formData.cpf))) ? 'text-muted' : 'text-primary'} size={24} />
                     <div className="text-left">
                       <p className="text-xs font-black uppercase tracking-widest">Visualizar Cópia Digital</p>
-                      {(!validarTelefone(formData.telefone) || !validarCPF(formData.cpf)) && (
+                      {(!formData.is_anonima && (!validarTelefone(formData.telefone) || !validarCPF(formData.cpf))) && (
                         <p className="text-[10px] text-red-500 font-bold uppercase italic mt-1">Insira um Telefone e CPF válidos para liberar a prévia</p>
                       )}
                     </div>
@@ -1162,11 +1183,13 @@ export function DenunciaFormWizard({
                     onClick={() => {
                       console.log('[wizard] Clique no botão Finalizar detectado.')
                       if (!formData.consentimento) { toast.error('Concorde com os termos primeiro.'); return }
-                      if (!validarTelefone(formData.telefone)) { toast.error('Telefone inválido.'); return }
-                      if (!validarCPF(formData.cpf)) { toast.error('CPF inválido.'); return }
+                      if (!formData.is_anonima) {
+                        if (!validarTelefone(formData.telefone)) { toast.error('Telefone inválido.'); return }
+                        if (!validarCPF(formData.cpf)) { toast.error('CPF inválido.'); return }
+                      }
                       handleSubmit()
                     }}
-                    disabled={loading || !formData.consentimento || !otpValidado || !isOnline || !validarTelefone(formData.telefone) || !validarCPF(formData.cpf)}
+                    disabled={loading || !formData.consentimento || (!formData.is_anonima && !otpValidado) || !isOnline || (!formData.is_anonima && (!validarTelefone(formData.telefone) || !validarCPF(formData.cpf)))}
                     className="btn-primary w-full sm:w-auto h-14 sm:h-20 px-8 sm:px-12 rounded-xl sm:rounded-[2rem] gap-4 bg-secondary hover:bg-secondary-600 disabled:opacity-30 shadow-glow-green fixed bottom-4 right-4 left-24 sm:static sm:bottom-auto sm:right-auto sm:left-auto z-40"
                   >
                     {loading ? <Loader2 className="animate-spin" /> : <Send size={20} className="sm:w-6 sm:h-6" />}

@@ -9,15 +9,24 @@ export const metadata = {
 
 export default async function NoticiasPage() {
   const supabase = createAdminClient()
-  
-  const { data: noticias, error } = await supabase
-    .from('noticias')
-    .select('*')
-    .order('criado_em', { ascending: false })
+
+  const [{ data: noticias, error }, { data: boletimRow }] = await Promise.all([
+    supabase
+      .from('noticias')
+      .select('*')
+      .order('criado_em', { ascending: false }),
+    supabase
+      .from('plataforma_config')
+      .select('valor')
+      .eq('chave', 'funcionalidade.boletim_ativo')
+      .maybeSingle()
+  ])
 
   if (error) {
     return <div className="p-8 text-error">Erro ao carregar notícias: {error.message}</div>
   }
+
+  const boletimAtivo = boletimRow?.valor === true || boletimRow?.valor === 'true'
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -30,7 +39,7 @@ export default async function NoticiasPage() {
         </div>
       </div>
 
-      <NewsManager initialNoticias={noticias || []} />
+      <NewsManager initialNoticias={noticias || []} boletimAtivo={boletimAtivo} />
     </div>
   )
 }

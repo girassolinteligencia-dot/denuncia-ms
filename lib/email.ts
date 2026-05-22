@@ -8,10 +8,11 @@ let resendInstance: Resend | null = null
 function getResend() {
   if (!resendInstance) {
     if (!process.env.RESEND_API_KEY) {
-      // No servidor, isso deve estar configurado.
-      // Se chegar aqui no cliente, retornamos um proxy ou falhamos silenciosamente para não quebrar o app
       if (typeof window !== 'undefined') {
         console.warn('[Email] Tentativa de inicializar Resend no cliente bloqueada.')
+        return null
+      }
+      if (process.env.NODE_ENV !== 'production') {
         return null
       }
       throw new Error('RESEND_API_KEY não configurada no servidor.')
@@ -37,7 +38,16 @@ export async function sendEmail(params: EmailParams) {
 
   try {
     const resend = getResend()
-    if (!resend) throw new Error('Serviço de e-mail indisponível no cliente.')
+    if (!resend) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[Email][DEV] RESEND_API_KEY ausente — simulando envio:')
+        console.warn(`  to: ${Array.isArray(to) ? to.join(', ') : to}`)
+        console.warn(`  subject: ${subject}`)
+        console.warn(`  text: ${text}`)
+        return { id: 'dev-mock' } as any
+      }
+      throw new Error('Serviço de e-mail indisponível no cliente.')
+    }
 
     const fromEmail = process.env.EMAIL_FROM || 'Denuncia MS <onboarding@resend.dev>'
     const replyTo = process.env.EMAIL_REPLY_TO || 'denunciams.ouvidoria@gmail.com'

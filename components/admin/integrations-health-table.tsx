@@ -47,8 +47,16 @@ export const IntegrationsHealthTable: React.FC<{ data: any[] }> = ({ data }) => 
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex gap-1">
-                    {item.tem_email && <Mail size={16} className="text-primary" title="E-mail" />}
-                    {item.tem_webhook && <Zap size={16} className="text-secondary" title="Webhook" />}
+                    {item.tem_email && (
+                      <span title="E-mail" className="inline-flex">
+                        <Mail size={16} className="text-primary" />
+                      </span>
+                    )}
+                    {item.tem_webhook && (
+                      <span title="Webhook" className="inline-flex">
+                        <Zap size={16} className="text-secondary" />
+                      </span>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-4">

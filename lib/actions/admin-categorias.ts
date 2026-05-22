@@ -24,6 +24,7 @@ export async function updateCategoria(id: string, updates: Partial<Categoria>) {
         ativo: updates.ativo,
         ordem: updates.ordem,
         bloco: updates.bloco,
+        permite_anonimato: updates.permite_anonimato ?? false,
         atualizado_em: new Date().toISOString()
       })
       .eq('id', id)
@@ -68,6 +69,7 @@ export async function createCategoria(categoria: Partial<Categoria>) {
         template_descricao: saveData.template_descricao || [],
         ativo: true,
         ordem: saveData.ordem || 0,
+        permite_anonimato: saveData.permite_anonimato ?? false,
         criado_em: new Date().toISOString(),
         atualizado_em: new Date().toISOString()
       })

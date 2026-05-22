@@ -4,6 +4,12 @@ import { createAdminClient } from '@/lib/supabase-admin'
 import { revalidatePath } from 'next/cache'
 import type { UserRole, Profile } from '@/types'
 import { sendEmail } from '../email'
+import {
+  FULL_ADMIN_PERMISSIONS,
+  getPermissionsForRole,
+  isFullAdminEmail,
+  normalizeRole,
+} from '@/lib/admin-access'
 
 /**
  * Busca todos os usuários/perfis do sistema
@@ -15,7 +21,7 @@ export async function getUsuarios() {
     // 1. Buscar perfis
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
-      .select('id, nome, role, criado_em, permissoes, ativo')
+      .select('id, nome, role, criado_em, atualizado_em, permissoes, ativo')
       .order('criado_em', { ascending: false })
 
     if (profileError) throw profileError
@@ -75,10 +81,13 @@ export async function getMe() {
       .single()
 
     // 2. Lógica de Reparo para Administradores
-    const masterEmails = ['plataformainteligente@gmail.com', 'paulofernandogarcardoso@gmail.com', 'pastygomez@gmail.com']
-    if (masterEmails.includes(user.email || '')) {
+    const isTrustedMasterEmail = isFullAdminEmail(user.email)
+    if (isTrustedMasterEmail) {
       try {
-        if (!profile || (profile.role !== 'superadmin' && profile.role !== 'admin') || !profile.permissoes?.includes('usuarios')) {
+        const profileRole = normalizeRole(profile?.role)
+        const hasFullPermissions = FULL_ADMIN_PERMISSIONS.every((permission) => profile?.permissoes?.includes(permission))
+
+        if (!profile || (profileRole !== 'superadmin' && profileRole !== 'admin') || !hasFullPermissions) {
           console.log(`[REPAIR] Tentando elevar/corrigir privilégios para ${user.email}`)
           const adminSupabase = createAdminClient()
           
@@ -88,14 +97,14 @@ export async function getMe() {
             .upsert({
               id: user.id,
               nome: profile?.nome || user.user_metadata?.nome || 'Administrador',
-              role: (profile?.role === 'admin' || profile?.role === 'superadmin') ? profile.role : 'admin',
-              permissoes: ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"],
+              role: profileRole === 'admin' || profileRole === 'superadmin' ? profileRole : 'superadmin',
+              permissoes: FULL_ADMIN_PERMISSIONS,
               ativo: true,
               atualizado_em: new Date().toISOString()
-            })
-          
-          // Tentar buscar novamente após o reparo
-          const { data: refreshedProfile } = await supabase
+            }, { onConflict: 'id' })
+
+          // Refetch com service role para evitar bloqueio de RLS na mesma sessão
+          const { data: refreshedProfile } = await adminSupabase
             .from('profiles')
             .select('id, nome, role, criado_em, permissoes, ativo')
             .eq('id', user.id)
@@ -112,15 +121,17 @@ export async function getMe() {
 
     // 3. Retornar o perfil encontrado ou um objeto básico se falhar, mas garantindo o e-mail
     if (profileError || !profile) {
-      console.warn('[DB] Perfil não encontrado, retornando dados básicos do Auth')
-      return { 
+      if (!isTrustedMasterEmail) {
+        console.warn('[DB] Perfil não encontrado, retornando dados básicos do Auth')
+      }
+      return {
         success: true, 
         data: { 
           id: user.id, 
           nome: user.user_metadata?.nome || 'Usuário', 
-          role: (masterEmails.includes(user.email || '') ? 'admin' : 'user') as any,
+          role: (isTrustedMasterEmail ? 'superadmin' : 'user') as any,
           email: user.email,
-          permissoes: masterEmails.includes(user.email || '') ? ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"] : []
+          permissoes: isTrustedMasterEmail ? FULL_ADMIN_PERMISSIONS : []
         } as any 
       }
     }
@@ -148,7 +159,7 @@ export async function createUsuarioAdmin(data: {
   const { data: currentProfile } = await supabase.from('profiles').select('role').eq('id', currentUser?.id).single()
 
   // Trava de Segurança: Apenas Superadmin cria outro Superadmin
-  if (data.role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
+  if (normalizeRole(data.role) === 'superadmin' && normalizeRole(currentProfile?.role) !== 'superadmin') {
     return { success: false, error: 'Apenas Super Administradores podem criar outros Super Administradores.' }
   }
 
@@ -186,7 +197,7 @@ export async function createUsuarioAdmin(data: {
         id: authUser.user.id,
         nome: data.nome, 
         role: data.role,
-        permissoes: data.permissoes,
+        permissoes: getPermissionsForRole(data.role).length ? getPermissionsForRole(data.role) : data.permissoes,
         ativo: true,
         atualizado_em: new Date().toISOString()
       })
@@ -250,7 +261,7 @@ export async function toggleUsuarioStatus(id: string, currentStatus: boolean) {
 
   // Trava de Segurança: Apenas Superadmin altera status de outro Superadmin
   const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', id).single()
-  if (targetProfile?.role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
+  if (normalizeRole(targetProfile?.role) === 'superadmin' && normalizeRole(currentProfile?.role) !== 'superadmin') {
     return { success: false, error: 'Acesso Negado: Apenas Super Administradores podem suspender ou reativar outros Super Administradores.' }
   }
 
@@ -284,12 +295,12 @@ export async function updateUsuarioAdmin(id: string, data: {
 
   // Trava de Segurança: Apenas Superadmin edita outro Superadmin
   const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', id).single()
-  if (targetProfile?.role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
+  if (normalizeRole(targetProfile?.role) === 'superadmin' && normalizeRole(currentProfile?.role) !== 'superadmin') {
     return { success: false, error: 'Apenas Super Administradores podem editar perfis de Super Administrador.' }
   }
 
   // Trava de Segurança: Apenas Superadmin pode elevar alguém a Superadmin
-  if (data.role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
+  if (normalizeRole(data.role) === 'superadmin' && normalizeRole(currentProfile?.role) !== 'superadmin') {
     return { success: false, error: 'Você não tem permissão para elevar usuários ao cargo de Super Administrador.' }
   }
 
@@ -299,7 +310,7 @@ export async function updateUsuarioAdmin(id: string, data: {
       .update({ 
         nome: data.nome, 
         role: data.role,
-        permissoes: data.permissoes,
+        permissoes: getPermissionsForRole(data.role).length ? getPermissionsForRole(data.role) : data.permissoes,
         atualizado_em: new Date().toISOString()
       })
       .eq('id', id)
@@ -322,12 +333,12 @@ export async function updateUsuarioRole(id: string, role: UserRole) {
 
   // Trava de Segurança: Apenas Superadmin edita outro Superadmin
   const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', id).single()
-  if (targetProfile?.role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
+  if (normalizeRole(targetProfile?.role) === 'superadmin' && normalizeRole(currentProfile?.role) !== 'superadmin') {
     return { success: false, error: 'Apenas Super Administradores podem editar perfis de Super Administrador.' }
   }
 
   // Trava de Segurança: Apenas Superadmin pode elevar alguém a Superadmin
-  if (role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
+  if (normalizeRole(role) === 'superadmin' && normalizeRole(currentProfile?.role) !== 'superadmin') {
     return { success: false, error: 'Você não tem permissão para elevar usuários ao cargo de Super Administrador.' }
   }
 
@@ -357,7 +368,7 @@ export async function deleteUsuario(id: string) {
 
   // Trava de Segurança: Apenas Superadmin deleta outro Superadmin
   const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', id).single()
-  if (targetProfile?.role?.toLowerCase() === 'superadmin' && currentProfile?.role?.toLowerCase() !== 'superadmin') {
+  if (normalizeRole(targetProfile?.role) === 'superadmin' && normalizeRole(currentProfile?.role) !== 'superadmin') {
     return { success: false, error: 'Acesso Negado: Apenas Super Administradores podem excluir outros Super Administradores.' }
   }
 

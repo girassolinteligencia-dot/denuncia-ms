@@ -14,8 +14,8 @@ export default async function IntegracoesPage() {
     return <div>Erro ao carregar dados de saúde.</div>
   }
 
-  const healthData = statsRes.integrationHealth.detailed || []
-  const failedCount = statsRes.integrationHealth.failedCount || 0
+  const healthData = statsRes.integrationHealth?.detailed || []
+  const failedCount = statsRes.integrationHealth?.failedCount || 0
   const totalIntegrations = healthData.length
   const successRate = totalIntegrations > 0 
     ? (((totalIntegrations - healthData.filter(h => !h.saudavel).length) / totalIntegrations) * 100).toFixed(1) 

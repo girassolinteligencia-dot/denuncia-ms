@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { X, UserPlus, Mail, Lock, Loader2, Save } from 'lucide-react'
 import { toast } from 'sonner'
 import { createUsuarioAdmin, updateUsuarioAdmin } from '@/lib/actions/admin-usuarios'
+import { FULL_ADMIN_PERMISSIONS, getPermissionsForRole, normalizeRole } from '@/lib/admin-access'
 import type { UserRole, Profile } from '@/types'
 
 interface CreateUserModalProps {
@@ -22,7 +23,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
     password: '',
     confirmPassword: '',
     role: 'moderador' as UserRole,
-    permissoes: ['dashboard', 'denuncias', 'categorias', 'comunicacao'] as string[]
+    permissoes: ['dashboard', 'denuncias', 'categorias', 'comunicacao'] as string[],
   })
 
   React.useEffect(() => {
@@ -51,21 +52,17 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
     { id: 'dashboard', label: 'Dashboard', desc: 'Visão geral e métricas' },
     { id: 'denuncias', label: 'Denúncias', desc: 'Gestão de casos e triagem' },
     { id: 'categorias', label: 'Categorias', desc: 'Configuração de tipos de denuncia' },
-    { id: 'comunicacao', label: 'Comunicação', desc: 'Notícias, Banners e Enquetes' },
+    { id: 'comunicacao', label: 'Comunicação', desc: 'Notícias, banners e enquetes' },
     { id: 'usuarios', label: 'Usuários', desc: 'Gestão de acessos (Admin Master)' },
     { id: 'configuracoes', label: 'Sistema', desc: 'Ajustes técnicos e campos' },
     { id: 'seguranca', label: 'Governança', desc: 'Logs e Auditoria' },
+    { id: 'saude', label: 'Saúde', desc: 'Monitoramento técnico do sistema' },
+    { id: 'integracoes', label: 'Integrações', desc: 'Monitor de despachos e webhooks' },
+    { id: 'privacidade', label: 'Privacidade', desc: 'Políticas e conformidade' },
   ]
 
   const handleRoleChange = (role: UserRole) => {
-    let permissoes: string[] = []
-    if (role === 'admin') {
-      permissoes = MODULOS.map(m => m.id)
-    } else if (role === 'moderador') {
-      permissoes = ['dashboard', 'denuncias', 'categorias', 'comunicacao']
-    } else if (role === 'comunicador') {
-      permissoes = ['dashboard', 'comunicacao']
-    }
+    const permissoes = getPermissionsForRole(role)
     setFormData({ ...formData, role, permissoes })
   }
 
@@ -224,9 +221,9 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
             <div className="bg-surface p-4 rounded-2xl space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {/* Apenas Superadmin pode atribuir cargo de Superadmin ou Admin Master a outros */}
-                {(['superadmin', 'admin', 'moderador', 'comunicador'] as UserRole[])
+                {(['superadmin', 'admin', 'moderador', 'comunicador', 'gestor_cupula'] as UserRole[])
                   .filter(r => {
-                    if (r === 'superadmin') return currentUser?.role?.toLowerCase() === 'superadmin'
+                    if (r === 'superadmin') return normalizeRole(currentUser?.role) === 'superadmin'
                     return true
                   })
                   .map((r) => (
@@ -243,7 +240,8 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
                       {r === 'superadmin' ? 'Super Administrador' :
                        r === 'admin' ? 'Administrador Master' : 
                        r === 'moderador' ? 'Analista de Ouvidoria' : 
-                       r === 'comunicador' ? 'Gestor de Comunicação' : r}
+                       r === 'comunicador' ? 'Gestor de Comunicação' :
+                       r === 'gestor_cupula' ? 'Gestor de Cúpula' : r}
                     </button>
                   ))}
               </div>
@@ -251,7 +249,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClos
               <div className="pt-2">
                 <p className="text-[9px] font-bold text-muted uppercase mb-3 px-1">Privilégios Individuais (Dashboards)</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {MODULOS.map((m) => (
+                  {(formData.role === 'superadmin' ? FULL_ADMIN_PERMISSIONS.map(id => MODULOS.find(m => m.id === id)).filter(Boolean) as typeof MODULOS : MODULOS).map((m) => (
                     <button
                       key={m.id}
                       type="button"

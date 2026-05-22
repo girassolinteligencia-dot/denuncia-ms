@@ -16,8 +16,26 @@ export default async function ConteudoAdminPage() {
   // 2. Busca Banners
   const { data: banners } = await supabase.from('banners').select('*').order('ordem', { ascending: true })
 
-  // 3. Busca Enquetes
-  const { data: enquetes } = await supabase.from('enquetes').select('*, opcoes:enquete_opcoes(*), votos:enquete_votos(opcao_id)')
+  // 3. Busca Enquetes sem depender de relacionamentos no schema cache do PostgREST
+  const { data: enquetes } = await supabase
+    .from('enquetes')
+    .select('*')
+    .order('criado_em', { ascending: false })
+
+  const enqueteIds = (enquetes || []).map((enquete) => enquete.id)
+  const [{ data: opcoes }, { data: votos }] = enqueteIds.length > 0
+    ? await Promise.all([
+        supabase
+          .from('enquete_opcoes')
+          .select('*')
+          .in('enquete_id', enqueteIds)
+          .order('ordem', { ascending: true }),
+        supabase
+          .from('enquete_votos')
+          .select('enquete_id, opcao_id')
+          .in('enquete_id', enqueteIds),
+      ])
+    : [{ data: [] }, { data: [] }]
 
   // 4. Busca Configurações de Funcionalidades
   const { data: configs } = await supabase.from('plataforma_config').select('chave, valor').in('chave', ['funcionalidade.pesquisa_satisfacao_ativa', 'funcionalidade.boletim_ativo', 'funcionalidade.newsletter_ativa'])
@@ -41,11 +59,23 @@ export default async function ConteudoAdminPage() {
 
   const processedEnquetes = (enquetes || []).map(e => ({
     ...e,
-    total_votos: e.votos?.length || 0,
-    opcoes: e.opcoes.map((o: any) => ({
-      ...o,
-      votos: e.votos?.filter((v: any) => v.opcao_id === o.id).length || 0
-    }))
+    titulo: e.titulo || e.pergunta || 'Enquete',
+    local_exibicao: e.local_exibicao || 'landing',
+    data_expiracao: e.data_expiracao || null,
+    limite_votos: e.limite_votos || null,
+    encerrada_manualmente: e.encerrada_manualmente || false,
+    total_votos: (votos || []).filter((v: any) => v.enquete_id === e.id).length,
+    opcoes: ((opcoes || []).filter((o: any) => o.enquete_id === e.id).length > 0
+      ? (opcoes || []).filter((o: any) => o.enquete_id === e.id)
+      : (Array.isArray(e.opcoes) ? e.opcoes.map((opcao: any, index: number) => ({
+          id: opcao?.id || `${e.id}-${index}`,
+          texto: typeof opcao === 'string' ? opcao : opcao?.texto || opcao?.label || `Opção ${index + 1}`,
+          ordem: typeof opcao?.ordem === 'number' ? opcao.ordem : index,
+        })) : [])
+    ).map((o: any) => ({
+        ...o,
+        votos: (votos || []).filter((v: any) => v.opcao_id === o.id).length || 0
+      }))
   }))
 
   return (

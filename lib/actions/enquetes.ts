@@ -6,6 +6,76 @@ import { headers } from 'next/headers'
 import { createHash } from 'crypto'
 import type { Enquete } from '@/types'
 
+type EnqueteRow = {
+  id: string
+  titulo?: string | null
+  pergunta?: string | null
+  descricao?: string | null
+  local_exibicao?: 'landing' | 'noticias' | null
+  ativa: boolean
+  data_expiracao?: string | null
+  limite_votos?: number | null
+  encerrada_manualmente?: boolean | null
+  criado_em: string
+  opcoes?: unknown
+}
+
+function normalizeEnquete(enquete: EnqueteRow, local: 'landing' | 'noticias') {
+  return {
+    ...enquete,
+    titulo: enquete.titulo || enquete.pergunta || 'Enquete',
+    descricao: enquete.descricao || '',
+    local_exibicao: enquete.local_exibicao || local,
+    criado_em: enquete.criado_em || new Date().toISOString(),
+    data_expiracao: enquete.data_expiracao || null,
+    limite_votos: enquete.limite_votos || null,
+    encerrada_manualmente: enquete.encerrada_manualmente || false,
+  }
+}
+
+function normalizeJsonOpcoes(enquete: EnqueteRow) {
+  const opcoes = Array.isArray(enquete.opcoes) ? enquete.opcoes : []
+
+  return opcoes.map((opcao: any, index) => ({
+    id: opcao?.id || `${enquete.id}-${index}`,
+    texto: typeof opcao === 'string' ? opcao : opcao?.texto || opcao?.label || `Opção ${index + 1}`,
+    ordem: typeof opcao?.ordem === 'number' ? opcao.ordem : index,
+  }))
+}
+
+async function hydrateEnquete(enquete: EnqueteRow | null, local: 'landing' | 'noticias') {
+  if (!enquete) return null
+
+  const supabase = createAdminClient()
+  const normalized = normalizeEnquete(enquete, local)
+
+  const [{ data: opcoes, error: opcoesError }, { data: votos, error: votosError }] = await Promise.all([
+    supabase
+      .from('enquete_opcoes')
+      .select('id, texto, ordem')
+      .eq('enquete_id', enquete.id)
+      .order('ordem', { ascending: true }),
+    supabase
+      .from('enquete_votos')
+      .select('opcao_id')
+      .eq('enquete_id', enquete.id),
+  ])
+
+  if (opcoesError || votosError) {
+    return {
+      ...normalized,
+      opcoes: normalizeJsonOpcoes(enquete),
+      votos: [],
+    }
+  }
+
+  return {
+    ...normalized,
+    opcoes: opcoes || [],
+    votos: votos || [],
+  }
+}
+
 /**
  * Auxiliar para extrair IP real e gerar Hash consistente
  */
@@ -48,46 +118,28 @@ export async function votarEnquete(enqueteId: string, opcaoId: string) {
 export async function getEnqueteAtiva(local: 'landing' | 'noticias') {
   const supabase = createAdminClient()
   try {
-    // Busca prioritariamente a enquete mais recente que esteja ATIVA
-    const { data: enquete, error } = await supabase
+    // Busca prioritariamente uma enquete ativa. A tabela em alguns ambientes
+    // usa schema legado com pergunta/opcoes em JSON, então normalizamos abaixo.
+    const { data: enquetesAtivas, error } = await supabase
       .from('enquetes')
-      .select(`
-        id, 
-        titulo, 
-        descricao, 
-        local_exibicao,
-        ativa,
-        data_expiracao,
-        limite_votos,
-        encerrada_manualmente,
-        criado_em,
-        opcoes:enquete_opcoes(id, texto, ordem),
-        votos:enquete_votos(opcao_id)
-      `)
-      .eq('local_exibicao', local)
+      .select('*')
       .eq('ativa', true) // Filtro essencial para refletir o Admin
-      .order('criado_em', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+      .limit(10)
 
     if (error) throw error
     
     // Se não houver ativa, busca a última encerrada para mostrar resultados históricos
-    let finalEnquete = enquete
+    const enquete = (enquetesAtivas || []).find((item: any) => !item.local_exibicao || item.local_exibicao === local) || enquetesAtivas?.[0] || null
+    let finalEnquete = await hydrateEnquete(enquete as EnqueteRow | null, local)
     if (!finalEnquete) {
-       const { data: lastOne } = await supabase
+       const { data: lastOnes, error: lastOneError } = await supabase
         .from('enquetes')
-        .select(`
-          id, titulo, descricao, local_exibicao, ativa, data_expiracao,
-          limite_votos, encerrada_manualmente, criado_em,
-          opcoes:enquete_opcoes(id, texto, ordem),
-          votos:enquete_votos(opcao_id)
-        `)
-        .eq('local_exibicao', local)
-        .order('criado_em', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-       finalEnquete = lastOne
+        .select('*')
+        .limit(10)
+
+      if (lastOneError) throw lastOneError
+      const lastOne = (lastOnes || []).find((item: any) => !item.local_exibicao || item.local_exibicao === local) || lastOnes?.[0] || null
+      finalEnquete = await hydrateEnquete(lastOne as EnqueteRow | null, local)
     }
 
     if (!finalEnquete) return null
@@ -150,7 +202,8 @@ export async function criarEnquete(data: {
   
   try {
     // 1. Inserir Enquete
-    const { data: enquete, error: eErr } = await supabase
+    let usesLegacySchema = false
+    let enqueteRes = await supabase
       .from('enquetes')
       .insert([{ 
         titulo: data.titulo, 
@@ -162,20 +215,36 @@ export async function criarEnquete(data: {
       .select()
       .single()
 
-    if (eErr) throw eErr
+    if (enqueteRes.error) {
+      usesLegacySchema = true
+      enqueteRes = await supabase
+        .from('enquetes')
+        .insert([{
+          pergunta: data.titulo,
+          ativa: true,
+          opcoes: data.opcoes,
+        }])
+        .select()
+        .single()
+    }
+
+    if (enqueteRes.error) throw enqueteRes.error
+    const enquete = enqueteRes.data
 
     // 2. Inserir Opções
-    const opcoesData = data.opcoes.map((texto, index) => ({
-      enquete_id: enquete.id,
-      texto,
-      ordem: index
-    }))
+    if (!usesLegacySchema) {
+      const opcoesData = data.opcoes.map((texto, index) => ({
+        enquete_id: enquete.id,
+        texto,
+        ordem: index
+      }))
 
-    const { error: oErr } = await supabase
-      .from('enquete_opcoes')
-      .insert(opcoesData)
+      const { error: oErr } = await supabase
+        .from('enquete_opcoes')
+        .insert(opcoesData)
 
-    if (oErr) throw oErr
+      if (oErr) throw oErr
+    }
 
     revalidatePath('/')
     revalidatePath('/admin/enquetes')
@@ -229,7 +298,8 @@ export async function atualizarEnquete(id: string, updates: {
   
   try {
     // 1. Atualizar dados básicos da Enquete
-    const { error: eErr } = await supabase
+    let usesLegacySchema = false
+    let updateRes = await supabase
       .from('enquetes')
       .update({ 
         titulo: updates.titulo, 
@@ -241,10 +311,25 @@ export async function atualizarEnquete(id: string, updates: {
       })
       .eq('id', id)
 
-    if (eErr) throw eErr
+    if (updateRes.error) {
+      usesLegacySchema = true
+      const legacyUpdates: Record<string, unknown> = {}
+
+      if (updates.titulo !== undefined) legacyUpdates.pergunta = updates.titulo
+      if (updates.ativa !== undefined) legacyUpdates.ativa = updates.ativa
+      if (updates.encerrada_manualmente === true) legacyUpdates.ativa = false
+      if (updates.opcoes) legacyUpdates.opcoes = updates.opcoes.map((opcao) => opcao.texto)
+
+      updateRes = await supabase
+        .from('enquetes')
+        .update(legacyUpdates)
+        .eq('id', id)
+    }
+
+    if (updateRes.error) throw updateRes.error
 
     // 2. Atualizar Opções (se fornecidas)
-    if (updates.opcoes) {
+    if (updates.opcoes && !usesLegacySchema) {
       const { error: dErr } = await supabase
         .from('enquete_opcoes')
         .delete()

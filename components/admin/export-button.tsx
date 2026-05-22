@@ -10,7 +10,7 @@ export const ExportButton: React.FC<{ denuncia: Denuncia }> = ({ denuncia }) => 
     const data = {
       protocolo: denuncia.protocolo,
       titulo: denuncia.titulo,
-      categoria: denuncia.categoria?.label || 'Geral',
+      categoria: denuncia.categorias?.label || 'Geral',
       descricao: denuncia.descricao_original,
       local: denuncia.local || 'Não informado',
       data_ocorrido: denuncia.data_ocorrido,
@@ -19,7 +19,8 @@ export const ExportButton: React.FC<{ denuncia: Denuncia }> = ({ denuncia }) => 
       identificacao: 'Identificada',
       nome: denuncia.denunciante_nome,
       email: denuncia.denunciante_email,
-      telefone: denuncia.denunciante_telefone
+      telefone: denuncia.denunciante_telefone,
+      anonima: denuncia.anonima || false
     }
 
     generateDenunciaPDF(data)

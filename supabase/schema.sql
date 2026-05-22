@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS categorias (
   aviso_legal        text,
   template_descricao jsonb DEFAULT '[]',
   ativo              boolean DEFAULT true,
+  permite_anonimato  boolean DEFAULT false,
   ordem              int DEFAULT 0,
   criado_em          timestamptz DEFAULT now(),
   atualizado_em      timestamptz DEFAULT now()

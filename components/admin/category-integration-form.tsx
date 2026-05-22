@@ -177,9 +177,9 @@ export const CategoryIntegrationForm: React.FC<Props> = ({ categoriaId, initialI
 
             <div className="space-y-4 pt-4 border-t border-dashed border-border">
                <label className="label">Modelo do Assunto (Dynamic Variables Suportadas)</label>
-               <input 
-                className="input font-mono text-xs" 
-                value={data.email_assunto_template}
+               <input
+                className="input font-mono text-xs"
+                value={data.email_assunto_template || ''}
                 onChange={e => setData({...data, email_assunto_template: e.target.value})}
                />
                <p className="text-[10px] text-muted">Variáveis disponíveis: {`{{protocolo}}, {{titulo}}, {{local}}, {{categoria}}`}</p>
