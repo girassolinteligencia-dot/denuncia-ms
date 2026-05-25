@@ -55,11 +55,11 @@ export default async function PublicHomePage() {
           </div>
         )}
 
-        <div className="container-page relative z-10 pb-10 sm:pb-16">
-          <div className="max-w-5xl mx-auto text-center space-y-12">
+        <div className="container-page relative z-10 pb-8 sm:pb-12">
+          <div className="max-w-5xl mx-auto text-center space-y-8 sm:space-y-10">
             
             {/* MASCOTE HERO CENTRALIZADO */}
-            <div className="flex flex-col items-center justify-center space-y-12 sm:space-y-16 animate-fade-in relative -mt-4 lg:-mt-8">
+            <div className="flex flex-col items-center justify-center space-y-6 sm:space-y-8 animate-fade-in relative">
               <div className="relative group">
                 {/* Glow expandido para o novo tamanho */}
                 <div className="absolute -inset-20 bg-primary/20 rounded-full blur-[120px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
@@ -74,7 +74,7 @@ export default async function PublicHomePage() {
               </div>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div className="flex items-center gap-3 justify-center">
                 <span className="text-white font-black text-xl sm:text-3xl tracking-tight uppercase italic text-center leading-tight">
                   Eu sou Bruno Ortiz.<br /> Fiscalização Cidadã na palma da sua mão.

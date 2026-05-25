@@ -6,8 +6,8 @@ import { ShieldCheck, BarChart3, Globe, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
 import { createAdminClient } from '@/lib/supabase-admin'
-import { getMunicipalityMapData } from '@/lib/actions/impacto'
-import { MSMunicipalityMap } from '@/components/public/transparencia-mapa'
+import { buscarTendenciasReais } from '@/lib/actions/intelligence'
+import { MSTransparencyCategoryMap } from '@/components/public/transparencia-category-map'
 import { FeedbackNewsletter } from '@/components/public/feedback-newsletter'
 
 export const metadata = {
@@ -17,8 +17,8 @@ export const metadata = {
 
 export default async function TransparenciaPage() {
   const supabase = createAdminClient()
-  const mapDataResult = await getMunicipalityMapData()
-  const mapData = mapDataResult.success ? mapDataResult.data || [] : []
+  const categoryDataResult = await buscarTendenciasReais()
+  const categoryData = categoryDataResult.success ? categoryDataResult.data || [] : []
 
   const { data: configs } = await supabase.from('plataforma_config').select('chave, valor')
   const configMap = (configs || []).reduce((acc: Record<string, any>, cur) => {
@@ -74,7 +74,7 @@ export default async function TransparenciaPage() {
           </div>
           
           <div className="bg-surface/50 rounded-[3rem] p-8 sm:p-16 border border-border shadow-inner">
-             <MSMunicipalityMap data={mapData} />
+             <MSTransparencyCategoryMap data={categoryData} />
           </div>
         </div>
       </section>
