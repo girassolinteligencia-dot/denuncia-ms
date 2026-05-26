@@ -22,7 +22,7 @@ import {
   Trash2
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { EmailPreview } from './email-preview'
 import { solicitarCodigoOTP, verificarOTP } from '@/lib/actions/auth'
 import { salvarRascunhoOffline, removerRascunho } from '@/lib/offline-storage'
@@ -69,6 +69,11 @@ interface DenunciaFormData {
   bairro: string
   cidade: string
   data_ocorrido: string
+  hora_ocorrido: string
+  autor_nome: string
+  testemunhas: string
+  servidor_publico: 'sim' | 'nao'
+  setor_servidor: string
   latitude: number | null
   longitude: number | null
   municipio: string
@@ -79,7 +84,7 @@ interface DenunciaFormData {
   arquivos: ArquivoAnexo[]
   consentimento: boolean
   otpToken: string
-  is_anonima?: boolean
+  is_anonima: boolean | null
 }
 
 // Funções de Validação
@@ -122,6 +127,7 @@ export function DenunciaFormWizard({
   categorias: Categoria[]
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [previewAberto, setPreviewAberto] = useState(false)
@@ -147,6 +153,11 @@ export function DenunciaFormWizard({
     longitude: null,
     municipio: '',
     data_ocorrido: new Date().toISOString().split('T')[0],
+    hora_ocorrido: '',
+    autor_nome: '',
+    testemunhas: '',
+    servidor_publico: 'nao',
+    setor_servidor: '',
     nome: '',
     email: '',
     telefone: '',
@@ -154,7 +165,7 @@ export function DenunciaFormWizard({
     arquivos: [],
     consentimento: false,
     otpToken: '',
-    is_anonima: false,
+    is_anonima: null,
   })
 
   // Monitorar Conectividade
@@ -204,6 +215,90 @@ export function DenunciaFormWizard({
     }
   }
 
+  const handleCategoriaSelect = (cat: Categoria) => {
+    setFormData(prev => ({
+      ...prev,
+      categoria_id: cat.id,
+      is_anonima: cat.permite_anonimato ? null : false,
+      otpToken: '',
+    }))
+    setOtpEnviado(false)
+    setOtpValidado(false)
+
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 100)
+  }
+
+  const handleTipoDenunciaSelect = (isAnonima: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      is_anonima: isAnonima,
+      otpToken: isAnonima ? '' : prev.otpToken,
+      nome: isAnonima ? '' : prev.nome,
+      email: isAnonima ? '' : prev.email,
+      telefone: isAnonima ? '' : prev.telefone,
+      cpf: isAnonima ? '' : prev.cpf,
+    }))
+
+    if (isAnonima) {
+      setOtpEnviado(false)
+      setOtpValidado(false)
+    }
+
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 100)
+  }
+
+  useEffect(() => {
+    const categoriaSlug = searchParams.get('categoria')
+    if (!categoriaSlug || formData.categoria_id) return
+
+    const categoria = categorias.find(cat => cat.slug === categoriaSlug)
+    if (!categoria) return
+
+    setFormData(prev => ({
+      ...prev,
+      categoria_id: categoria.id,
+      is_anonima: categoria.permite_anonimato ? null : false,
+      otpToken: '',
+    }))
+    setOtpEnviado(false)
+    setOtpValidado(false)
+
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 300)
+  }, [categorias, formData.categoria_id, searchParams])
+
+  const validateAnonymousEssentials = () => {
+    if (formData.is_anonima !== true) return true
+
+    if (!formData.autor_nome) {
+      toast.error('Informe o nome completo da pessoa que supostamente praticou o ato.')
+      handleFieldScroll('field-autor_nome')
+      return false
+    }
+    if (!formData.data_ocorrido) {
+      toast.error('Informe a data aproximada do ocorrido.')
+      handleFieldScroll('field-data-ocorrido')
+      return false
+    }
+    if (!formData.hora_ocorrido) {
+      toast.error('Informe o horário aproximado do ocorrido.')
+      handleFieldScroll('field-hora-ocorrido')
+      return false
+    }
+    if (formData.servidor_publico === 'sim' && !formData.setor_servidor) {
+      toast.error('Selecione o setor em que atua como servidor público.')
+      handleFieldScroll('field-setor-servidor')
+      return false
+    }
+
+    return true
+  }
+
   // Função para scroll sequencial inteligente
   const handleFieldScroll = (targetId?: string) => {
     setTimeout(() => {
@@ -224,7 +319,7 @@ export function DenunciaFormWizard({
       if (newStep === 2) targetId = 'field-titulo';
       if (newStep === 3) targetId = 'step-3-title';
       if (newStep === 4) targetId = 'step-4-title';
-      if (newStep === 5) targetId = otpValidado ? 'field-telefone' : 'field-nome';
+      if (newStep === 5) targetId = formData.is_anonima === true ? 'field-consentimento' : otpValidado ? 'field-telefone' : 'field-nome';
 
       const el = document.getElementById(targetId);
       if (el) {
@@ -382,6 +477,33 @@ export function DenunciaFormWizard({
     if (!isOnline) {
       toast.error('Aguarde a conexão voltar para finalizar o protocolo oficial.')
       return
+    }
+
+    if (formData.is_anonima) {
+      if (!formData.local || !formData.cep || !formData.bairro || !formData.cidade) {
+        toast.error('Para denúncia anônima, informe o endereço completo do local do fato.')
+        return
+      }
+      if (!formData.autor_nome) {
+        toast.error('Informe o nome completo da pessoa que supostamente praticou o ato.')
+        return
+      }
+      if (!formData.data_ocorrido) {
+        toast.error('Informe a data aproximada do ocorrido.')
+        return
+      }
+      if (!formData.hora_ocorrido) {
+        toast.error('Informe o horário aproximado do ocorrido.')
+        return
+      }
+      if (!formData.servidor_publico) {
+        toast.error('Informe se você é servidor público ou não.')
+        return
+      }
+      if (formData.servidor_publico === 'sim' && !formData.setor_servidor) {
+        toast.error('Selecione o setor em que atua como servidor público.')
+        return
+      }
     }
 
     if (!formData.is_anonima) {
@@ -698,11 +820,7 @@ export function DenunciaFormWizard({
                   <button
                     key={cat.id}
                     onClick={() => {
-                      handleInputChange('categoria_id', cat.id)
-                      // Rolar suavemente para o botão de avançar após selecionar
-                      setTimeout(() => {
-                        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                      }, 100)
+                      handleCategoriaSelect(cat)
                     }}
                     className={`p-4 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border-2 transition-all text-left relative group flex flex-col items-center sm:items-start text-center sm:text-left ${
                       formData.categoria_id === cat.id 
@@ -734,8 +852,81 @@ export function DenunciaFormWizard({
                 </div>
               )}
 
+              {currentCategory?.permite_anonimato && (
+                <div className="space-y-5 animate-fade-in">
+                  <div className="space-y-1 text-center sm:text-left">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Escolha o caminho da denúncia</p>
+                    <p className="text-sm text-muted font-medium">Esta categoria permite denúncia anônima. Defina agora como deseja prosseguir.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <button
+                      type="button"
+                      onClick={() => handleTipoDenunciaSelect(false)}
+                      className={`p-6 sm:p-8 rounded-[2rem] border-2 text-left transition-all ${
+                        formData.is_anonima === false
+                          ? 'bg-primary/5 border-primary shadow-glow-cyan'
+                          : 'bg-white border-border/60 hover:border-primary/30'
+                      }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <ShieldCheck size={24} />
+                        </div>
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-sm font-black uppercase tracking-widest text-dark italic">Com identificação</p>
+                            <p className="text-xs text-muted font-bold mt-1">Caminho recomendado para acompanhamento do protocolo.</p>
+                          </div>
+                          <div className="space-y-2 text-[11px] leading-relaxed text-dark/70 font-medium">
+                            <p><strong>Vantagens:</strong> permite validação, contato para complementos e acompanhamento mais completo.</p>
+                            <p><strong>Desvantagem:</strong> exige dados pessoais, protegidos por sigilo e LGPD.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleTipoDenunciaSelect(true)}
+                      className={`p-6 sm:p-8 rounded-[2rem] border-2 text-left transition-all ${
+                        formData.is_anonima === true
+                          ? 'bg-secondary/10 border-secondary shadow-glow-green'
+                          : 'bg-white border-border/60 hover:border-secondary/40'
+                      }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-secondary/15 text-secondary flex items-center justify-center shrink-0">
+                          <Lock size={24} />
+                        </div>
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-sm font-black uppercase tracking-widest text-dark italic">Anônima</p>
+                            <p className="text-xs text-muted font-bold mt-1">Sem informar seus dados pessoais.</p>
+                          </div>
+                          <div className="space-y-2 text-[11px] leading-relaxed text-dark/70 font-medium">
+                            <p><strong>Vantagens:</strong> preserva sua identidade desde o início do fluxo.</p>
+                            <p><strong>Desvantagens:</strong> exige relato mais completo e pode limitar contato posterior para esclarecimentos.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {currentCategory && !currentCategory.permite_anonimato && (
+                <div className="rounded-3xl border border-primary/10 bg-primary/5 p-6 text-sm font-bold text-dark/70 animate-fade-in">
+                  Esta categoria exige denúncia com identificação para garantir a apuração responsável e o acompanhamento oficial.
+                </div>
+              )}
+
               <div ref={bottomRef} className="flex justify-end pt-6 pb-20 sm:pb-0">
-                <button onClick={handleNext} disabled={!formData.categoria_id} className="btn-primary w-full sm:w-auto h-14 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan transition-all disabled:opacity-30 fixed bottom-4 right-4 left-4 sm:static sm:bottom-auto sm:right-auto sm:left-auto z-40">
+                <button
+                  onClick={handleNext}
+                  disabled={!formData.categoria_id || (currentCategory?.permite_anonimato && formData.is_anonima === null)}
+                  className="btn-primary w-full sm:w-auto h-14 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan transition-all disabled:opacity-30 fixed bottom-4 right-4 left-4 sm:static sm:bottom-auto sm:right-auto sm:left-auto z-40"
+                >
                   <span className="font-black uppercase tracking-widest text-[10px] sm:text-xs">Próximo: Relato</span>
                   <ArrowRight size={18} className="sm:w-5 sm:h-5" />
                 </button>
@@ -781,6 +972,110 @@ export function DenunciaFormWizard({
                     />
                   </div>
                 </div>
+
+                {formData.is_anonima && (
+                  <div className="space-y-6 p-6 bg-surface/80 border border-border rounded-[2rem]">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-3xl bg-primary/10 text-primary flex items-center justify-center">
+                        <Zap size={24} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[0.32em] text-primary">Informações essenciais para denúncia anônima</p>
+                        <p className="text-sm text-dark/70 leading-relaxed mt-2">
+                          Para atender às exigências de investigação, pedimos que você preencha mais detalhes sobre o fato antes de informar localização e evidências. Esses dados ajudam a tornar a denúncia anônima mais investigável.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-dark">Nome do suposto autor</label>
+                        <input
+                          id="field-autor_nome"
+                          className="input h-14 rounded-xl border-2 font-bold"
+                          placeholder="Nome completo da pessoa envolvida"
+                          value={formData.autor_nome}
+                          onChange={(e) => handleInputChange('autor_nome', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-dark">Data aproximada</label>
+                        <input
+                          id="field-data-ocorrido"
+                          type="date"
+                          className="input h-14 rounded-xl border-2 font-bold"
+                          value={formData.data_ocorrido}
+                          onChange={(e) => handleInputChange('data_ocorrido', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-dark">Horário aproximado</label>
+                        <input
+                          id="field-hora-ocorrido"
+                          type="time"
+                          className="input h-14 rounded-xl border-2 font-bold"
+                          value={formData.hora_ocorrido}
+                          onChange={(e) => handleInputChange('hora_ocorrido', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-dark">Servidor público?</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {['sim', 'nao'].map((valor) => (
+                            <button
+                              key={valor}
+                              type="button"
+                              onClick={() => handleInputChange('servidor_publico', valor as 'sim' | 'nao')}
+                              className={`rounded-2xl border-2 py-4 text-sm font-black uppercase transition-all ${formData.servidor_publico === valor ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-border text-dark hover:border-primary/40'}`}
+                            >
+                              {valor === 'sim' ? 'Sim' : 'Não'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {formData.servidor_publico === 'sim' && (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-dark">Setor de atuação</label>
+                        <select
+                          id="field-setor-servidor"
+                          className="input h-14 rounded-xl border-2 bg-white font-bold"
+                          value={formData.setor_servidor}
+                          onChange={(e) => handleInputChange('setor_servidor', e.target.value)}
+                        >
+                          <option value="">Selecione o setor</option>
+                          <option value="Educação">Educação</option>
+                          <option value="Saúde">Saúde</option>
+                          <option value="Assistência Social">Assistência Social</option>
+                          <option value="Obras">Obras</option>
+                          <option value="Direitos Humanos">Direitos Humanos</option>
+                          <option value="Tecnologia">Tecnologia</option>
+                          <option value="Consumidor">Consumidor</option>
+                          <option value="Administrativo">Administrativo</option>
+                          <option value="Gestão de Pessoas">Gestão de Pessoas</option>
+                          <option value="Segurança Pública">Segurança Pública</option>
+                          <option value="Jurídico">Jurídico</option>
+                          <option value="Meio Ambiente">Meio Ambiente</option>
+                          <option value="Infraestrutura">Infraestrutura</option>
+                          <option value="Transporte">Transporte</option>
+                          <option value="Outros">Outros</option>
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-dark">Testemunhas</label>
+                      <textarea
+                        id="field-testemunhas"
+                        className="input min-h-[140px] rounded-2xl border-2 p-4 text-sm font-bold"
+                        placeholder="Nomes ou descrições de pessoas que presenciaram o fato"
+                        value={formData.testemunhas}
+                        onChange={(e) => handleInputChange('testemunhas', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div ref={bottomRef} className="flex items-center justify-between pt-8 border-t border-border/40 pb-20 sm:pb-0">
@@ -793,6 +1088,7 @@ export function DenunciaFormWizard({
                       toast.error('Preencha o título e a descrição'); 
                       return 
                     }
+                    if (!validateAnonymousEssentials()) return
                     handleNext() 
                   }} 
                   className="btn-primary w-full sm:w-auto h-14 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan transition-all fixed bottom-4 right-4 left-24 sm:static sm:bottom-auto sm:right-auto sm:left-auto z-40"
@@ -973,18 +1269,18 @@ export function DenunciaFormWizard({
               <div className="flex items-center justify-between border-b border-border/40 pb-6">
                 <div className="space-y-1">
                   <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tighter italic uppercase text-primary">
-                    {otpValidado ? 'Finalização Oficial' : 'Segurança & Validação'}
+                    {formData.is_anonima === true || otpValidado ? 'Finalização Oficial' : 'Segurança & Validação'}
                   </h2>
                   <p className="text-muted text-sm font-medium">
-                    {otpValidado ? 'Preencha os dados finais para protocolar.' : 'Valide seu e-mail para prosseguir.'}
+                    {formData.is_anonima === true ? 'Revise os termos e confirme para protocolar sua denúncia anônima.' : otpValidado ? 'Preencha os dados finais para protocolar.' : 'Valide seu e-mail para prosseguir.'}
                   </p>
                 </div>
               </div>
 
-              <div className={`p-8 sm:p-10 rounded-[3rem] space-y-8 relative overflow-hidden transition-all duration-700 ${otpValidado ? 'bg-surface border-2 border-primary/20' : 'bg-dark text-white'}`}>
+              <div className={`p-8 sm:p-10 rounded-[3rem] space-y-8 relative overflow-hidden transition-all duration-700 ${formData.is_anonima === true || otpValidado ? 'bg-surface border-2 border-primary/20' : 'bg-dark text-white'}`}>
                 
                 {/* EXPLICAÇÃO INICIAL */}
-                {!otpValidado && (
+                {!otpValidado && formData.is_anonima !== true && (
                   <div className="bg-white/10 border border-white/20 p-6 rounded-3xl flex gap-4 relative z-10 backdrop-blur-md shadow-inner">
                     <div className="p-2 bg-secondary/20 rounded-lg">
                       <ShieldCheck size={24} className="text-secondary shrink-0" />
@@ -996,22 +1292,6 @@ export function DenunciaFormWizard({
                       </p>
                     </div>
                   </div>
-                )}
-
-                {/* FASE DE OPÇÃO POR ANONIMATO */}
-                {currentCategory?.permite_anonimato && (
-                  <label className={`flex items-start gap-4 p-6 rounded-2xl border-2 cursor-pointer transition-all ${formData.is_anonima ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-border/50'} relative z-10 mb-6`}>
-                    <input type="checkbox" className="hidden" checked={formData.is_anonima} onChange={(e) => handleInputChange('is_anonima', e.target.checked)} />
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border-2 mt-1 transition-all ${formData.is_anonima ? 'bg-primary border-primary text-white' : 'bg-white border-border/60 text-transparent'}`}>
-                      <Check size={16} strokeWidth={4} />
-                    </div>
-                    <div className="space-y-2 text-left">
-                      <p className="text-[12px] font-black text-dark uppercase tracking-widest italic">Denúncia Anônima</p>
-                      <p className="text-[11px] text-muted font-medium leading-relaxed italic">
-                        Desejo fazer esta denúncia de forma anônima. Não fornecerei meus dados, mas abro mão de receber o acompanhamento por e-mail.
-                      </p>
-                    </div>
-                  </label>
                 )}
 
                 {/* FASE 1: NOME E EMAIL */}

@@ -82,23 +82,26 @@ export const generateDenunciaPDF = (denuncia: DenunciaExportData) => {
   // Grid de Informações
   let currentY = 65 + titleHeight
 
-  const drawInfoBox = (label: string, value: string, x: number, y: number) => {
+  const drawInfoBox = (label: string, value: string, x: number, y: number, width: number) => {
     doc.setFontSize(7)
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(MUTED[0], MUTED[1], MUTED[2])
     doc.text(label.toUpperCase(), x, y)
     
+    const valueLines = doc.splitTextToSize(value, width)
     doc.setFontSize(9)
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(DARK[0], DARK[1], DARK[2])
-    doc.text(value, x, y + 5)
+    doc.text(valueLines, x, y + 5)
+
+    return valueLines.length
   }
 
-  drawInfoBox('Categoria', denuncia.categoria, 15, currentY)
-  drawInfoBox('Data da Ocorrência', denuncia.data_ocorrido ? format(new Date(denuncia.data_ocorrido), 'dd/MM/yyyy') : 'Não informada', 85, currentY)
-  drawInfoBox('Localização', denuncia.local || 'Não informada', 145, currentY)
+  const categoryLines = drawInfoBox('Categoria', denuncia.categoria, 15, currentY, 55)
+  const dateLines = drawInfoBox('Data da Ocorrência', denuncia.data_ocorrido ? format(new Date(denuncia.data_ocorrido), 'dd/MM/yyyy') : 'Não informada', 80, currentY, 45)
+  const locationLines = drawInfoBox('Localização', denuncia.local || 'Não informada', 125, currentY, pageWidth - 140)
 
-  currentY += 20
+  currentY += Math.max(categoryLines, dateLines, locationLines) * 5 + 20
 
   // Identificação do Denunciante
   doc.setFillColor(249, 250, 251)

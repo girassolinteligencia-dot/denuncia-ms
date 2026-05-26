@@ -44,6 +44,27 @@ export async function registrarDenuncia(
   const emailNorm = formData.email?.toLowerCase().trim()
   const emailHash = emailNorm ? createHash('sha256').update(emailNorm).digest('hex') : ''
 
+  const montarDescricaoAnonima = (data: SubmitDenunciaRequest) => {
+    const enderecoCompleto = [data.local, data.numero, data.bairro, data.cidade, data.cep]
+      .filter(Boolean)
+      .join(', ') || 'Não informado'
+
+    const partes = [
+      `Nome completo do suposto autor: ${data.autor_nome || 'Não informado'}`,
+      `Data aproximada do ocorrido: ${data.data_ocorrido || 'Não informada'}`,
+      `Horário aproximado: ${data.hora_ocorrido || 'Não informado'}`,
+      `Servidor público: ${data.servidor_publico === 'sim' ? 'Sim' : 'Não'}`,
+      data.servidor_publico === 'sim' ? `Setor: ${data.setor_servidor || 'Não informado'}` : null,
+      data.testemunhas ? `Testemunhas: ${data.testemunhas}` : null,
+      `Endereço completo do local: ${enderecoCompleto}`,
+      '',
+      'RELATO ORIGINAL:',
+      data.descricao_original || 'Não informado',
+    ].filter(Boolean)
+
+    return partes.join('\n')
+  }
+
   console.log('[denuncia] Iniciando registro:', { categoria: formData.categoria_id, titulo: formData.titulo })
 
   try {
@@ -88,6 +109,8 @@ export async function registrarDenuncia(
     const localCompleto = [formData.local, formData.numero, formData.bairro, formData.cidade]
       .filter(Boolean).join(', ')
 
+    const descricaoFinal = formData.is_anonima ? montarDescricaoAnonima(formData) : formData.descricao_original
+
     const { data: denuncia, error: denErr } = await supabase
       .from('denuncias')
       .insert({
@@ -95,7 +118,7 @@ export async function registrarDenuncia(
         chave_acesso:       chaveAcesso,
         categoria_id:       formData.categoria_id,
         titulo:             formData.titulo,
-        descricao_original: formData.descricao_original,
+        descricao_original: descricaoFinal,
         local:              localCompleto || null,
         cep:                formData.cep || null,
         numero:             formData.numero || null,
@@ -160,14 +183,20 @@ export async function registrarDenuncia(
         protocolo,
         categoria:     catData?.label || 'Geral',
         titulo:        formData.titulo,
-        descricao:     formData.descricao_original,
+        descricao:     descricaoFinal,
         local:         localCompleto,
         data_ocorrido: formData.data_ocorrido || '',
+        hora_ocorrido: formData.hora_ocorrido || '',
+        autor_nome:    formData.autor_nome || '',
+        testemunhas:   formData.testemunhas || '',
+        servidor_publico: formData.servidor_publico || 'nao',
+        setor_servidor:   formData.setor_servidor || '',
         criado_em:     denuncia.criado_em,
         orgao_nome:    'Denuncia MS',
+        anonima:       !!formData.is_anonima,
         arquivos:      arquivosVinculados,
         nome:          formData.is_anonima ? 'Anônimo' : formData.nome,
-        email:         formData.is_anonima ? 'Não informado' : emailNorm,
+        email:         formData.is_anonima ? '' : emailNorm,
       })
 
       const pdfPath = `oficial_${protocolo}.pdf`

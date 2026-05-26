@@ -3,6 +3,9 @@
 import { createAdminClient } from '@/lib/supabase-admin'
 import { sendEmail } from '@/lib/email'
 
+const NEWSLETTER_TABLES = ['newsletter_inscricoes', 'newsletter_subscriptions'] as const
+const SCHEMA_CACHE_ERROR_CODES = ['42P01', 'PGRST202', 'PGRST205'] as const
+
 export async function registrarVoto(voto: string, comentario?: string) {
   const supabase = createAdminClient()
   try {
@@ -23,15 +26,58 @@ export async function inscreverNewsletter(email: string) {
   const emailLimpo = email.toLowerCase().trim()
   
   try {
-    const { error } = await supabase
-      .from('newsletter_inscricoes')
-      .insert([{ email: emailLimpo }])
+    let lastError: any = null
+    let alreadyRegistered = false
 
-    if (error) {
-      if (error.code === '23505') { 
-        return { success: true, message: 'Este e-mail já está em nossa base!' }
+    const rpcResult = await supabase.rpc('inscrever_newsletter', { p_email: emailLimpo })
+
+    if (!rpcResult.error) {
+      const payload = rpcResult.data as { success?: boolean; message?: string; already_registered?: boolean } | null
+
+      if (payload?.success === false) {
+        return { success: false, error: payload.message || 'Não foi possível processar a inscrição.' }
       }
-      throw error
+
+      alreadyRegistered = Boolean(payload?.already_registered)
+    } else if (!SCHEMA_CACHE_ERROR_CODES.includes(rpcResult.error.code as any)) {
+      throw rpcResult.error
+    }
+
+    if (rpcResult.error) {
+      for (const table of NEWSLETTER_TABLES) {
+        const { error } = await supabase
+          .from(table)
+          .insert([{ email: emailLimpo }])
+
+        if (!error) {
+          lastError = null
+          break
+        }
+
+        if (error.code === '23505') {
+          alreadyRegistered = true
+          lastError = null
+          break
+        }
+
+        lastError = error
+
+        if (!SCHEMA_CACHE_ERROR_CODES.includes(error.code as any)) {
+          break
+        }
+      }
+    }
+
+    if (lastError) {
+      if (SCHEMA_CACHE_ERROR_CODES.includes(lastError.code as any)) {
+        throw new Error('O cadastro de newsletter precisa da migration 20260525_fix_newsletter_rpc aplicada no Supabase.')
+      }
+
+      throw lastError
+    }
+
+    if (alreadyRegistered) {
+      return { success: true, message: 'Este e-mail já está em nossa base!' }
     }
 
     // Disparar E-mail de Boas-vindas

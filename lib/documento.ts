@@ -18,6 +18,7 @@ export interface VariaveisDocumento {
   nome?: string
   email?: string
   telefone?: string
+  anonima?: string
   app_nome: string
   app_url: string
 }
@@ -43,6 +44,7 @@ export function substituirVariaveis(
     '{{nome}}': variaveis.nome || '',
     '{{email}}': variaveis.email || '',
     '{{telefone}}': variaveis.telefone || '',
+    '{{anonima}}': variaveis.anonima || 'Não',
     '{{app_nome}}': variaveis.app_nome,
     '{{app_url}}': variaveis.app_url,
   }

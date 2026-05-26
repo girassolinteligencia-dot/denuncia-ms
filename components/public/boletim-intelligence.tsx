@@ -69,7 +69,7 @@ export function BoletimIntelligence() {
         {noticias.length === 0 ? (
           <div className="p-12 border-2 border-dashed border-border/40 rounded-[3rem] flex flex-col items-center justify-center text-center space-y-4">
             <CloudOff size={48} className="text-muted/20" />
-            <p className="text-muted font-bold text-sm italic">Nenhum boletim oficial emitido nas últimas 24h.</p>
+            <p className="text-muted font-bold text-sm italic">Nenhum boletim foi emitido nas últimas 24 horas. Volte depois para saber o que está movimentando o estado.</p>
           </div>
         ) : (
           noticias.map((noticia) => (
@@ -107,7 +107,7 @@ export function BoletimIntelligence() {
                             href={`/noticias/${noticia.slug}`}
                             className="flex items-center gap-2 text-[9px] sm:text-[10px] font-black uppercase text-primary tracking-widest group-hover:translate-x-1 transition-transform"
                          >
-                            Ver detalhes <ArrowRight size={14} />
+                            Ver Detalhes <ArrowRight size={14} />
                          </Link>
                       </div>
                    </div>
@@ -125,12 +125,12 @@ export function BoletimIntelligence() {
             
             <div className="flex items-center gap-3 border-b border-white/10 pb-4">
                <BarChart3 size={20} className="text-primary" />
-               <h3 className="font-black text-xs uppercase tracking-widest italic">Tendências do Dia</h3>
+               <h3 className="font-black text-xs uppercase tracking-widest italic">O Que Está em Movimento</h3>
             </div>
 
             <div className="space-y-5 sm:space-y-6">
                {tendencias.length === 0 ? (
-                 <p className="text-[10px] text-white/40 font-medium italic">Dados insuficientes para gerar tendências.</p>
+                 <p className="text-[10px] text-white/40 font-medium italic">Ainda não temos padrões para mostrar. Volte depois.</p>
                ) : (
                  tendencias.map((item, i) => (
                    <div key={i} className="space-y-2">
@@ -148,7 +148,7 @@ export function BoletimIntelligence() {
 
             <div className="pt-2">
                <p className="text-[8px] text-white/30 font-bold leading-relaxed uppercase tracking-tighter">
-                  Dados gerados via anonimização de interações cidadãs (72h).
+                  Análise gerada a partir de padrões anônimos de denuncias (últimas 72h). Nomes e dados pessoais não são inclusos.
                </p>
             </div>
          </div>
@@ -159,8 +159,8 @@ export function BoletimIntelligence() {
                <Zap size={20} />
             </div>
             <div>
-               <h4 className="font-black text-dark uppercase text-[11px] tracking-widest">Boletim Diário</h4>
-               <p className="text-[9px] text-muted font-bold mt-1 leading-relaxed uppercase">Receba o impacto no seu e-mail.</p>
+               <h4 className="font-black text-dark uppercase text-[11px] tracking-widest">Receba o Boletim</h4>
+               <p className="text-[9px] text-muted font-bold mt-1 leading-relaxed uppercase">Quer saber quando algo importante acontece? Deixe seu e-mail.</p>
             </div>
             <div className="space-y-2">
                <div className="flex gap-2">
@@ -172,11 +172,11 @@ export function BoletimIntelligence() {
                     disabled={submitting}
                   />
                   <button 
-                    className={`btn-primary w-10 h-10 p-0 shrink-0 shadow-none ${submitting ? 'opacity-50' : ''}`}
+                    className={`btn-primary h-10 px-4 shrink-0 shadow-none text-[10px] font-black uppercase tracking-widest ${submitting ? 'opacity-50' : ''}`}
                     onClick={handleSubscribe}
                     disabled={submitting || !email}
                   >
-                     <ArrowRight size={16} />
+                     Me inscrever
                   </button>
                </div>
             </div>

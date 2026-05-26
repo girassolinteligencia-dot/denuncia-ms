@@ -244,7 +244,12 @@ export interface SubmitDenunciaRequest {
   numero?: string
   bairro?: string
   cidade?: string
-  data_ocorrido?: string,
+  data_ocorrido?: string
+  hora_ocorrido?: string
+  autor_nome?: string
+  testemunhas?: string
+  servidor_publico?: 'sim' | 'nao'
+  setor_servidor?: string
   nome?: string
   email?: string
   telefone?: string
