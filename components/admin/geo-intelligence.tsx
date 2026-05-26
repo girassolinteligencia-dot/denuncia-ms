@@ -19,8 +19,6 @@ const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapCo
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
-const HeatmapLayer = dynamic(() => import('./geo-heatmap-layer').then(mod => mod.HeatmapLayer), { ssr: false })
-
 interface GeoData {
   id: string
   protocolo: string
