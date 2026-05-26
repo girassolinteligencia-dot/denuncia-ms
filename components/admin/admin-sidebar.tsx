@@ -24,6 +24,8 @@ import { logout } from '@/lib/actions/auth'
 import { getMe } from '@/lib/actions/admin-usuarios'
 import type { Profile } from '@/types'
 
+const SUPERADMIN_EMAILS = ['paulofernandogarciacardoso@gmail.com']
+
 export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> = ({ isOpen, onClose }) => {
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -55,12 +57,11 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
 
   // Normaliza o cargo para facilitar a checagem
   const role = userProfile?.role?.toLowerCase() || ''
+  const email = userProfile?.email?.toLowerCase() || ''
   const isAdminMaster = role === 'admin' || 
                         role === 'superadmin' || 
                         role === 'administrador' ||
-                        userProfile?.email === 'plataformainteligente@gmail.com' ||
-                        userProfile?.email === 'paulofernandogarcardoso@gmail.com' ||
-                        userProfile?.email === 'pastygomez@gmail.com'
+                        SUPERADMIN_EMAILS.includes(email)
   
   const permissoes = userProfile?.permissoes || []
 

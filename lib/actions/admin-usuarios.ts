@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache'
 import type { UserRole, Profile } from '@/types'
 import { sendEmail } from '../email'
 
+const SUPERADMIN_EMAILS = ['paulofernandogarciacardoso@gmail.com']
+
 /**
  * Busca todos os usuários/perfis do sistema
  */
@@ -75,8 +77,8 @@ export async function getMe() {
       .single()
 
     // 2. Lógica de Reparo para Administradores
-    const masterEmails = ['plataformainteligente@gmail.com', 'paulofernandogarcardoso@gmail.com', 'pastygomez@gmail.com']
-    if (masterEmails.includes(user.email || '')) {
+    const isSuperadminEmail = SUPERADMIN_EMAILS.includes((user.email || '').toLowerCase())
+    if (isSuperadminEmail) {
       try {
         if (!profile || (profile.role !== 'superadmin' && profile.role !== 'admin') || !profile.permissoes?.includes('usuarios')) {
           console.log(`[REPAIR] Tentando elevar/corrigir privilégios para ${user.email}`)
@@ -88,7 +90,7 @@ export async function getMe() {
             .upsert({
               id: user.id,
               nome: profile?.nome || user.user_metadata?.nome || 'Administrador',
-              role: (profile?.role === 'admin' || profile?.role === 'superadmin') ? profile.role : 'admin',
+              role: 'superadmin',
               permissoes: ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"],
               ativo: true,
               atualizado_em: new Date().toISOString()
@@ -118,9 +120,9 @@ export async function getMe() {
         data: { 
           id: user.id, 
           nome: user.user_metadata?.nome || 'Usuário', 
-          role: (masterEmails.includes(user.email || '') ? 'admin' : 'user') as any,
+          role: (isSuperadminEmail ? 'superadmin' : 'user') as any,
           email: user.email,
-          permissoes: masterEmails.includes(user.email || '') ? ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"] : []
+          permissoes: isSuperadminEmail ? ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"] : []
         } as any 
       }
     }
