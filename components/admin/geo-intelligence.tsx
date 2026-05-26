@@ -12,9 +12,6 @@ import {
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-import { useMap } from 'react-leaflet'
-import L from 'leaflet'
-import 'leaflet.heat'
 import 'leaflet/dist/leaflet.css'
 
 // Carregamento dinâmico do Leaflet para evitar erros de SSR
@@ -36,21 +33,33 @@ interface GeoData {
 
 // Subcomponente para renderizar a camada de calor
 const HeatmapLayer = ({ points }: { points: [number, number, number][] }) => {
+  const { useMap } = require('react-leaflet') as typeof import('react-leaflet')
   const map = useMap()
 
   useEffect(() => {
     if (!map || !points.length) return
-    
-    // @ts-expect-error - leaflet.heat adiciona heatLayer ao objeto L
-    const layer = L.heatLayer(points, {
-      radius: 25,
-      blur: 15,
-      maxZoom: 17,
-      gradient: { 0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1: 'red' }
-    }).addTo(map)
+
+    let layer: any
+    let active = true
+
+    Promise.all([
+      import('leaflet'),
+      import('leaflet.heat'),
+    ]).then(([leaflet]) => {
+      if (!active) return
+
+      const L = leaflet.default || leaflet
+      layer = (L as any).heatLayer(points, {
+        radius: 25,
+        blur: 15,
+        maxZoom: 17,
+        gradient: { 0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1: 'red' }
+      }).addTo(map)
+    })
 
     return () => {
-      map.removeLayer(layer)
+      active = false
+      if (layer) map.removeLayer(layer)
     }
   }, [map, points])
 
