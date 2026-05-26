@@ -18,14 +18,15 @@ export async function updateCategoria(id: string, updates: Partial<Categoria>) {
         icon_name: updates.icon_name,
         slug: updates.slug,
         email_destino: updates.email_destino,
+        sites_institucionais: updates.sites_institucionais,
+        telefones_uteis: updates.telefones_uteis,
         instrucao_publica: updates.instrucao_publica,
         aviso_legal: updates.aviso_legal,
         template_descricao: updates.template_descricao,
-        permite_anonimato: updates.permite_anonimato,
+        permite_anonimato: updates.permite_anonimato ?? false,
         ativo: updates.ativo,
         ordem: updates.ordem,
         bloco: updates.bloco,
-        permite_anonimato: updates.permite_anonimato ?? false,
         atualizado_em: new Date().toISOString()
       })
       .eq('id', id)
@@ -65,13 +66,14 @@ export async function createCategoria(categoria: Partial<Categoria>) {
         icon_name: saveData.icon_name,
         bloco: saveData.bloco || 'Geral',
         email_destino: saveData.email_destino,
+        sites_institucionais: saveData.sites_institucionais,
+        telefones_uteis: saveData.telefones_uteis,
         instrucao_publica: saveData.instrucao_publica,
         aviso_legal: saveData.aviso_legal,
         template_descricao: saveData.template_descricao || [],
-        permite_anonimato: saveData.permite_anonimato || false,
+        permite_anonimato: saveData.permite_anonimato ?? false,
         ativo: true,
         ordem: saveData.ordem || 0,
-        permite_anonimato: saveData.permite_anonimato ?? false,
         criado_em: new Date().toISOString(),
         atualizado_em: new Date().toISOString()
       })

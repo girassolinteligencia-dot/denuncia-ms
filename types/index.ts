@@ -80,6 +80,8 @@ export interface Categoria {
   aviso_legal: string | null
   template_descricao: { topico: string; placeholder: string }[]
   email_destino?: string
+  sites_institucionais?: string
+  telefones_uteis?: string
   ativo: boolean
   permite_anonimato: boolean
   ordem: number

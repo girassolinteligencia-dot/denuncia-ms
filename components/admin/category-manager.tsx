@@ -1,19 +1,21 @@
 'use client'
 
 import React, { useState } from 'react'
-import { 
-  Plus, 
-  Search, 
-  GripVertical, 
-  Edit2, 
-  Trash2, 
-  CheckCircle2, 
+import {
+  Plus,
+  Search,
+  GripVertical,
+  Edit2,
+  Trash2,
+  CheckCircle2,
   XCircle,
   Mail,
   Zap,
   AlertTriangle,
   FolderOpen,
-  UserX
+  UserX,
+  Globe,
+  Phone
 } from 'lucide-react'
 import { 
   DndContext, 
@@ -289,12 +291,14 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
             instrucao_publica: '',
             aviso_legal: '',
             template_descricao: [],
+            email_destino: '',
+            sites_institucionais: '',
+            telefones_uteis: '',
             permite_anonimato: false,
             ativo: true,
             ordem: categorias.length + 1,
             criado_em: new Date().toISOString(),
             atualizado_em: new Date().toISOString(),
-            permite_anonimato: false
           })}
           className="btn-primary w-full sm:w-auto gap-2 h-11 text-xs font-black uppercase tracking-widest"
         >
@@ -347,8 +351,8 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
       {editingCat && (
         <>
           <div className="fixed inset-0 bg-dark/20 backdrop-blur-sm z-[100]" onClick={() => setEditingCat(null)}></div>
-          <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-[101] animate-slide-left border-l border-border flex flex-col">
-             <div className="p-6 border-b border-border bg-surface flex items-center justify-between">
+          <div className="fixed right-0 top-0 h-screen w-full max-w-md bg-white shadow-2xl z-[101] animate-slide-left border-l border-border flex flex-col overflow-hidden">
+             <div className="p-6 border-b border-border bg-surface flex items-center justify-between shrink-0">
                 <div>
                    <h2 className="font-extrabold text-dark uppercase tracking-tighter italic">Parametrizar Categoria</h2>
                    <p className="text-[10px] text-muted font-bold uppercase tracking-widest">{editingCat.label}</p>
@@ -467,6 +471,118 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
                    })()}
                    <p className="text-[9px] text-muted mt-2 font-medium italic">
                       As denúncias desta categoria serão enviadas para todos os e-mails acima. Se vazio, irão para o e-mail principal.
+                   </p>
+                </div>
+
+                <div>
+                   <label className="label">Sites Institucionais</label>
+                   {(() => {
+                      const sites = editingCat.sites_institucionais
+                        ? editingCat.sites_institucionais.split(',').map(s => s.trim())
+                        : [''];
+                      if (sites.length === 0) sites.push('');
+                      return (
+                        <div className="space-y-3">
+                          {sites.map((site, idx) => (
+                            <div key={idx} className="relative flex items-center gap-2">
+                              <div className="relative flex-1">
+                                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
+                                <input
+                                  type="url"
+                                  className="input pl-10 h-11"
+                                  placeholder="https://www.orgao.ms.gov.br"
+                                  value={site}
+                                  onChange={e => {
+                                    const val = e.target.value.replace(/,/g, '');
+                                    const arr = [...sites];
+                                    arr[idx] = val;
+                                    setEditingCat({ ...editingCat, sites_institucionais: arr.join(',') });
+                                  }}
+                                />
+                              </div>
+                              {sites.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const arr = sites.filter((_, i) => i !== idx);
+                                    setEditingCat({ ...editingCat, sites_institucionais: arr.join(',') });
+                                  }}
+                                  className="p-2 text-error hover:bg-red-50 rounded-lg shrink-0 transition-colors"
+                                  title="Remover site"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => setEditingCat({ ...editingCat, sites_institucionais: [...sites, ''].join(',') })}
+                            className="text-xs text-primary font-bold flex items-center gap-1 hover:underline mt-2"
+                          >
+                            <Plus size={14} /> Adicionar outro site
+                          </button>
+                        </div>
+                      )
+                   })()}
+                   <p className="text-[9px] text-muted mt-2 font-medium italic">
+                      Sites de referência exibidos ao cidadão junto com a categoria.
+                   </p>
+                </div>
+
+                <div>
+                   <label className="label">Telefones Úteis</label>
+                   {(() => {
+                      const telefones = editingCat.telefones_uteis
+                        ? editingCat.telefones_uteis.split(',').map(t => t.trim())
+                        : [''];
+                      if (telefones.length === 0) telefones.push('');
+                      return (
+                        <div className="space-y-3">
+                          {telefones.map((tel, idx) => (
+                            <div key={idx} className="relative flex items-center gap-2">
+                              <div className="relative flex-1">
+                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
+                                <input
+                                  type="tel"
+                                  className="input pl-10 h-11"
+                                  placeholder="(67) 3316-3600"
+                                  value={tel}
+                                  onChange={e => {
+                                    const val = e.target.value.replace(/,/g, '');
+                                    const arr = [...telefones];
+                                    arr[idx] = val;
+                                    setEditingCat({ ...editingCat, telefones_uteis: arr.join(',') });
+                                  }}
+                                />
+                              </div>
+                              {telefones.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const arr = telefones.filter((_, i) => i !== idx);
+                                    setEditingCat({ ...editingCat, telefones_uteis: arr.join(',') });
+                                  }}
+                                  className="p-2 text-error hover:bg-red-50 rounded-lg shrink-0 transition-colors"
+                                  title="Remover telefone"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => setEditingCat({ ...editingCat, telefones_uteis: [...telefones, ''].join(',') })}
+                            className="text-xs text-primary font-bold flex items-center gap-1 hover:underline mt-2"
+                          >
+                            <Plus size={14} /> Adicionar outro telefone
+                          </button>
+                        </div>
+                      )
+                   })()}
+                   <p className="text-[9px] text-muted mt-2 font-medium italic">
+                      Telefones de referência exibidos ao cidadão junto com a categoria.
                    </p>
                 </div>
 
