@@ -11,6 +11,8 @@ import {
   normalizeRole,
 } from '@/lib/admin-access'
 
+const SUPERADMIN_EMAILS = ['paulofernandogarciacardoso@gmail.com']
+
 /**
  * Busca todos os usuários/perfis do sistema
  */
@@ -81,8 +83,8 @@ export async function getMe() {
       .single()
 
     // 2. Lógica de Reparo para Administradores
-    const isTrustedMasterEmail = isFullAdminEmail(user.email)
-    if (isTrustedMasterEmail) {
+    const isSuperadminEmail = SUPERADMIN_EMAILS.includes((user.email || '').toLowerCase())
+    if (isSuperadminEmail) {
       try {
         const profileRole = normalizeRole(profile?.role)
         const hasFullPermissions = FULL_ADMIN_PERMISSIONS.every((permission) => profile?.permissoes?.includes(permission))
@@ -97,8 +99,8 @@ export async function getMe() {
             .upsert({
               id: user.id,
               nome: profile?.nome || user.user_metadata?.nome || 'Administrador',
-              role: profileRole === 'admin' || profileRole === 'superadmin' ? profileRole : 'superadmin',
-              permissoes: FULL_ADMIN_PERMISSIONS,
+              role: 'superadmin',
+              permissoes: ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"],
               ativo: true,
               atualizado_em: new Date().toISOString()
             }, { onConflict: 'id' })
@@ -129,9 +131,9 @@ export async function getMe() {
         data: { 
           id: user.id, 
           nome: user.user_metadata?.nome || 'Usuário', 
-          role: (isTrustedMasterEmail ? 'superadmin' : 'user') as any,
+          role: (isSuperadminEmail ? 'superadmin' : 'user') as any,
           email: user.email,
-          permissoes: isTrustedMasterEmail ? FULL_ADMIN_PERMISSIONS : []
+          permissoes: isSuperadminEmail ? ["dashboard", "denuncias", "categorias", "comunicacao", "usuarios", "configuracoes", "seguranca"] : []
         } as any 
       }
     }

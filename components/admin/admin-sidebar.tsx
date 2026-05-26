@@ -22,8 +22,10 @@ import {
 
 import { logout } from '@/lib/actions/auth'
 import { getMe } from '@/lib/actions/admin-usuarios'
-import { hasAdminPermission, isFullAdminEmail, isFullAdminRole, normalizeRole } from '@/lib/admin-access'
+import { hasAdminPermission } from '@/lib/admin-access'
 import type { Profile } from '@/types'
+
+const SUPERADMIN_EMAILS = ['paulofernandogarciacardoso@gmail.com']
 
 export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> = ({ isOpen, onClose }) => {
   const pathname = usePathname()
@@ -55,8 +57,13 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
   }, [])
 
   // Normaliza o cargo para facilitar a checagem
-  const role = normalizeRole(userProfile?.role)
-  const isAdminMaster = isFullAdminRole(role) || isFullAdminEmail(userProfile?.email)
+  const role = userProfile?.role?.toLowerCase() || ''
+  const email = userProfile?.email?.toLowerCase() || ''
+  const isAdminMaster = role === 'admin' ||
+                        role === 'superadmin' ||
+                        role === 'administrador' ||
+                        SUPERADMIN_EMAILS.includes(email)
+
 
   // Função robusta de verificação de acesso
   const temAcesso = (modulo: string) => {

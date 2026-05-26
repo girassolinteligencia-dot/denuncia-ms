@@ -32,6 +32,42 @@ interface GeoData {
   criado_em: string
 }
 
+// Subcomponente para renderizar a camada de calor
+const HeatmapLayer = ({ points }: { points: [number, number, number][] }) => {
+  const { useMap } = require('react-leaflet') as typeof import('react-leaflet')
+  const map = useMap()
+
+  useEffect(() => {
+    if (!map || !points.length) return
+
+    let layer: any
+    let active = true
+
+    Promise.all([
+      import('leaflet'),
+      import('leaflet.heat'),
+    ]).then(([leaflet]) => {
+      if (!active) return
+
+      const L = leaflet.default || leaflet
+      layer = (L as any).heatLayer(points, {
+        radius: 25,
+        blur: 15,
+        maxZoom: 17,
+        gradient: { 0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1: 'red' }
+      }).addTo(map)
+    })
+
+    return () => {
+      active = false
+      if (layer) map.removeLayer(layer)
+    }
+  }, [map, points])
+
+  return null
+}
+
+
 export const AdminGeoIntelligence = ({ data }: { data: GeoData[] }) => {
   const [viewMode, setViewMode] = useState<'points' | 'heat'>('points')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')

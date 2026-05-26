@@ -13,7 +13,8 @@ import {
   Zap,
   AlertTriangle,
   FolderOpen,
-  Lock
+  Lock,
+  UserX
 } from 'lucide-react'
 import { 
   DndContext, 
@@ -95,6 +96,12 @@ const SortableCategoryItem = ({
           {!cat.ativo && (
             <span className="badge bg-red-50 text-error border border-red-100 uppercase tracking-tighter text-[8px] sm:text-[9px] mt-1 inline-block">
               OMITIDA NO SITE
+            </span>
+          )}
+          {cat.permite_anonimato && (
+            <span className="badge bg-primary-50 text-primary border border-primary/10 uppercase tracking-tighter text-[8px] sm:text-[9px] mt-1 inline-flex items-center gap-1">
+              <UserX size={10} />
+              PERMITE ANONIMATO
             </span>
           )}
         </div>
@@ -283,6 +290,7 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
             instrucao_publica: '',
             aviso_legal: '',
             template_descricao: [],
+            permite_anonimato: false,
             ativo: true,
             ordem: categorias.length + 1,
             criado_em: new Date().toISOString(),
@@ -504,6 +512,35 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
                          <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${editingCat.ativo ? 'right-1' : 'left-1'}`}></div>
                       </button>
                    </div>
+                </div>
+
+                <div className="bg-primary-50/60 rounded-xl p-4 border border-primary/10 space-y-3">
+                   <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3">
+                         <div className="mt-0.5 rounded-lg bg-white p-2 text-primary border border-primary/10">
+                            <UserX size={16} />
+                         </div>
+                         <div>
+                            <span className="text-[10px] font-black text-dark uppercase tracking-widest">Permitir denúncia anônima</span>
+                            <p className="text-[10px] text-muted font-bold leading-relaxed mt-1">
+                               Quando ativo, o cidadão poderá escolher entre denúncia identificada ou anônima logo no início do formulário.
+                            </p>
+                         </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setEditingCat({ ...editingCat, permite_anonimato: !editingCat.permite_anonimato })}
+                        className={`w-12 h-6 rounded-full relative transition-all shrink-0 ${editingCat.permite_anonimato ? 'bg-primary' : 'bg-border'}`}
+                        title={editingCat.permite_anonimato ? 'Desativar anonimato' : 'Permitir anonimato'}
+                      >
+                         <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${editingCat.permite_anonimato ? 'right-1' : 'left-1'}`}></div>
+                      </button>
+                   </div>
+                   {editingCat.permite_anonimato && (
+                     <div className="rounded-lg bg-white border border-primary/10 p-3 text-[10px] font-bold text-primary leading-relaxed">
+                       O modo anônimo exige relato mais completo e não coleta nome, e-mail, telefone ou CPF do denunciante.
+                     </div>
+                   )}
                 </div>
                 
                  <div className="bg-surface rounded-xl p-4 border border-border mt-4">
