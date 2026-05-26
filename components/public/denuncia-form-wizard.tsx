@@ -74,6 +74,8 @@ interface DenunciaFormData {
   testemunhas: string
   servidor_publico: 'sim' | 'nao'
   setor_servidor: string
+  agente_politico: 'sim' | 'nao'
+  cargo_agente: string
   latitude: number | null
   longitude: number | null
   municipio: string
@@ -158,6 +160,8 @@ export function DenunciaFormWizard({
     testemunhas: '',
     servidor_publico: 'nao',
     setor_servidor: '',
+    agente_politico: 'nao',
+    cargo_agente: '',
     nome: '',
     email: '',
     telefone: '',
@@ -1021,12 +1025,28 @@ export function DenunciaFormWizard({
                       <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-dark">Envolve servidor público?</label>
                         <div className="grid grid-cols-2 gap-3">
-                          {['sim', 'nao'].map((valor) => (
+                          {(['sim', 'nao'] as const).map((valor) => (
                             <button
                               key={valor}
                               type="button"
-                              onClick={() => handleInputChange('servidor_publico', valor as 'sim' | 'nao')}
+                              onClick={() => handleInputChange('servidor_publico', valor)}
                               className={`rounded-2xl border-2 py-4 text-sm font-black uppercase transition-all ${formData.servidor_publico === valor ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-border text-dark hover:border-primary/40'}`}
+                            >
+                              {valor === 'sim' ? 'Sim' : 'Não'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-dark">Envolve agente político?</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {(['sim', 'nao'] as const).map((valor) => (
+                            <button
+                              key={valor}
+                              type="button"
+                              onClick={() => handleInputChange('agente_politico', valor)}
+                              className={`rounded-2xl border-2 py-4 text-sm font-black uppercase transition-all ${formData.agente_politico === valor ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-border text-dark hover:border-primary/40'}`}
                             >
                               {valor === 'sim' ? 'Sim' : 'Não'}
                             </button>
@@ -1061,6 +1081,21 @@ export function DenunciaFormWizard({
                           <option value="Transporte">Transporte</option>
                           <option value="Outros">Outros</option>
                         </select>
+                      </div>
+                    )}
+
+                    {(formData.servidor_publico === 'sim' || formData.agente_politico === 'sim') && (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-dark">
+                          Cargo do {formData.agente_politico === 'sim' ? 'Agente Político' : 'Servidor Público'}
+                        </label>
+                        <input
+                          id="field-cargo-agente"
+                          className="input h-14 rounded-xl border-2 font-bold"
+                          placeholder={formData.agente_politico === 'sim' ? 'Ex: Vereador, Deputado, Secretário...' : 'Ex: Fiscal, Agente de Saúde, Delegado...'}
+                          value={formData.cargo_agente}
+                          onChange={(e) => handleInputChange('cargo_agente', e.target.value)}
+                        />
                       </div>
                     )}
 
