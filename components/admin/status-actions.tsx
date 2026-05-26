@@ -29,6 +29,11 @@ export const StatusActions: React.FC<{ denunciaId: string, currentStatus: Status
 
   const handleStatusChange = async (newStatus: StatusDenuncia) => {
     if (newStatus === status) return
+
+    if (!obs.trim()) {
+      toast.error('Observação de triagem é obrigatória para alterar o status.')
+      return
+    }
     
     setLoading(true)
     const result = await updateDenunciaStatus(denunciaId, newStatus, obs)

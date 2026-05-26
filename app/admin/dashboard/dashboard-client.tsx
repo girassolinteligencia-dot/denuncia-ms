@@ -86,8 +86,8 @@ function DashboardContent() {
           <p className="text-muted text-[11px] font-black uppercase tracking-widest mt-1">Centro de Comando Denuncia MS — Monitoramento Cidadão</p>
         </div>
 
-        <div className="flex p-1.5 bg-surface rounded-2xl border border-border self-start shadow-inner overflow-x-auto max-w-full scrollbar-hide">
-          <div className="flex items-center min-w-max">
+        <div className="flex flex-wrap gap-2 p-1.5 bg-surface rounded-2xl border border-border self-start shadow-inner overflow-x-auto max-w-full scrollbar-hide">
+          <div className="flex flex-wrap items-center gap-2">
             <button 
               onClick={() => setActiveTab('analytics')}
               className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all shrink-0 ${

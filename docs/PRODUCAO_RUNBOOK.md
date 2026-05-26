@@ -6,7 +6,7 @@ Regra principal: nenhum deploy, migration, alteracao de variavel ou script com s
 
 ## 1. Pre-flight obrigatorio
 
-Executar localmente, no diretorio `denuncia-ms-1`:
+Executar localmente, no diretorio `denuncia-ms`:
 
 ```bash
 npm ci
