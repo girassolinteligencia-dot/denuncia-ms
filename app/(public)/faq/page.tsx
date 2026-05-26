@@ -101,7 +101,7 @@ export default function FAQPage() {
             <p className="text-white/50 text-[10px] sm:text-xs font-bold uppercase tracking-widest">Nossa equipe está pronta para ajudar.</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-            <Link href="/" className="btn-outline border-white/10 text-white hover:bg-white/10 h-12 px-8 text-[10px] font-black uppercase tracking-widest">
+            <Link href="/" className="inline-flex items-center gap-2 text-white border border-white/10 bg-white/10 hover:bg-white/20 h-12 px-8 text-[10px] font-black uppercase tracking-widest transition-colors">
               Início
             </Link>
             <Link href="/denunciar" className="btn-primary bg-secondary text-dark border-none h-12 px-8 text-[10px] font-black uppercase tracking-widest">

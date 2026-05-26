@@ -4,6 +4,8 @@
 
 Este projeto esta em producao e e usado pela populacao. Durante os sprints locais, nao publicar deploy, nao rodar migrations em producao e nao executar scripts com service role contra o banco real sem autorizacao explicita.
 
+> Status atual (23/05/2026): o diretório oficial é `c:\.MAIS\denuncia-ms`. A cópia `denuncia-ms-1` é obsoleta e deve ser ignorada.
+
 ## Ambiente seguro
 
 - Trabalhar no diretorio `denuncia-ms`.

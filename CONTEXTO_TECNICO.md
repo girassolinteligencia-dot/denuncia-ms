@@ -2,6 +2,8 @@
 
 # Leia este arquivo antes de qualquer modificação no projeto.
 
+> Status atual (23/05/2026): o diretório oficial do projeto é `c:\.MAIS\denuncia-ms`.
+> A cópia `denuncia-ms-1` foi auditada e está obsoleta; não deve ser usada para desenvolvimento ou deploy.
 
 ## DECISÕES ARQUITETURAIS CRÍTICAS (NÃO SOBRESCREVER)
 
@@ -85,6 +87,16 @@
 - Página /admin/usuarios: verificação de role deve aceitar 'admin' E 'superadmin'
 - Se aparecer erro 'column X does not exist' no PostgREST: executar NOTIFY pgrst, 'reload schema' no SQL Editor
 
+
+### 23/05/2026 — Fix Enquetes + Audit Log (pendente aplicação manual em prod)
+- **BUG**: `enquete_votos` e `enquete_opcoes` não existem no banco `jntbmydqvacrjsbsvgml`
+  — migrations `20260423_sistema_enquetes.sql` e `20260424_enquetes_avancadas.sql` não foram aplicadas nesse banco
+- **BUG**: `audit_identidade` também não existe em produção
+  — código em `lib/actions/admin-denuncias.ts:151` já tenta inserir nessa tabela (erro silencioso)
+- **FIX SQL**: `docs/sql/FIX_PRODUCAO_ENQUETES_E_AUDIT.sql` — rodar no SQL Editor do Supabase
+  URL: https://supabase.com/dashboard/project/jntbmydqvacrjsbsvgml/sql/new
+- **Migration local**: `supabase/migrations/20260523_fix_enquetes_audit_identidade.sql` criada
+- **env.local atualizado**: SUPABASE_SERVICE_ROLE_KEY agora usa JWT clássico `eyJ...` (necessário para autenticação correta)
 
 ### 22/05/2026 — Implementação de Anonimato & Controle de Acesso
 - [x] **Coluna `permite_anonimato`**: Adicionada a tabela `categorias` via migration 20260521_add_permite_anonimato.sql

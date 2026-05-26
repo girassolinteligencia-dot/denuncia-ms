@@ -566,6 +566,65 @@ export async function retroGeocodeMissingCoords() {
 }
 
 /**
+ * Exclui definitivamente uma denúncia. Restrito a superadmin.
+ * Registra o motivo no log de auditoria antes de deletar.
+ */
+export async function deletarDenuncia(id: string, motivo: string) {
+  const supabase = createAdminClient()
+
+  try {
+    // Verificar se o usuário logado é superadmin
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Não autenticado.')
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profile?.role !== 'superadmin') {
+      throw new Error('Apenas superadmins podem excluir denúncias.')
+    }
+
+    if (!motivo || motivo.trim().length < 10) {
+      throw new Error('O motivo da exclusão deve ter ao menos 10 caracteres.')
+    }
+
+    // Buscar protocolo antes de deletar para o log
+    const { data: denuncia } = await supabase
+      .from('denuncias')
+      .select('protocolo')
+      .eq('id', id)
+      .single()
+
+    // Registrar no log de auditoria antes de deletar
+    await supabase.from('log_auditoria').insert({
+      acao: 'DELETE_DENUNCIA',
+      tabela: 'denuncias',
+      registro_id: id,
+      valor_anterior: { protocolo: denuncia?.protocolo },
+      valor_novo: { motivo_exclusao: motivo.trim(), excluido_por: user.id },
+      ip: 'ADMIN_PANEL',
+      usuario_id: user.id,
+    })
+
+    const { error } = await supabase
+      .from('denuncias')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+
+    revalidatePath('/admin/denuncias')
+    return { success: true }
+  } catch (err: any) {
+    console.error('[admin] Erro ao deletar denúncia:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+/**
  * Reencaminha (força re-tentativa) o despacho do e-mail de uma denúncia.
  */
 export async function reencaminharEmailDespacho(denunciaId: string) {

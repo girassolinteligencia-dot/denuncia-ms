@@ -4,9 +4,10 @@ Use este roteiro para validar localmente ou em preview. Nao execute deploy de pr
 
 ## 1. Validacao automatizada
 
-No diretorio `denuncia-ms-1`:
+No diretorio `denuncia-ms`:
 
 ```bash
+npm ci
 npm test
 npm run lint
 npm run typecheck
