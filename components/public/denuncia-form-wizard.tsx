@@ -1019,7 +1019,7 @@ export function DenunciaFormWizard({
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-dark">Servidor público?</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-dark">Envolve servidor público?</label>
                         <div className="grid grid-cols-2 gap-3">
                           {['sim', 'nao'].map((valor) => (
                             <button

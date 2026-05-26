@@ -29,7 +29,7 @@ export default async function DetalheDenunciaPage({ params }: { params: { id: st
     getMe()
   ])
 
-  const isSuperAdmin = me.success && (me.data?.role === 'superadmin' || me.data?.role === 'admin')
+  const isSuperAdmin = me.success && me.data?.role === 'superadmin'
 
   if (!result.success || !result.data) {
     return <div className="p-8 text-error">Erro ao carregar detalhes: {result.error}</div>
@@ -133,9 +133,10 @@ export default async function DetalheDenunciaPage({ params }: { params: { id: st
               </div>
               <h3 className="text-xs font-black text-secondary uppercase tracking-widest mb-6">Controle Operacional</h3>
               
-              <StatusActions 
-                denunciaId={denuncia.id} 
-                currentStatus={denuncia.status} 
+              <StatusActions
+                denunciaId={denuncia.id}
+                currentStatus={denuncia.status}
+                isSuperAdmin={isSuperAdmin}
               />
            </div>
 

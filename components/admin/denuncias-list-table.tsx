@@ -1,20 +1,21 @@
 'use client'
 
 import React, { useState } from 'react'
-import { 
-  Clock, 
-  Search, 
-  Send, 
-  CheckCircle2, 
+import {
+  Clock,
+  Search,
+  Send,
+  CheckCircle2,
   AlertTriangle,
   ChevronRight,
-  CheckSquare
+  CheckSquare,
 } from 'lucide-react'
 import Link from 'next/link'
 import type { Denuncia, StatusDenuncia } from '@/types'
 import { reencaminharEmailDespacho, updateDenunciasStatusBatch } from '@/lib/actions/admin-denuncias'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
+import { ExportOficioButton } from '@/components/admin/export-oficio-button'
 
 const STATUS_STYLE: Record<StatusDenuncia, { label: string, color: string, icon: any }> = {
   recebida: { label: 'Recebida', color: 'bg-primary-50 text-primary border-primary/20', icon: Clock },
@@ -107,12 +108,28 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
 
          {/* BATCH ACTIONS BAR */}
          {selectedIds.length > 0 && (
-           <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 px-4 py-2 rounded-xl animate-fade-in w-full sm:w-auto justify-center sm:justify-end">
-             <span className="text-[10px] font-black text-primary uppercase tracking-widest mr-2 flex items-center gap-1">
-                <CheckSquare size={14} />
-                {selectedIds.length} sel.
+           <div className="flex flex-wrap items-center gap-2 bg-primary/5 border border-primary/20 px-4 py-2 rounded-xl animate-fade-in w-full sm:w-auto justify-center sm:justify-end">
+             <span className="text-[10px] font-black text-primary uppercase tracking-widest mr-1 flex items-center gap-1">
+               <CheckSquare size={14} />
+               {selectedIds.length} sel.
              </span>
-             <button 
+             <button
+               onClick={() => handleBatchUpdate('recebida')}
+               disabled={batchLoading}
+               className="text-[9px] font-bold uppercase bg-primary/10 hover:bg-primary border border-primary/20 hover:border-primary text-primary hover:text-white transition-all px-3 py-1.5 rounded-lg flex items-center gap-1"
+             >
+               {batchLoading ? <Loader2 size={12} className="animate-spin" /> : <Clock size={12} />}
+               Recebida
+             </button>
+             <button
+               onClick={() => handleBatchUpdate('em_analise')}
+               disabled={batchLoading}
+               className="text-[9px] font-bold uppercase bg-blue-50 hover:bg-info border border-blue-200 hover:border-info text-info hover:text-white transition-all px-3 py-1.5 rounded-lg flex items-center gap-1"
+             >
+               {batchLoading ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+               Em Análise
+             </button>
+             <button
                onClick={() => handleBatchUpdate('encaminhada')}
                disabled={batchLoading}
                className="text-[9px] font-bold uppercase bg-secondary/10 hover:bg-secondary border border-secondary/20 hover:border-secondary text-secondary hover:text-white transition-all px-3 py-1.5 rounded-lg flex items-center gap-1"
@@ -120,7 +137,15 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
                {batchLoading ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
                Encaminhar
              </button>
-             <button 
+             <button
+               onClick={() => handleBatchUpdate('resolvida')}
+               disabled={batchLoading}
+               className="text-[9px] font-bold uppercase bg-green-50 hover:bg-success border border-green-200 hover:border-success text-success hover:text-white transition-all px-3 py-1.5 rounded-lg flex items-center gap-1"
+             >
+               {batchLoading ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+               Resolvida
+             </button>
+             <button
                onClick={() => handleBatchUpdate('arquivada')}
                disabled={batchLoading}
                className="text-[9px] font-bold uppercase bg-surface hover:bg-muted border border-border text-muted hover:text-white transition-all px-3 py-1.5 rounded-lg flex items-center gap-1"
@@ -128,6 +153,7 @@ export const DenunciasListTable: React.FC<{ initialDenuncias: any[] }> = ({ init
                {batchLoading ? <Loader2 size={12} className="animate-spin" /> : <AlertTriangle size={12} />}
                Arquivar
              </button>
+             <ExportOficioButton selectedIds={selectedIds} />
            </div>
          )}
       </div>
