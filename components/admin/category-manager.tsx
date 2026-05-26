@@ -13,7 +13,6 @@ import {
   Zap,
   AlertTriangle,
   FolderOpen,
-  Lock,
   UserX
 } from 'lucide-react'
 import { 
@@ -543,24 +542,7 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
                    )}
                 </div>
                 
-                 <div className="bg-surface rounded-xl p-4 border border-border mt-4">
-                    <div className="flex items-center justify-between">
-                       <div className="flex items-center gap-2">
-                          <Lock size={16} className="text-secondary" />
-                          <span className="text-[10px] font-black text-dark uppercase tracking-widest">Permitir Anonimato</span>
-                       </div>
-                       <button 
-                         type="button"
-                         onClick={() => setEditingCat({...editingCat, permite_anonimato: !editingCat.permite_anonimato})}
-                         className={`w-12 h-6 rounded-full relative transition-all ${editingCat.permite_anonimato ? 'bg-primary' : 'bg-border'}`}
-                         title={editingCat.permite_anonimato ? 'Desativar' : 'Ativar'}
-                       >
-                          <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${editingCat.permite_anonimato ? 'right-1' : 'left-1'}`}></div>
-                       </button>
-                    </div>
-                 </div>
-                
-                <div className="pt-4 pb-8">
+                 <div className="pt-4 pb-8">
                     <button 
                       type="submit"
                       disabled={loading}
