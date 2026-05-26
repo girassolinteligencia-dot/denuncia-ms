@@ -5,6 +5,21 @@ import { revalidatePath, unstable_noStore as noStore } from 'next/cache'
 import type { StatusDenuncia } from '@/types'
 import { decryptData } from '@/lib/encrypt'
 
+const NEWSLETTER_TABLES = ['newsletter_inscricoes', 'newsletter_subscriptions'] as const
+
+async function getNewsletterCount(supabase: ReturnType<typeof createAdminClient>) {
+  for (const table of NEWSLETTER_TABLES) {
+    const { count, error } = await supabase
+      .from(table)
+      .select('*', { count: 'exact', head: true })
+
+    if (!error) return count || 0
+    if (!['42P01', 'PGRST205'].includes(error.code)) throw error
+  }
+
+  return 0
+}
+
 /**
  * Atualiza o status de uma denuncia e registra no log de auditoria
  */
@@ -159,10 +174,16 @@ export async function getDenunciaDetalhes(id: string) {
       }
     }
 
+    // Normaliza join: Supabase pode retornar array mesmo em relação 1:1
+    const categoriasNormalizada = Array.isArray(data.categorias)
+      ? data.categorias[0] || null
+      : data.categorias
+
     return {
       success: true,
       data: {
         ...data,
+        categorias: categoriasNormalizada,
         denunciante_nome,
         denunciante_email,
         denunciante_telefone,
@@ -187,9 +208,7 @@ export async function getDashboardStats() {
     if (error) throw error
 
     // 2. Busca métricas de engajamento
-    const { count: newsletterCount } = await supabase
-      .from('newsletter_inscricoes')
-      .select('*', { count: 'exact', head: true })
+    const newsletterCount = await getNewsletterCount(supabase)
 
     const { count: votosCount } = await supabase
       .from('enquete_votos')
@@ -233,12 +252,24 @@ export async function getRecentActivities() {
   try {
     const { data, error } = await supabase
       .from('log_auditoria')
-      .select('*, usuario:profiles(nome)')
+      .select('*')
       .order('criado_em', { ascending: false })
       .limit(6)
 
     if (error) throw error
-    return { success: true, data }
+
+    const usuarioIds = Array.from(new Set((data || []).map((item: any) => item.usuario_id).filter(Boolean)))
+    const { data: profiles } = usuarioIds.length > 0
+      ? await supabase.from('profiles').select('id, nome').in('id', usuarioIds)
+      : { data: [] }
+
+    const profileMap = new Map((profiles || []).map((profile: any) => [profile.id, profile]))
+    const mergedData = (data || []).map((item: any) => ({
+      ...item,
+      usuario: item.usuario_id ? profileMap.get(item.usuario_id) || null : null,
+    }))
+
+    return { success: true, data: mergedData }
   } catch (err: any) {
     console.error('Erro ao buscar atividades:', err)
     return { success: false, error: err.message }

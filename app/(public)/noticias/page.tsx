@@ -22,7 +22,7 @@ export default async function NoticiasPage() {
             Central de <span className="text-primary italic">Notícias</span>
           </h1>
           <p className="text-xs sm:text-md text-muted max-w-xl mx-auto md:mx-0 font-medium leading-relaxed">
-            Acompanhe as principais atualizações e relatórios de inteligência de Mato Grosso do Sul.
+            Acompanhe as principais atualizações, tendências e relatórios de inteligência sobre Mato Grosso do Sul.
           </p>
         </header>
 
@@ -35,8 +35,8 @@ export default async function NoticiasPage() {
         <section className="bg-white border-y border-border py-16">
           <div className="container-page max-w-4xl">
             <div className="text-center mb-8 space-y-2">
-               <h2 className="text-2xl font-black text-dark tracking-tight uppercase italic">Opinião <span className="text-primary">Pública</span></h2>
-               <p className="text-muted text-xs font-medium">Participe da nossa pesquisa sobre os fatos recentes.</p>
+               <h2 className="text-2xl font-black text-dark tracking-tight uppercase italic">O Que <span className="text-primary">Você Pensa?</span></h2>
+               <p className="text-muted text-xs font-medium">Participe da nossa pesquisa sobre os fatos recentes do estado. Sua opinião ajuda a gente a entender o que importa para você.</p>
             </div>
             <EnqueteDinamica initialData={enqueteNoticias} />
           </div>

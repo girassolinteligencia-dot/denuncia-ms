@@ -44,26 +44,55 @@ export async function registrarDenuncia(
   const emailNorm = formData.email?.toLowerCase().trim()
   const emailHash = emailNorm ? createHash('sha256').update(emailNorm).digest('hex') : ''
 
+  const montarDescricaoAnonima = (data: SubmitDenunciaRequest) => {
+    const enderecoCompleto = [data.local, data.numero, data.bairro, data.cidade, data.cep]
+      .filter(Boolean)
+      .join(', ') || 'Não informado'
+
+    const partes = [
+      `Nome completo do suposto autor: ${data.autor_nome || 'Não informado'}`,
+      `Data aproximada do ocorrido: ${data.data_ocorrido || 'Não informada'}`,
+      `Horário aproximado: ${data.hora_ocorrido || 'Não informado'}`,
+      `Servidor público: ${data.servidor_publico === 'sim' ? 'Sim' : 'Não'}`,
+      data.servidor_publico === 'sim' ? `Setor: ${data.setor_servidor || 'Não informado'}` : null,
+      data.testemunhas ? `Testemunhas: ${data.testemunhas}` : null,
+      `Endereço completo do local: ${enderecoCompleto}`,
+      '',
+      'RELATO ORIGINAL:',
+      data.descricao_original || 'Não informado',
+    ].filter(Boolean)
+
+    return partes.join('\n')
+  }
+
   console.log('[denuncia] Iniciando registro:', { categoria: formData.categoria_id, titulo: formData.titulo })
 
   try {
     // 1. Validações Iniciais
-    if (!emailNorm) return { success: false, error: 'E-mail de identificação é obrigatório.' }
-    if (!formData.telefone) return { success: false, error: 'O número de telefone/WhatsApp é obrigatório.' }
-    if (!formData.cpf) return { success: false, error: 'O CPF é obrigatório para a identificação oficial.' }
-    
-    const { data: banido } = await supabase
-      .from('blacklist_usuarios')
-      .select('id')
-      .eq('email_hash', emailHash)
-      .maybeSingle()
+    if (!formData.is_anonima) {
+      if (!emailNorm) return { success: false, error: 'E-mail de identificação é obrigatório.' }
+      if (!formData.telefone) return { success: false, error: 'O número de telefone/WhatsApp é obrigatório.' }
+      if (!formData.cpf) return { success: false, error: 'O CPF é obrigatório para a identificação oficial.' }
+      
+      const { data: banido } = await supabase
+        .from('blacklist_usuarios')
+        .select('id')
+        .eq('email_hash', emailHash)
+        .maybeSingle()
 
-    if (banido) return { success: false, error: 'Acesso suspenso por violação dos termos.' }
+      if (banido) return { success: false, error: 'Acesso suspenso por violação dos termos.' }
 
-    // 2. Validar OTP (O código agora é consumido apenas se passar por aqui)
-    const otpCheck = await verificarOTP(emailNorm, formData.otpToken || '')
-    if (!otpCheck.success) {
-      return { success: false, error: 'Código de verificação inválido ou já utilizado. Solicite um novo.' }
+      // 2. Validar OTP (O código agora é consumido apenas se passar por aqui)
+      const otpCheck = await verificarOTP(emailNorm, formData.otpToken || '')
+      if (!otpCheck.success) {
+        return { success: false, error: 'Código de verificação inválido ou já utilizado. Solicite um novo.' }
+      }
+    } else {
+      // Validar segurança da categoria (impedir manipulação do frontend)
+      const { data: catAnon } = await supabase.from('categorias').select('permite_anonimato').eq('id', formData.categoria_id).single()
+      if (!catAnon?.permite_anonimato) {
+        return { success: false, error: 'Esta categoria não permite denúncia anônima.' }
+      }
     }
 
     // 3. Gerar Protocolo
@@ -80,6 +109,8 @@ export async function registrarDenuncia(
     const localCompleto = [formData.local, formData.numero, formData.bairro, formData.cidade]
       .filter(Boolean).join(', ')
 
+    const descricaoFinal = formData.is_anonima ? montarDescricaoAnonima(formData) : formData.descricao_original
+
     const { data: denuncia, error: denErr } = await supabase
       .from('denuncias')
       .insert({
@@ -87,7 +118,7 @@ export async function registrarDenuncia(
         chave_acesso:       chaveAcesso,
         categoria_id:       formData.categoria_id,
         titulo:             formData.titulo,
-        descricao_original: formData.descricao_original,
+        descricao_original: descricaoFinal,
         local:              localCompleto || null,
         cep:                formData.cep || null,
         numero:             formData.numero || null,
@@ -98,6 +129,7 @@ export async function registrarDenuncia(
         longitude:          formData.longitude || null,
         data_ocorrido:      formData.data_ocorrido || null,
         status:             'recebida',
+        anonima:            formData.is_anonima || false,
       })
       .select('id, criado_em')
       .single()
@@ -107,7 +139,9 @@ export async function registrarDenuncia(
     }
 
     // Marca OTP como usado apenas após insert bem-sucedido
-    await validarOTP(emailNorm, formData.otpToken || '')
+    if (!formData.is_anonima) {
+      await validarOTP(emailNorm || '', formData.otpToken || '')
+    }
 
     // 6. Processamento em Segundo Plano (Non-blocking para o usuário)
     try {
@@ -133,26 +167,36 @@ export async function registrarDenuncia(
       }
 
       // Identidade (PII)
-      await supabase.from('identidades').insert({
-        denuncia_id:  denuncia.id,
-        nome_enc:     await encryptData(formData.nome?.trim() || 'Cidadão'),
-        email_enc:    await encryptData(emailNorm),
-        email_hash:   emailHash,
-        telefone_enc: formData.telefone ? await encryptData(formData.telefone.trim()) : null,
-        cpf_enc:      formData.cpf ? await encryptData(formData.cpf.trim()) : null,
-      })
+      if (!formData.is_anonima) {
+        await supabase.from('identidades').insert({
+          denuncia_id:  denuncia.id,
+          nome_enc:     await encryptData(formData.nome?.trim() || 'Cidadão'),
+          email_enc:    await encryptData(emailNorm || ''),
+          email_hash:   emailHash,
+          telefone_enc: formData.telefone ? await encryptData(formData.telefone.trim()) : null,
+          cpf_enc:      formData.cpf ? await encryptData(formData.cpf.trim()) : null,
+        })
+      }
 
       // PDF & Fila
       const pdfBuffer = await gerarPDFDenuncia({
         protocolo,
         categoria:     catData?.label || 'Geral',
         titulo:        formData.titulo,
-        descricao:     formData.descricao_original,
+        descricao:     descricaoFinal,
         local:         localCompleto,
         data_ocorrido: formData.data_ocorrido || '',
+        hora_ocorrido: formData.hora_ocorrido || '',
+        autor_nome:    formData.autor_nome || '',
+        testemunhas:   formData.testemunhas || '',
+        servidor_publico: formData.servidor_publico || 'nao',
+        setor_servidor:   formData.setor_servidor || '',
         criado_em:     denuncia.criado_em,
         orgao_nome:    'Denuncia MS',
-        arquivos:      arquivosVinculados
+        anonima:       !!formData.is_anonima,
+        arquivos:      arquivosVinculados,
+        nome:          formData.is_anonima ? 'Anônimo' : formData.nome,
+        email:         formData.is_anonima ? '' : emailNorm,
       })
 
       const pdfPath = `oficial_${protocolo}.pdf`
@@ -177,12 +221,14 @@ export async function registrarDenuncia(
       }
 
       // 1. E-mail para o CIDADÃO (Confirmando recebimento)
-      sendEmail({
-        to:      emailNorm,
-        subject: `[DenunciaMS] Protocolo ${protocolo} — Denuncia registrada`,
-        html:    gerarEmailDenunciante(protocolo, chaveAcesso, formData.nome || 'Cidadão'),
-        text:    `Protocolo: ${protocolo} | Chave: ${chaveAcesso}`,
-      }).catch(e => console.error('[email] Erro ao notificar cidadão:', e))
+      if (!formData.is_anonima && emailNorm) {
+        sendEmail({
+          to:      emailNorm,
+          subject: `[DenunciaMS] Protocolo ${protocolo} — Denuncia registrada`,
+          html:    gerarEmailDenunciante(protocolo, chaveAcesso, formData.nome || 'Cidadão'),
+          text:    `Protocolo: ${protocolo} | Chave: ${chaveAcesso}`,
+        }).catch(e => console.error('[email] Erro ao notificar cidadão:', e))
+      }
 
       // 2. E-mail para o ÓRGÃO DESTINATÁRIO (Se houver email_destino na categoria)
       if (catData?.email_destino) {
@@ -238,10 +284,10 @@ export async function registrarDenuncia(
             descricao: formData.descricao_original,
             local: localCompleto,
             data_ocorrido: formData.data_ocorrido || new Date().toISOString(),
-            nome: formData.nome,
-            email: emailNorm,
-            telefone: formData.telefone,
-            cpf: formData.cpf,
+            nome: formData.is_anonima ? 'Anônimo' : formData.nome,
+            email: formData.is_anonima ? '' : emailNorm,
+            telefone: formData.is_anonima ? '' : formData.telefone,
+            cpf: formData.is_anonima ? '' : formData.cpf,
             totalArquivos: arquivosVinculados.length,
             criado_em: denuncia.criado_em,
             baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://denuncia-ms.vercel.app'

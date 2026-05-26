@@ -9,13 +9,16 @@ import {
   CheckCircle2, 
   HelpCircle,
   MessageSquare,
-  Search
+  Search,
+  UserCheck,
+  MapPin,
+  ClipboardCheck
 } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = {
   title: 'Como Funciona | DENUNCIA MS',
-  description: 'Saiba como registrar sua denuncia de forma segura e eficaz no Mato Grosso do Sul.',
+  description: 'Entenda exatamente como funciona: de um clique até sua voz chegar a quem pode agir.',
 }
 
 export default function ComoFuncionaPage() {
@@ -34,14 +37,14 @@ export default function ComoFuncionaPage() {
                Inteligência Cívica
             </div>
             <h1 className="text-3xl sm:text-7xl font-black text-white tracking-tighter leading-[1] sm:leading-[0.9] italic">
-               Sua denúncia num <span className="text-secondary">caminho seguro.</span>
+               Sua Denuncia num <span className="text-secondary">Caminho Seguro</span>
             </h1>
             <p className="text-sm sm:text-lg text-white/70 max-w-xl font-medium leading-relaxed mx-auto lg:mx-0">
-              Entenda como a <span className="text-white font-black">DENUNCIA MS</span> usa tecnologia para garantir sua segurança e a entrega rápida aos órgãos.
+              Vamos mostrar exatamente como funciona: de um clique até sua voz chegar a quem pode agir. Tudo transparente, tudo protegido.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                <Link href="/denunciar" className="btn-primary gap-3 px-8 bg-secondary hover:bg-secondary-600 text-dark border-none shadow-glow-green h-12 sm:h-14 text-xs font-black uppercase tracking-widest">
-                  Iniciar agora
+                  Começar agora
                   <ArrowRight size={18} />
                </Link>
             </div>
@@ -58,42 +61,89 @@ export default function ComoFuncionaPage() {
         </div>
       </section>
 
-      {/* Grid de Processo - 4 Passos */}
+      {/* Grid de Processo */}
       <section className="py-16 sm:py-24 bg-white relative">
          <div className="container-page space-y-12 sm:space-y-16">
             <div className="text-center space-y-3 px-4">
-               <h2 className="text-2xl sm:text-4xl font-black text-dark tracking-tight italic uppercase">O Fluxo da Informação</h2>
-               <p className="text-muted text-xs sm:text-base max-w-2xl mx-auto font-medium">Cada etapa é monitorada com rigor técnico, do início ao fim.</p>
+               <h2 className="text-2xl sm:text-4xl font-black text-dark tracking-tight italic uppercase">O Caminho da Denuncia</h2>
+               <p className="text-muted text-xs sm:text-base max-w-2xl mx-auto font-medium">Cada etapa foi desenhada para você se sentir seguro e para garantir que seu relato seja útil de verdade.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                <ProcessStep 
                  num="01"
-                 title="Registro & Fatos"
-                 desc="Você seleciona a categoria e narra os fatos. Nosso formulário é otimizado para que você não esqueça nenhum detalhe importante."
-                 icon={FileText}
+                 title="ESCOLHA A CATEGORIA"
+                 desc="Você diz que tipo de problema viu — pode ser corrupção, má conduta pública, crime, ou outra coisa. Essa escolha ajuda a encaminhar tudo para o órgão certo."
+                 icon={Zap}
                  color="bg-primary/10 text-primary"
                />
                <ProcessStep 
                  num="02"
-                 title="Anexos de Mídia"
-                 desc="Insira fotos, vídeos ou documentos. Todos os arquivos são criptografados no momento do upload para proteger a fonte."
-                 icon={Camera}
+                 title="DECIDA SE QUER SE IDENTIFICAR"
+                 desc="Você pode colocar seu nome e contato — ou não. Se não quiser se identificar, a categoria precisa permitir. Você saberá na hora."
+                 icon={UserCheck}
                  color="bg-secondary/10 text-secondary"
                />
                <ProcessStep 
                  num="03"
-                 title="Identificação Segura"
-                 desc="A validação por e-mail (OTP) garante que sua denuncia seja legítima e oficial, protegendo o sistema contra falsos relatos."
-                 icon={Lock}
+                 title="CONTE O QUE VIU"
+                 desc="Descreva os fatos do jeito que entender. Coloque nomes, datas, horários, detalhes. Se não souber algo, deixe em branco — a verdade é mais importante que perfeição."
+                 icon={FileText}
                  color="bg-dark text-white shadow-lg"
                />
                <ProcessStep 
                  num="04"
-                 title="Triagem & Ação"
-                 desc="A denuncia é enviada automaticamente aos órgãos responsáveis, que iniciam os procedimentos de apuração e fiscalização."
-                 icon={CheckCircle2}
+                 title="DIGA O LOCAL"
+                 desc="Pode ser uma rua, um bairro, um órgão. Ajuda quem vai investigar a entender melhor o contexto. Opcionalmente, a gente pode usar sua localização (se você permitir)."
+                 icon={MapPin}
                  color="bg-electric/10 text-electric"
+               />
+               <ProcessStep 
+                 num="05"
+                 title="ANEXE O QUE TIVER"
+                 desc="Fotos, vídeos, áudio, documento — tudo que prove o que você está dizendo. Coisas concretas fortalecem muito o relato."
+                 icon={Camera}
+                 color="bg-primary/10 text-primary"
+               />
+               <ProcessStep 
+                 num="06"
+                 title="RECEBA SEU NÚMERO"
+                 desc="Ao terminar, o sistema cria um protocolo único. Guarde esse número — é seu comprovante e seu caminho para acompanhar tudo."
+                 icon={CheckCircle2}
+                 color="bg-secondary/10 text-secondary"
+               />
+            </div>
+         </div>
+      </section>
+
+      {/* Comparativo de Caminhos */}
+      <section className="py-16 sm:py-20 bg-surface border-y border-border">
+         <div className="container-page space-y-10">
+            <div className="max-w-3xl space-y-3">
+               <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-lg text-[9px] font-black uppercase tracking-widest text-primary border border-primary/10">
+                  <ClipboardCheck size={12} />
+                  Escolha orientada
+               </div>
+               <h2 className="text-2xl sm:text-4xl font-black text-dark tracking-tight italic uppercase">Identificado ou Anônimo?</h2>
+               <p className="text-sm sm:text-base text-muted font-medium leading-relaxed">
+                  A depender da categoria, você pode escolher se colocar seu nome ou não. Cada caminho tem vantagens.
+               </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+               <PathCard
+                 icon={ShieldCheck}
+                 title="DENUNCIA COM SEU NOME"
+                 bestFor="Melhor quando você quer acompanhar o processo e pode ser contatado se precisarem esclarecer algo."
+                 requires="O que você informa: nome, e-mail, telefone, CPF (só para validação — não ficamos com dados desnecessários)."
+                 limit="O que a gente faz: protege tudo com criptografia, valida seu e-mail por código, e bloqueia acesso público aos seus dados."
+               />
+               <PathCard
+                 icon={Lock}
+                 title="DENUNCIA ANÔNIMA"
+                 bestFor="Melhor quando sua segurança pessoal é prioridade e a categoria permite anonimato."
+                 requires="O que você informa: os detalhes do caso (o que, quando, onde, quem fez) — mas sem seu nome."
+                 limit="O que muda: sem contato posterior, então sua descrição precisa ser bem completa logo de saída. Ajuda quem vai apurar a ter contexto total."
                />
             </div>
          </div>
@@ -112,30 +162,34 @@ export default function ComoFuncionaPage() {
                         Blindagem Digital
                      </div>
                      <h2 className="text-2xl sm:text-5xl font-black tracking-tighter leading-tight italic uppercase">
-                        Como garantimos seu <span className="text-secondary underline decoration-2 sm:decoration-4 underline-offset-4 sm:underline-offset-8">Sigilo?</span>
+                        Seus Dados Estão <span className="text-secondary underline decoration-2 sm:decoration-4 underline-offset-4 sm:underline-offset-8">Protegidos</span>
                      </h2>
                      <div className="space-y-6">
                         <FeatureItem 
-                          title="Criptografia de Ponta-a-Ponta" 
-                          desc="Os dados são embaralhados antes de serem salvos no banco de dados, tornando sua identidade ilegível para acessos não autorizados."
+                          title="CRIPTOGRAFIA FORTE" 
+                          desc="Tudo o que você manda é embaralhado antes de chegar no servidor. Mesmo que alguém conseguisse acessar ilegalmente, veria só código vazio."
                         />
                         <FeatureItem 
-                          title="Validação por Código Único" 
-                          desc="O sistema OTP garante que o e-mail informado pertence ao autor, elevando a confiança jurídica da denuncia."
+                          title="VALIDAÇÃO POR CÓDIGO"
+                          desc="Se você coloca seu e-mail, mandamos um código. Você confirma. Isso garante que é você mesmo — e nos protege contra abuso da plataforma."
                         />
                         <FeatureItem 
-                          title="Protocolo Independente" 
-                          desc="O número gerado comprova a oficialização do seu relato e garante que seus dados pessoais não fiquem expostos."
+                          title="ANONIMATO QUANDO PERMITIDO"
+                          desc="Se você quer ficar anônimo, sua identidade não sai daqui. O sistema exclui seu nome do relato que vai para o órgão público."
+                        />
+                        <FeatureItem 
+                          title="RASCUNHO GUARDADO"
+                          desc="Enquanto você está preenchendo, o navegador salva tudo localmente (no seu computador). A gente não vê enquanto você está digitando."
                         />
                         
                         {/* Alerta MPMS */}
                         <div className="p-6 bg-white/5 border border-white/10 rounded-3xl mt-4 space-y-3">
                            <p className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] flex items-center gap-2">
                               <ShieldCheck size={16} />
-                              Nota sobre Identificação Obrigatória
+                              Sobre Identificação e Anonimato
                            </p>
                            <p className="text-xs text-white/70 leading-relaxed font-medium italic">
-                              Conforme orientação dos órgãos de fiscalização, a identificação via OTP é necessária para garantir a segurança jurídica e a efetividade das investigações, prevenindo o uso indevido da plataforma.
+                              Algumas categorias precisam de seu nome por exigência legal — para que o processo tenha validade oficial. Outras permitem anonimato. Quando você escolher ser anônimo, o sistema protege sua identidade, mas pede que você descreva os fatos com mais detalhes, para que quem apurar tenha tudo que precisa.
                            </p>
                         </div>
                      </div>
@@ -146,24 +200,24 @@ export default function ComoFuncionaPage() {
                         <div className="bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 flex flex-col gap-3">
                            <Lock className="text-secondary" />
                            <h4 className="font-bold text-sm">SSL/TLS 1.3</h4>
-                           <p className="text-[10px] text-white/50 leading-relaxed font-medium">Camada de transporte ultra-segura para envio de dados.</p>
+                           <p className="text-[10px] text-white/50 leading-relaxed font-medium">Camada de proteção na transmissão de dados. Padrão bancário.</p>
                         </div>
                         <div className="bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 flex flex-col gap-3">
                            <Search className="text-secondary" />
                            <h4 className="font-bold text-sm">Auditoria Interna</h4>
-                           <p className="text-[10px] text-white/50 leading-relaxed font-medium">Rigoroso controle de quem acessa cada denuncia.</p>
+                           <p className="text-[10px] text-white/50 leading-relaxed font-medium">Nós mesmos checamos quem acessa cada denuncia. Registro de tudo.</p>
                         </div>
                      </div>
                      <div className="space-y-4">
                         <div className="bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 flex flex-col gap-3">
                            <MessageSquare className="text-secondary" />
                            <h4 className="font-bold text-sm">Proteção LGPD</h4>
-                           <p className="text-[10px] text-white/50 leading-relaxed font-medium">Tratamento de dados em conformidade com a lei federal.</p>
+                           <p className="text-[10px] text-white/50 leading-relaxed font-medium">Lei de proteção de dados brasileira. A gente segue à risca.</p>
                         </div>
                         <div className="bg-secondary rounded-3xl p-6 text-dark flex flex-col gap-3">
                            <ShieldCheck size={32} />
                            <h4 className="font-black text-xs uppercase tracking-widest leading-none">Certificado</h4>
-                           <p className="text-[10px] font-bold opacity-70">Selo de Integridade Digital MS</p>
+                           <p className="text-[10px] font-bold opacity-70">Integridade Digital MS</p>
                         </div>
                      </div>
                   </div>
@@ -185,16 +239,24 @@ export default function ComoFuncionaPage() {
 
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
                <FaqItem 
-                 q="A identificação é obrigatória?" 
-                 a="Sim. Para elevar a qualidade das denuncias e garantir a segurança jurídica, exigimos a validação por e-mail e CPF em todos os registros." 
+                 q="A identificação é obrigatória?"
+                 a="Depende da categoria. Algumas categorias (como crimes contra a vida, por exemplo) exigem identificação para que o processo tenha validade legal. Outras permitem anonimato. O sistema avisa qual é o seu caso antes de você começar."
+               />
+               <FaqItem 
+                 q="O que muda se eu não me identificar?"
+                 a="Você não coloca nome, e-mail ou CPF. A gente não consegue te contatr depois se precisar perguntar algo. Então sua descrição dos fatos precisa ser bem clara e completa desde o começo."
+               />
+               <FaqItem 
+                 q="Por que validar o e-mail?"
+                 a="Um código é mandado para o seu e-mail. Você copia e cola aqui. Isso confirma que é você mesmo — protege você de alguém abrir uma denuncia falsa com seu e-mail, e protege a gente contra abuso."
                />
                <FaqItem 
                  q="Perdi meu protocolo, e agora?" 
-                 a="Por segurança, protocolos perdidos não podem ser recuperados. É fundamental anotar a chave de acesso gerada ao final do processo." 
+                 a="O protocolo é seu comprovante legal. Se perdeu, pode voltar aqui e consultar com seu e-mail ou CPF (se se identificou). Se foi anônimo, guarde bem: não tem como recuperar."
                />
                 <FaqItem 
                   q="Como sei que minha denuncia foi entregue?" 
-                  a="O número de protocolo é o seu comprovante legal de que o documento foi gerado e enviado ao órgão competente. Você pode consultar a validade do registro na área 'Consultar Protocolo'." 
+                  a="O número de protocolo é seu recibo. Você pode colar ele em um documento, mandar por e-mail, mostrar em um processo. Ele prova que você denunciou." 
                 />
                 <FaqItem 
                   q="Quanto tempo leva para o órgão responder?" 
@@ -209,21 +271,21 @@ export default function ComoFuncionaPage() {
          <div className="container-page pb-20">
             <div className="bg-primary rounded-[30px] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-glow-cyan">
                <div className="space-y-2 text-center md:text-left">
-                  <h3 className="text-2xl md:text-3xl font-black text-white italic uppercase tracking-tighter leading-none">Pronto para colaborar?</h3>
-                  <p className="text-white/60 text-sm font-bold uppercase tracking-widest">Inicie sua denuncia em menos de 2 minutos.</p>
+                  <h3 className="text-2xl md:text-3xl font-black text-white italic uppercase tracking-tighter leading-none">Pronto para Registrar?</h3>
+                  <p className="text-white/60 text-sm font-bold uppercase tracking-widest">Escolha a categoria e vamos junto nessa.</p>
                </div>
                <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                  <Link href="/" className="btn-outline border-white/20 text-white hover:bg-white/10 font-black h-14 px-8 uppercase tracking-widest text-xs">
-                     Voltar ao Início
-                  </Link>
-                  <Link href="/denunciar" className="btn-primary bg-secondary text-dark border-none hover:bg-secondary-600 font-black h-14 px-10 uppercase tracking-widest text-xs">
-                     Denunciar Agora
-                  </Link>
+                 <Link href="/denunciar" className="btn-primary bg-secondary text-dark border-none hover:bg-secondary-600 font-black h-14 px-10 uppercase tracking-widest text-xs">
+                    Denunciar Agora
+                 </Link>
+                 <Link href="/" className="inline-flex items-center gap-2 text-white border border-white/20 bg-white/10 hover:bg-white/20 font-black h-14 px-8 uppercase tracking-widest text-xs transition-colors">
+                    Voltar ao Início
+                 </Link>
                </div>
             </div>
             
             <div className="mt-8 text-center uppercase text-[10px] font-black text-muted tracking-[0.3em]">
-               Plataforma Independente — Transparência e Inteligência Cívica
+               Plataforma Independente — Protegendo Vozes Cidadãs desde 2024
             </div>
          </div>
       </section>
@@ -259,6 +321,32 @@ function FeatureItem({ title, desc }: { title: string, desc: string }) {
        <div className="space-y-1">
           <h4 className="font-extrabold text-sm uppercase tracking-tight text-white">{title}</h4>
           <p className="text-xs text-white/50 leading-relaxed font-medium">{desc}</p>
+       </div>
+    </div>
+  )
+}
+
+function PathCard({ icon: Icon, title, bestFor, requires, limit }: { icon: React.ElementType, title: string, bestFor: string, requires: string, limit: string }) {
+  return (
+    <div className="bg-white p-6 sm:p-8 rounded-[2rem] border border-border shadow-sm space-y-6">
+       <div className="flex items-start gap-4">
+          <div className="p-4 rounded-2xl bg-primary/5 text-primary border border-primary/10 shrink-0">
+             <Icon size={26} />
+          </div>
+          <div className="space-y-2">
+             <h3 className="text-lg sm:text-2xl font-black text-dark uppercase tracking-tight italic">{title}</h3>
+             <p className="text-sm text-muted font-medium leading-relaxed">{bestFor}</p>
+          </div>
+       </div>
+       <div className="grid grid-cols-1 gap-3">
+          <div className="p-4 rounded-2xl bg-surface border border-border/70">
+             <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Exige</p>
+             <p className="text-xs sm:text-sm text-dark/70 font-medium leading-relaxed">{requires}</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-surface border border-border/70">
+             <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Atenção</p>
+             <p className="text-xs sm:text-sm text-dark/70 font-medium leading-relaxed">{limit}</p>
+          </div>
        </div>
     </div>
   )

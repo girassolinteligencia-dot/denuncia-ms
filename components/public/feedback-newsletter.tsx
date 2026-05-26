@@ -27,9 +27,9 @@ export function FeedbackNewsletter({ ativa = true, showNewsletter = true }: { at
     const res = await registrarVoto(id)
     if (res.success) {
       setEnviadoVoto(true)
-      toast.success('Obrigado pelo seu feedback!')
+      toast.success('Obrigado por sua honestidade. Melhoramos com isso.')
     } else {
-      toast.error('Erro ao enviar feedback: ' + res.error)
+      toast.error('Houve um problema. Tente novamente em alguns segundos.')
     }
   }
 
@@ -44,7 +44,7 @@ export function FeedbackNewsletter({ ativa = true, showNewsletter = true }: { at
       toast.success(res.message || 'Inscrição realizada com sucesso!')
       setEmail('')
     } else {
-      toast.error(res.error || 'Erro ao realizar inscrição.')
+      toast.error(res.error || 'Houve um problema. Tente novamente em alguns segundos.')
     }
   }
 
@@ -61,10 +61,10 @@ export function FeedbackNewsletter({ ativa = true, showNewsletter = true }: { at
             {/* LADO ESQUERDO: PESQUISA */}
             <div className={`space-y-8 text-center ${showNewsletter ? 'lg:text-left' : ''}`}>
               <div className="space-y-2">
-                <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tighter italic uppercase">
-                  Sua <span className="text-secondary">Voz</span> Importa
-                </h3>
-                <p className="text-white/60 text-sm font-medium">Como está sendo sua experiência com a nossa plataforma?</p>
+                  <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tighter italic uppercase">
+                    Sua <span className="text-secondary">Voz</span> Importa
+                  </h3>
+                <p className="text-white/60 text-sm font-medium">Como está sendo sua experiência com a gente?</p>
               </div>
 
               {enviadoVoto ? (
@@ -102,9 +102,11 @@ export function FeedbackNewsletter({ ativa = true, showNewsletter = true }: { at
                     <Mail size={12} className="text-secondary" />
                     Mantenha-se informado
                   </div>
-                  <h4 className="text-xl font-black text-white uppercase italic tracking-tight">Receba atualizações do MS</h4>
+                  <h4 className="text-xl font-black text-white uppercase italic tracking-tight">Mantenha-se Informado</h4>
                   <p className="text-white/50 text-sm leading-relaxed font-medium">
-                    Inscreva seu e-mail para receber notícias sobre casos resolvidos, transparência pública e novas ferramentas de fiscalização.
+                    Quer saber quando denuncias são resolvidas? Quando novas categorias abrem? Quando surgem novos direitos para você?
+                    <br />
+                    Deixe seu e-mail. Mandaremos notícias que importam — nada de spam.
                   </p>
                 </div>
 
@@ -124,11 +126,11 @@ export function FeedbackNewsletter({ ativa = true, showNewsletter = true }: { at
                     className="absolute right-2 top-2 bottom-2 px-6 sm:px-10 bg-secondary hover:bg-secondary-600 disabled:bg-white/10 text-dark font-black uppercase text-xs tracking-widest rounded-xl sm:rounded-2xl flex items-center gap-3 transition-all shadow-glow-green"
                   >
                     {loadingEmail ? <Loader2 className="animate-spin" /> : enviadoEmail ? <CheckCircle2 /> : <Send size={18} />}
-                    <span className="hidden sm:inline">{enviadoEmail ? 'Inscrito' : 'Inscrever'}</span>
+                    <span className="hidden sm:inline">{enviadoEmail ? 'Já inscrito' : 'Me inscrever'}</span>
                   </button>
                 </form>
                 <p className="text-[10px] text-white/30 font-medium italic text-center lg:text-left">
-                  * Respeitamos sua privacidade. Cancele a qualquer momento.
+                  Respeitamos sua privacidade. Cancele quando quiser, sem pergunta.
                 </p>
               </div>
             )}

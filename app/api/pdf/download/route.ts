@@ -37,11 +37,17 @@ export async function GET(
   let email = ''
   let telefone = ''
 
-  if (denuncia.identidades) {
+  const identidade = Array.isArray(denuncia.identidades)
+    ? denuncia.identidades[0]
+    : denuncia.identidades
+
+  if (denuncia.anonima) {
+    nome = 'Anônimo'
+  } else if (identidade) {
     try {
-      nome = await decryptData(denuncia.identidades.nome_enc)
-      email = await decryptData(denuncia.identidades.email_enc)
-      telefone = await decryptData(denuncia.identidades.telefone_enc)
+      nome = await decryptData(identidade.nome_enc)
+      email = await decryptData(identidade.email_enc)
+      telefone = await decryptData(identidade.telefone_enc)
     } catch (e) {
       console.error('Erro ao descriptografar dados para o PDF:', e)
     }
@@ -49,17 +55,22 @@ export async function GET(
 
   // 3. Gerar o PDF
   try {
+    const localParts = [denuncia.local, denuncia.numero ? `Nº ${denuncia.numero}` : null, denuncia.bairro, denuncia.cidade]
+      .filter(Boolean)
+      .join(', ')
+
     const pdfBuffer = await gerarPDFDenuncia({
       protocolo: denuncia.protocolo,
       categoria: denuncia.categorias?.label || 'Geral',
       titulo: denuncia.titulo,
       descricao: denuncia.descricao_original,
-      local: `${denuncia.local}, ${denuncia.numero || 'S/N'} - ${denuncia.bairro}, ${denuncia.cidade}`,
+      local: localParts || 'Não informado',
       data_ocorrido: denuncia.data_ocorrido,
-      criado_em: denuncia.criado_at,
+      criado_em: denuncia.criado_em,
       nome,
       email,
       telefone,
+      anonima: !!denuncia.anonima,
       orgao_nome: 'Ouvidoria Geral do Estado'
     })
 

@@ -9,10 +9,16 @@ interface PDFData {
   descricao: string
   local: string
   data_ocorrido: string
+  hora_ocorrido?: string
+  autor_nome?: string
+  testemunhas?: string
+  servidor_publico?: 'sim' | 'nao'
+  setor_servidor?: string
   criado_em: string
   nome?: string
   email?: string
   telefone?: string
+  anonima?: boolean
   orgao_nome: string
   arquivos?: { url: string, type: string, name: string }[]
 }
@@ -36,6 +42,7 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
     hora_envio: new Date(data.criado_em).toLocaleTimeString('pt-BR'),
     orgao_nome: data.orgao_nome,
     local: data.local,
+    anonima: data.anonima ? 'Sim' : 'Não',
   })
 
   const rodape = await formatarDocumento('rodape', {
@@ -46,6 +53,7 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
     hora_envio: new Date(data.criado_em).toLocaleTimeString('pt-BR'),
     nome: data.nome,
     email: data.email,
+    anonima: data.anonima ? 'Sim' : 'Não',
   })
 
   // 2. Desenha o PDF
@@ -53,11 +61,31 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
   doc.setFillColor(primaryColor)
   doc.rect(0, 0, 210, 40, 'F')
   
+  const appName = ident['identidade.nome'] ? String(ident['identidade.nome']).toUpperCase() : 'DENUNCIA MS'
+  let appTitleX = 15
+
+  if (ident['identidade.logo']) {
+    try {
+      const logoUrl = String(ident['identidade.logo'])
+      const response = await fetch(logoUrl)
+      if (response.ok) {
+        const buffer = Buffer.from(await response.arrayBuffer())
+        const ext = logoUrl.split('.').pop()?.toLowerCase()
+        const imgType = ext === 'png' ? 'PNG' : ext === 'jpg' || ext === 'jpeg' ? 'JPEG' : undefined
+        if (imgType) {
+          doc.addImage(buffer.toString('base64'), imgType, 15, 10, 18, 18)
+          appTitleX = 38
+        }
+      }
+    } catch (err) {
+      console.warn('[pdf] Não foi possível carregar logo para o cabeçalho:', err)
+    }
+  }
+
   doc.setTextColor(255, 255, 255)
   doc.setFontSize(22)
   doc.setFont('helvetica', 'bold')
-  const appName = ident['identidade.nome'] ? String(ident['identidade.nome']).toUpperCase() : 'DENUNCIA MS'
-  doc.text(appName, 15, 20)
+  doc.text(appName, appTitleX, 22)
   
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
@@ -83,6 +111,15 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
 
   // Corpo da Denuncia
   y += 15
+  if (data.anonima) {
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(primaryColor)
+    doc.text('DENÚNCIA REGISTRADA SOB ANONIMATO - IDENTIDADE DO DENUNCIANTE PROTEGIDA', 15, y)
+    y += 10
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(50, 50, 50)
+  }
+
   doc.setFont('helvetica', 'bold')
   doc.text('RELATO DO CIDADÃO:', 15, y)
   

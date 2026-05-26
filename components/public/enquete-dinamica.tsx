@@ -24,7 +24,7 @@ export function EnqueteDinamica({ initialData }: { initialData: Enquete | null }
     setVotando(false)
 
     if (res.success) {
-      toast.success('Voto registrado com sucesso!')
+      toast.success('Seu voto foi registrado. Obrigado!')
       
       const novasOpcoes = (data.opcoes || []).map(opt => {
         const novosVotos = opt.id === opcaoId ? (opt.votos || 0) + 1 : (opt.votos || 0)
@@ -42,7 +42,7 @@ export function EnqueteDinamica({ initialData }: { initialData: Enquete | null }
         jaVotou: true 
       })
     } else {
-      toast.error(res.error || 'Erro ao votar.')
+      toast.error(res.error || 'Houve um problema ao registrar. Tente novamente em alguns segundos.')
     }
   }
 
@@ -57,7 +57,7 @@ export function EnqueteDinamica({ initialData }: { initialData: Enquete | null }
           <BarChart3 size={22} className="text-secondary" />
           <div>
             <h3 className="font-black uppercase tracking-widest italic text-xs">Pesquisa de Opinião</h3>
-            <p className="text-[10px] font-bold text-white/50 uppercase">Módulo de Engajamento Público</p>
+            <p className="text-[10px] font-bold text-white/50 uppercase">Sua voz importa nas decisões que afetam o estado.</p>
           </div>
         </div>
         
@@ -65,12 +65,12 @@ export function EnqueteDinamica({ initialData }: { initialData: Enquete | null }
           {isEncerrada ? (
             <div className="flex items-center gap-2 px-4 py-1.5 bg-white/10 rounded-full border border-white/20 text-[10px] font-black uppercase tracking-widest text-accent">
               <Lock size={12} />
-              Enquete Encerrada
+              Enquete Encerrada — A coleta terminou
             </div>
           ) : (
             <div className="flex items-center gap-2 px-4 py-1.5 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-widest animate-pulse">
               <span className="w-2 h-2 rounded-full bg-accent shadow-[0_0_10px_#FFD700]"></span>
-              Ao Vivo
+              Enquete Ativa — Você pode votar agora
             </div>
           )}
         </div>
@@ -138,7 +138,7 @@ export function EnqueteDinamica({ initialData }: { initialData: Enquete | null }
                   <Target size={14} />
                   <span className="text-[9px] font-black uppercase tracking-widest">Participação</span>
                 </div>
-                <p className="text-sm font-black text-dark italic">{data.totalVotos} Votos</p>
+                <p className="text-sm font-black text-dark italic">{data.totalVotos} votos até agora</p>
               </div>
 
               {data.data_expiracao && (
@@ -146,11 +146,11 @@ export function EnqueteDinamica({ initialData }: { initialData: Enquete | null }
                   <div className="flex items-center gap-1.5 text-muted">
                     <Timer size={14} />
                     <span className="text-[9px] font-black uppercase tracking-widest">
-                      {isEncerrada ? 'Encerrada em' : 'Prazo Final'}
+                      Prazo
                     </span>
                   </div>
                   <p className="text-sm font-black text-dark italic">
-                    {format(new Date(data.data_expiracao), "dd 'de' MMM, HH:mm", { locale: ptBR })}
+                    Encerra em {format(new Date(data.data_expiracao), "dd 'de' MMM, HH:mm", { locale: ptBR })}
                   </p>
                 </div>
               )}
@@ -159,9 +159,9 @@ export function EnqueteDinamica({ initialData }: { initialData: Enquete | null }
                 <div className="space-y-1 hidden sm:block">
                   <div className="flex items-center gap-1.5 text-muted">
                     <Info size={14} />
-                    <span className="text-[9px] font-black uppercase tracking-widest">Meta de Coleta</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest">Meta</span>
                   </div>
-                  <p className="text-sm font-black text-dark italic">{data.limite_votos} Votos Max.</p>
+                  <p className="text-sm font-black text-dark italic">{data.limite_votos} participações esperadas</p>
                 </div>
               )}
            </div>
@@ -173,11 +173,11 @@ export function EnqueteDinamica({ initialData }: { initialData: Enquete | null }
                   <Lock size={18} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-dark uppercase tracking-widest">Relatório de Encerramento</p>
+                  <p className="text-[10px] font-black text-dark uppercase tracking-widest">Esta enquete foi encerrada.</p>
                   <p className="text-xs text-muted font-medium">
-                    {data.status_atual === 'expirada' ? 'Esta consulta foi encerrada automaticamente ao atingir o prazo estabelecido.' : 
-                     data.status_atual === 'limite_atingido' ? 'A meta de participação foi atingida e a coleta de dados concluída.' :
-                     'Enquete encerrada por decisão da administração da plataforma.'}
+                    {data.status_atual === 'expirada' ? 'Motivo: Atingiu o prazo programado' : 
+                     data.status_atual === 'limite_atingido' ? 'Motivo: A meta de participação foi alcançada' :
+                     'Motivo: Decisão da administração'}
                   </p>
                 </div>
              </div>
@@ -186,7 +186,7 @@ export function EnqueteDinamica({ initialData }: { initialData: Enquete | null }
            {data.jaVotou && !isEncerrada && (
              <div className="mt-8 flex items-center justify-center gap-2 text-primary bg-primary/5 py-4 rounded-2xl border border-primary/20">
                 <CheckCircle2 size={16} />
-                <span className="text-xs font-black uppercase tracking-widest italic">Obrigado pela sua participação!</span>
+                <span className="text-xs font-black uppercase tracking-widest italic">Obrigado por participar. Sua opinião está registrada e será considerada.</span>
              </div>
            )}
         </div>
