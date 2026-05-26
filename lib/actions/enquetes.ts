@@ -127,22 +127,13 @@ export async function getEnqueteAtiva(local: 'landing' | 'noticias') {
       .limit(10)
 
     if (error) throw error
-    
-    // Se não houver ativa, busca a última encerrada para mostrar resultados históricos
-    const enquete = (enquetesAtivas || []).find((item: any) => !item.local_exibicao || item.local_exibicao === local) || enquetesAtivas?.[0] || null
-    let finalEnquete = await hydrateEnquete(enquete as EnqueteRow | null, local)
-    if (!finalEnquete) {
-       const { data: lastOnes, error: lastOneError } = await supabase
-        .from('enquetes')
-        .select('*')
-        .limit(10)
 
-      if (lastOneError) throw lastOneError
-      const lastOne = (lastOnes || []).find((item: any) => !item.local_exibicao || item.local_exibicao === local) || lastOnes?.[0] || null
-      finalEnquete = await hydrateEnquete(lastOne as EnqueteRow | null, local)
-    }
+    const enquete = (enquetesAtivas || []).find((item: any) => item.local_exibicao === local) ||
+                   (enquetesAtivas || []).find((item: any) => !item.local_exibicao) || null
+    const finalEnquete = await hydrateEnquete(enquete as EnqueteRow | null, local)
 
-    if (!finalEnquete) return null
+    // Só exibe se tiver opções cadastradas
+    if (!finalEnquete || !finalEnquete.opcoes?.length) return null
 
     const totalVotos = finalEnquete.votos?.length || 0
     

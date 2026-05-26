@@ -200,46 +200,46 @@ export default async function PublicHomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 space-y-3 hover:bg-white/10 transition-all">
-              <div className="p-2.5 bg-secondary/20 text-secondary rounded-xl w-fit">
-                <Fingerprint size={24} />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-2 hover:bg-white/10 transition-all text-center flex flex-col items-center">
+              <div className="p-2 bg-secondary/20 text-secondary rounded-xl w-fit">
+                <Fingerprint size={20} />
               </div>
-              <h3 className="text-base sm:text-lg font-black uppercase tracking-tight">Sem cadastro ou dados desnecessários</h3>
-              <p className="text-white/50 text-xs sm:text-sm leading-relaxed font-medium">
+              <h3 className="text-sm font-black uppercase tracking-tight">Sem cadastro ou dados desnecessários</h3>
+              <p className="text-white/50 text-xs leading-relaxed font-medium">
                 Você não precisa se registrar, criar senha ou alimentar banco de dados. Preenche, denuncia, vai embora. Fim.
               </p>
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 space-y-3 hover:bg-white/10 transition-all">
-              <div className="p-2.5 bg-secondary/20 text-secondary rounded-xl w-fit">
-                <Radio size={24} />
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-2 hover:bg-white/10 transition-all text-center flex flex-col items-center">
+              <div className="p-2 bg-secondary/20 text-secondary rounded-xl w-fit">
+                <Radio size={20} />
               </div>
-              <h3 className="text-base sm:text-lg font-black uppercase tracking-tight">Criptografia de verdade</h3>
-              <p className="text-white/50 text-xs sm:text-sm leading-relaxed font-medium">
+              <h3 className="text-sm font-black uppercase tracking-tight">Criptografia de verdade</h3>
+              <p className="text-white/50 text-xs leading-relaxed font-medium">
                 Seus dados pessoais (nome, e-mail, telefone) não ficam acessíveis em servidor público. Estão protegidos como se fossem documentos lacrados.
               </p>
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 space-y-3 hover:bg-white/10 transition-all">
-              <div className="p-2.5 bg-secondary/20 text-secondary rounded-xl w-fit">
-                <ShieldCheck size={24} />
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-2 hover:bg-white/10 transition-all text-center flex flex-col items-center">
+              <div className="p-2 bg-secondary/20 text-secondary rounded-xl w-fit">
+                <ShieldCheck size={20} />
               </div>
-              <h3 className="text-base sm:text-lg font-black uppercase tracking-tight">Você decide ser anônimo</h3>
-              <p className="text-white/50 text-xs sm:text-sm leading-relaxed font-medium">
+              <h3 className="text-sm font-black uppercase tracking-tight">Você decide ser anônimo</h3>
+              <p className="text-white/50 text-xs leading-relaxed font-medium">
                 Se a categoria permitir, você não precisa se identificar. Sua voz sai, mas seu rosto fica guardado.
               </p>
             </div>
-          </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 space-y-3">
-            <div className="p-2.5 bg-secondary/20 text-secondary rounded-xl w-fit">
-              <ShieldCheck size={24} />
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-2 hover:bg-white/10 transition-all text-center flex flex-col items-center">
+              <div className="p-2 bg-secondary/20 text-secondary rounded-xl w-fit">
+                <ShieldCheck size={20} />
+              </div>
+              <h3 className="text-sm font-black uppercase tracking-tight">A lei está do seu lado</h3>
+              <p className="text-white/50 text-xs leading-relaxed font-medium">
+                Seguimos LGPD à risca. Não vendemos dados, não compartilhamos com terceiros, não usamos sua informação para marketing.
+              </p>
             </div>
-            <h3 className="text-base sm:text-lg font-black uppercase tracking-tight">A lei está do seu lado</h3>
-            <p className="text-white/50 text-xs sm:text-sm leading-relaxed font-medium">
-              Seguimos LGPD à risca. Não vendemos dados, não compartilhamos com terceiros, não usamos sua informação para marketing.
-            </p>
           </div>
 
           {/* CTA Cidadão Fiscal */}
