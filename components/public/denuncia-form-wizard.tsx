@@ -140,6 +140,7 @@ export function DenunciaFormWizard({
   const [cooldown, setCooldown] = useState(0)
   const [isOnline, setIsOnline] = useState(true)
   const [geolocalizando, setGeolocalizando] = useState(false)
+  const [confirmacaoRelato, setConfirmacaoRelato] = useState<{ campos: string[] } | null>(null)
   const otpInputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -278,32 +279,7 @@ export function DenunciaFormWizard({
     }, 300)
   }, [categorias, formData.categoria_id, searchParams])
 
-  const validateAnonymousEssentials = () => {
-    if (formData.is_anonima !== true) return true
 
-    if (!formData.autor_nome) {
-      toast.error('Informe o nome completo da pessoa que supostamente praticou o ato.')
-      handleFieldScroll('field-autor_nome')
-      return false
-    }
-    if (!formData.data_ocorrido) {
-      toast.error('Informe a data aproximada do ocorrido.')
-      handleFieldScroll('field-data-ocorrido')
-      return false
-    }
-    if (!formData.hora_ocorrido) {
-      toast.error('Informe o horário aproximado do ocorrido.')
-      handleFieldScroll('field-hora-ocorrido')
-      return false
-    }
-    if (formData.servidor_publico === 'sim' && !formData.setor_servidor) {
-      toast.error('Selecione o setor em que atua como servidor público.')
-      handleFieldScroll('field-setor-servidor')
-      return false
-    }
-
-    return true
-  }
 
   // Função para scroll sequencial inteligente
   const handleFieldScroll = (targetId?: string) => {
@@ -1141,19 +1117,110 @@ export function DenunciaFormWizard({
                 )}
               </div>
 
+              {/* Modal de confirmação de relato suspeito */}
+              {confirmacaoRelato && (
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+                  <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md p-8 space-y-6 animate-slide-up border border-amber-200">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                        <AlertTriangle size={24} />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-black uppercase tracking-widest text-dark">Revise antes de continuar</p>
+                        <p className="text-xs text-muted font-medium leading-relaxed">
+                          Notamos que alguns campos podem estar incompletos. Uma denúncia mais detalhada tem maior chance de ser investigada com sucesso.
+                        </p>
+                      </div>
+                    </div>
+                    <ul className="space-y-2">
+                      {confirmacaoRelato.campos.map((c, i) => (
+                        <li key={i} className="flex items-center gap-2 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                          {c}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-xs text-dark/60 font-medium">Tem certeza que as informações estão corretas e deseja continuar assim mesmo?</p>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setConfirmacaoRelato(null)}
+                        className="flex-1 h-12 border-2 border-border rounded-2xl text-xs font-black uppercase tracking-widest text-dark hover:border-primary hover:text-primary transition-all"
+                      >
+                        Revisar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setConfirmacaoRelato(null); handleNext() }}
+                        className="flex-1 h-12 bg-dark text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-black transition-all"
+                      >
+                        Continuar assim
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div ref={bottomRef} className="flex items-center justify-between pt-8 border-t border-border/40 pb-20 sm:pb-0">
                 <button onClick={handleBack} className="group flex items-center gap-3 text-[10px] sm:text-[11px] uppercase font-black text-muted hover:text-dark transition-all">
                   <ArrowLeft size={16} className="sm:w-5 sm:h-5" /> Voltar
                 </button>
-                <button 
-                  onClick={() => { 
-                    if (!formData.titulo || !formData.descricao_original) { 
-                      toast.error('Preencha o título e a descrição'); 
-                      return 
+                <button
+                  onClick={() => {
+                    if (!formData.titulo) {
+                      toast.error('Título obrigatório', { description: 'Informe um título para a ocorrência.' })
+                      handleFieldScroll('field-titulo')
+                      return
                     }
-                    if (!validateAnonymousEssentials()) return
-                    handleNext() 
-                  }} 
+                    if (!formData.descricao_original) {
+                      toast.error('Descrição obrigatória', { description: 'Descreva os fatos ocorridos.' })
+                      handleFieldScroll('field-descricao')
+                      return
+                    }
+                    if (formData.is_anonima) {
+                      if (!formData.autor_nome) {
+                        toast.error('Nome do suposto autor obrigatório')
+                        handleFieldScroll('field-autor_nome')
+                        return
+                      }
+                      if (!formData.data_ocorrido) {
+                        toast.error('Data do ocorrido obrigatória')
+                        handleFieldScroll('field-data-ocorrido')
+                        return
+                      }
+                      if (!formData.hora_ocorrido) {
+                        toast.error('Horário aproximado obrigatório')
+                        handleFieldScroll('field-hora-ocorrido')
+                        return
+                      }
+                      if (formData.servidor_publico === 'sim' && !formData.setor_servidor) {
+                        toast.error('Selecione o setor do servidor público')
+                        handleFieldScroll('field-setor-servidor')
+                        return
+                      }
+                      if ((formData.servidor_publico === 'sim' || formData.agente_politico === 'sim') && !formData.cargo_agente) {
+                        toast.error('Informe o cargo do servidor/agente político')
+                        handleFieldScroll('field-cargo-agente')
+                        return
+                      }
+                    }
+                    // Avisos discretos sobre campos possivelmente incompletos
+                    const avisos: string[] = []
+                    if (formData.titulo.trim().length < 10) {
+                      avisos.push('Título muito curto — seja mais específico sobre a ocorrência')
+                    }
+                    if (formData.descricao_original.trim().length < 80) {
+                      avisos.push('Descrição com poucos detalhes — inclua fatos, pessoas, datas e contexto')
+                    }
+                    if (formData.is_anonima && formData.autor_nome.trim().split(' ').length < 2) {
+                      avisos.push('Nome do suposto autor parece incompleto — informe nome e sobrenome se possível')
+                    }
+                    if (avisos.length > 0) {
+                      setConfirmacaoRelato({ campos: avisos })
+                      return
+                    }
+                    handleNext()
+                  }}
                   className="btn-primary w-full sm:w-auto h-14 sm:h-16 px-6 sm:px-10 rounded-xl sm:rounded-2xl gap-3 shadow-glow-cyan transition-all fixed bottom-4 right-4 left-24 sm:static sm:bottom-auto sm:right-auto sm:left-auto z-40"
                 >
                   <span className="font-black uppercase tracking-widest text-[10px] sm:text-xs">Próximo: Local</span>
