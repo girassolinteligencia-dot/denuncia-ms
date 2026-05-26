@@ -9,78 +9,65 @@ export async function getImpactoStats() {
   const supabase = createAdminClient()
 
   try {
-    // 1. Denuncias Hoje (desde 00:00 do dia atual em GMT-4, ajustado para UTC)
-    const msOffsetHours = 4;
-    const nowUTC = new Date();
-    
-    // Calcula a hora atual equivalente no MS
-    const msTime = new Date(nowUTC.getTime() - msOffsetHours * 60 * 60 * 1000);
-    // Define a meia-noite (00:00:00) na data do MS
-    msTime.setUTCHours(0, 0, 0, 0);
-    
-    // Converte essa meia-noite local de volta para o horário UTC (+4h)
-    const hoje = new Date(msTime.getTime() + msOffsetHours * 60 * 60 * 1000);
-    
-    // Ontem é exatamente 24 horas antes de "hoje"
-    const ontem = new Date(hoje.getTime() - 24 * 60 * 60 * 1000);
-    
+    const msOffsetHours = 4
+    const nowUTC = new Date()
+    const msTime = new Date(nowUTC.getTime() - msOffsetHours * 60 * 60 * 1000)
+    msTime.setUTCHours(0, 0, 0, 0)
+    const hoje = new Date(msTime.getTime() + msOffsetHours * 60 * 60 * 1000)
+    const ontem = new Date(hoje.getTime() - 24 * 60 * 60 * 1000)
+
     const { count: denunciasHoje } = await supabase
       .from('denuncias')
       .select('*', { count: 'exact', head: true })
       .gte('criado_em', hoje.toISOString())
-      
-    // Denuncias Ontem (desde 00:00 de ontem até 23:59:59 de ontem)
-    
+
     const { count: denunciasOntem } = await supabase
       .from('denuncias')
       .select('*', { count: 'exact', head: true })
       .gte('criado_em', ontem.toISOString())
       .lt('criado_em', hoje.toISOString())
 
-    // 2. Foco Geográfico (Município com mais denuncias)
-    const { data: cidadesData } = await supabase
-      .from('denuncias')
-      .select('municipio, cidade, local')
-
-    const contagemCidades = (cidadesData || []).reduce((acc: Record<string, number>, curr) => {
-      let city = curr.municipio || curr.cidade
-      
-      if (!city && curr.local) {
-        city = curr.local.split(',').length > 2 ? curr.local.split(',')[1].trim() : 'Não informado'
-      }
-      
-      if (!city || city === '') city = 'Não informado'
-      
-      // Normalizar para evitar duplicidade (ex: "SÃO PAULO" e "SAO PAULO")
-      city = city.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase()
-
-      acc[city] = (acc[city] || 0) + 1
-      return acc
-    }, {})
-
-    const sortedCidades = Object.entries(contagemCidades).sort((a, b) => b[1] - a[1])
-    let top3 = sortedCidades.slice(0, 3).map(([nome, count]) => ({ nome, count }))
-
-    // 3. Índice de Resolução (Em vez de feedback falso)
     const { count: totalDenuncias } = await supabase
       .from('denuncias')
       .select('*', { count: 'exact', head: true })
-      
+
     const { count: resolvidas } = await supabase
       .from('denuncias')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'resolvida')
-      
+
     const resolucaoBase = totalDenuncias && totalDenuncias > 0 ? Math.round(((resolvidas || 0) / totalDenuncias) * 100) : 0
-    
-    // Calculo de Crescimento
+
+    const { data: categoryRows, error: categoryError } = await supabase
+      .from('denuncias')
+      .select('categorias(label)')
+      .gte('criado_em', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+
+    if (categoryError) throw categoryError
+
+    const categoryCounts: Record<string, number> = {}
+    ;(categoryRows || []).forEach((item: any) => {
+      const label = (item.categorias as any)?.label || 'Outros'
+      categoryCounts[label] = (categoryCounts[label] || 0) + 1
+    })
+
+    const totalCategoryCount = Object.values(categoryCounts).reduce((sum, value) => sum + value, 0) || 1
+    const categories = Object.entries(categoryCounts)
+      .map(([label, count]) => ({
+        label,
+        percentage: (count / totalCategoryCount) * 100
+      }))
+      .sort((a, b) => b.percentage - a.percentage)
+      .slice(0, 5)
+
+    const topCategories = categories.slice(0, 3)
+
     let crescimentoLabel = '--'
     const hCount = denunciasHoje || 0
     const oCount = denunciasOntem || 0
-    
+
     if (oCount === 0) {
-      if (hCount > 0) crescimentoLabel = '+100%'
-      else crescimentoLabel = '0%'
+      crescimentoLabel = hCount > 0 ? '+100%' : '0%'
     } else {
       const diff = hCount - oCount
       const percent = (diff / oCount) * 100
@@ -90,9 +77,9 @@ export async function getImpactoStats() {
     return {
       success: true,
       stats: {
-        hoje: hCount,
-        feedback: `${resolucaoBase}%`,
-        topCidades: top3,
+        categories,
+        topCategories,
+        resolucao: `${resolucaoBase}%`,
         crescimento: crescimentoLabel
       }
     }
