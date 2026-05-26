@@ -84,6 +84,7 @@ interface DenunciaFormData {
   telefone: string
   cpf: string
   arquivos: ArquivoAnexo[]
+  links: string[]
   consentimento: boolean
   otpToken: string
   is_anonima: boolean | null
@@ -167,6 +168,7 @@ export function DenunciaFormWizard({
     telefone: '',
     cpf: '',
     arquivos: [],
+    links: [],
     consentimento: false,
     otpToken: '',
     is_anonima: null,
@@ -338,6 +340,28 @@ export function DenunciaFormWizard({
   }
 
   const handleNext = () => {
+    if (step === 3) {
+      if (!formData.cep) {
+        toast.error('CEP obrigatório', { description: 'Informe o CEP do local do ocorrido para continuar.' })
+        handleFieldScroll('field-cep')
+        return
+      }
+      if (!formData.cidade) {
+        toast.error('Cidade obrigatória', { description: 'Informe a cidade para continuar.' })
+        handleFieldScroll('field-cidade')
+        return
+      }
+      if (!formData.local) {
+        toast.error('Logradouro obrigatório', { description: 'Informe a rua ou avenida para continuar.' })
+        handleFieldScroll('field-local')
+        return
+      }
+      if (!formData.bairro) {
+        toast.error('Bairro obrigatório', { description: 'Informe o bairro para continuar.' })
+        handleFieldScroll('field-bairro')
+        return
+      }
+    }
     handleStepTransition(Math.min(step + 1, 5))
   }
 
@@ -357,11 +381,15 @@ export function DenunciaFormWizard({
     }
 
     const ALLOWED_TYPES = [
-      'image/jpeg', 'image/png', 'image/webp', 
-      'application/pdf', 
-      'application/msword', 
+      'image/jpeg', 'image/png', 'image/webp',
+      'application/pdf',
+      'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/webm'
+      'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/webm',
+      'text/plain',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/csv', 'application/csv',
     ]
 
     const { uploadArquivoDenuncia } = await import('@/lib/actions/denuncia')
@@ -370,7 +398,7 @@ export function DenunciaFormWizard({
       // Validar Tipo
       if (!ALLOWED_TYPES.includes(file.type)) {
         toast.warning('Formato não suportado', {
-          description: `O arquivo "${file.name}" não está em um formato aceito (Fotos, PDFs ou Áudios). Poderia converter para um formato padrão?`
+          description: `O arquivo "${file.name}" não está em um formato aceito (Fotos, PDFs, Word, Áudios, TXT, XLSX ou CSV). Poderia converter para um formato padrão?`
         })
         continue
       }
@@ -538,7 +566,7 @@ export function DenunciaFormWizard({
         email: formData.email 
       })
 
-      const res = await registrarDenuncia(formData, arquivosProntos.map(a => ({
+      const res = await registrarDenuncia({ ...formData, is_anonima: formData.is_anonima ?? undefined }, arquivosProntos.map(a => ({
         name: a.name,
         type: a.type,
         url: a.url!,
@@ -1240,7 +1268,7 @@ export function DenunciaFormWizard({
                     onChange={handleFileChange} 
                     className="hidden" 
                     id="file-upload" 
-                    accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,audio/*"
+                    accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,audio/*,text/plain,.txt,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.xlsx,text/csv,.csv"
                   />
                   <label htmlFor="file-upload" className="flex flex-col items-center justify-center p-12 border-4 border-dashed border-border/60 rounded-[3rem] bg-surface cursor-pointer hover:bg-surface/80 transition-all">
                     <Paperclip size={40} className="mb-4 text-primary" />
@@ -1248,7 +1276,7 @@ export function DenunciaFormWizard({
                     <div className="mt-4 space-y-1 text-center">
                       <p className="text-[10px] text-muted font-bold uppercase tracking-widest">Máximo 5 arquivos</p>
                       <p className="text-[9px] text-muted/60 font-medium italic">
-                        Formatos: Fotos, PDF, Word ou Áudios (Máx 4MB/cada)
+                        Formatos: Fotos, PDF, Word, Áudios, TXT, XLSX, CSV (Máx 4MB/cada)
                       </p>
                     </div>
                   </label>
@@ -1283,6 +1311,50 @@ export function DenunciaFormWizard({
                       <CloudOff size={32} className="mb-2" />
                       <p className="text-[10px] font-bold uppercase tracking-widest">Nenhum arquivo anexado</p>
                     </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Campo de Links */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">Links como Evidência</label>
+                    <p className="text-[9px] text-muted/60 font-medium italic px-1">URLs que subsidiam a denúncia (máximo 5 links)</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {formData.links.map((link, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input
+                        className="input h-12 rounded-xl border-2 font-medium text-sm flex-1"
+                        type="url"
+                        placeholder="https://..."
+                        value={link}
+                        onChange={(e) => {
+                          const updated = [...formData.links]
+                          updated[i] = e.target.value
+                          setFormData(prev => ({ ...prev, links: updated }))
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, links: prev.links.filter((_, idx) => idx !== i) }))}
+                        className="text-muted hover:text-red-600 hover:bg-red-50 p-2 rounded-xl transition-all"
+                        title="Remover link"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                  {formData.links.length < 5 && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, links: [...prev.links, ''] }))}
+                      className="w-full h-12 border-2 border-dashed border-border/60 rounded-xl text-[10px] font-black text-muted uppercase tracking-widest hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2"
+                    >
+                      + Adicionar Link
+                    </button>
                   )}
                 </div>
               </div>
@@ -1474,18 +1546,20 @@ export function DenunciaFormWizard({
 
                 {previewAberto && (
                   <div className="p-6 bg-white border-2 border-border/30 rounded-[2rem] animate-slide-up">
-                    <EmailPreview 
+                    <EmailPreview
                       protocolo="PREVIEW"
                       categoria={currentCategory?.label || ''}
                       titulo={formData.titulo}
                       descricao={formData.descricao_original}
                       local={formData.local}
                       data_ocorrido={formData.data_ocorrido}
+                      anonima={formData.is_anonima === true}
                       nome={formData.nome}
                       email={formData.email}
                       telefone={formData.telefone}
                       cpf={formData.cpf}
                       totalArquivos={formData.arquivos.length}
+                      links={formData.links.filter(Boolean)}
                     />
                   </div>
                 )}

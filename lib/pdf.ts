@@ -21,6 +21,7 @@ interface PDFData {
   anonima?: boolean
   orgao_nome: string
   arquivos?: { url: string, type: string, name: string }[]
+  links?: string[]
 }
 
 /**
@@ -128,6 +129,25 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
   doc.setFontSize(12)
   const relatoLines = doc.splitTextToSize(data.descricao, 180)
   doc.text(relatoLines, 15, y)
+
+  // Links como evidência
+  if (data.links && data.links.length > 0) {
+    y += 10
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(11)
+    doc.setTextColor(50, 50, 50)
+    doc.text('LINKS COMO EVIDÊNCIA:', 15, y)
+    y += 8
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
+    doc.setTextColor(2, 22, 145)
+    for (const link of data.links) {
+      const linkLines = doc.splitTextToSize(`${link}`, 180)
+      doc.text(linkLines, 15, y)
+      y += linkLines.length * 6
+    }
+    doc.setTextColor(50, 50, 50)
+  }
 
   // Rodapé
   y = 270

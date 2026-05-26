@@ -11,13 +11,15 @@ export interface EmailTemplateData {
   local: string
   data_ocorrido: string
   identificada?: boolean
+  anonima?: boolean
   // Dados do denunciante (visíveis ao órgão)
   nome?: string
   email?: string
   telefone?: string
   cpf?: string
-  // Arquivos
+  // Arquivos e links
   totalArquivos: number
+  links?: string[]
   criado_em: string
   baseUrl?: string
 }
@@ -134,6 +136,12 @@ export function gerarEmailOrgao(d: EmailTemplateData): string {
   <tr>
     <td style="padding:16px 32px 0">
       <p style="margin:0;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px">Dados do Denunciante</p>
+      ${d.anonima ? `
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:16px">
+        <tr><td style="padding:4px 16px">
+          <p style="margin:0;color:#92400e;font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:1px">NÃO HÁ DADOS DO DENUNCIANTE POR SE TRATAR DE DENÚNCIA ANÔNIMA</p>
+        </td></tr>
+      </table>` : `
       <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:16px">
         <tr>
           <td style="padding:4px 16px">
@@ -145,7 +153,7 @@ export function gerarEmailOrgao(d: EmailTemplateData): string {
             </table>
           </td>
         </tr>
-      </table>
+      </table>`}
     </td>
   </tr>
 
@@ -157,6 +165,17 @@ export function gerarEmailOrgao(d: EmailTemplateData): string {
       <p style="margin:6px 0 0;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;color:#1d4ed8;font-size:13px;font-weight:700;display:inline-block">
         📎 ${d.totalArquivos} arquivo(s) em anexo
       </p>
+    </td>
+  </tr>` : ''}
+
+  <!-- LINKS -->
+  ${d.links && d.links.length > 0 ? `
+  <tr>
+    <td style="padding:12px 32px 0">
+      <p style="margin:0;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px">Links como Evidência</p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px">
+        ${d.links.map((l, i) => `<tr><td style="padding:3px 0"><p style="margin:0;color:#1d4ed8;font-size:12px;font-weight:700">${i + 1}. <a href="${l}" style="color:#1d4ed8">${l}</a></p></td></tr>`).join('')}
+      </table>
     </td>
   </tr>` : ''}
 

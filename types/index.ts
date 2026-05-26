@@ -261,6 +261,7 @@ export interface SubmitDenunciaRequest {
   longitude?: number | null
   municipio?: string | null
   is_anonima?: boolean
+  links?: string[]
 }
 
 export interface ConsultaProtocoloResponse {

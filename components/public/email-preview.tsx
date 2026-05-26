@@ -8,11 +8,13 @@ interface Props {
   descricao: string
   local: string
   data_ocorrido: string
+  anonima?: boolean
   nome: string
   email: string
   telefone: string
   cpf: string
   totalArquivos: number
+  links?: string[]
 }
 
 export function EmailPreview(props: Props) {
@@ -24,12 +26,13 @@ export function EmailPreview(props: Props) {
     descricao: props.descricao || '(Descrição da denuncia)',
     local: props.local || 'Não informado',
     data_ocorrido: props.data_ocorrido || new Date().toISOString(),
-    identificada: true,
-    nome: props.nome || '(Seu nome)',
-    email: props.email || '(Seu e-mail)',
-    telefone: props.telefone || '(Seu telefone)',
-    cpf: props.cpf || '(Seu CPF)',
+    anonima: props.anonima,
+    nome: props.anonima ? undefined : (props.nome || '(Seu nome)'),
+    email: props.anonima ? undefined : (props.email || '(Seu e-mail)'),
+    telefone: props.anonima ? undefined : (props.telefone || '(Seu telefone)'),
+    cpf: props.anonima ? undefined : (props.cpf || '(Seu CPF)'),
     totalArquivos: props.totalArquivos,
+    links: props.links,
     criado_em: new Date().toISOString(),
     baseUrl: typeof window !== 'undefined' ? window.location.origin : '',
   })
