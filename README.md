@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DenunciaMS
 
-## Getting Started
+Projeto oficial: `c:\.MAIS\denuncia-ms`
 
-First, run the development server:
+> Status atual (23/05/2026): diretório `denuncia-ms` é o único ambiente de desenvolvimento autorizado. A cópia `denuncia-ms-1` é obsoleta e não deve ser utilizada.
+
+## Visão geral
+
+Aplicação Next.js 14 + Supabase para a gestão de denúncias públicas.
+
+- Frontend público e painel admin.
+- Autenticação via Supabase.
+- Uploads de anexos para buckets privados (`denuncias`, `relatos-oficiais`).
+- Geração de PDF e hash de assinatura.
+- Controle de anonimato por categoria.
+- Worker de despacho e rotas cron para processamento assíncrono.
+
+## Desenvolvimento local
 
 ```bash
+cd denuncia-ms
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrir: `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Validação obrigatória antes de alterações
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm ci
+npm test
+npm run lint
+npx tsc --noEmit
+npm run build
+```
 
-## Learn More
+## Diretório oficial
 
-To learn more about Next.js, take a look at the following resources:
+- Código genuíno: `c:\.MAIS\denuncia-ms`
+- Não usar: `c:\.MAIS\denuncia-ms-1`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy / Produção
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Deploy deve ser executado apenas com aprovação explícita e após validação local completa.
 
-## Deploy on Vercel
+- `npx vercel --prod`
+- Confirmar variáveis de ambiente.
+- Validar preview antes de promoção.
+- Fazer rollback se necessário.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Atenção
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Não aplicar migrations em produção sem plano de rollback.
+- Não usar service role de produção em ambiente local.
+- `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `ENCRYPTION_KEY` e `CRON_SECRET` são secrets server-only.
