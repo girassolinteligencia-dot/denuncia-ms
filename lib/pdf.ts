@@ -52,95 +52,7 @@ const C = {
   red:       [185,  28,  28] as [number, number, number], // #B91C1C
 }
 
-// ─── Base Legal por Categoria ─────────────────────────────────────────────────
 
-const BASE_LEGAL: Record<string, { lei: string; desc: string }[]> = {
-  'corrupcao-desvio': [
-    { lei: 'Lei nº 8.429/1992 — art. 9º e 10', desc: 'Atos de improbidade que importam enriquecimento ilícito ou causam dano ao erário.' },
-    { lei: 'Lei nº 12.846/2013 — Lei Anticorrupção', desc: 'Responsabilização de pessoas jurídicas por atos lesivos à administração pública.' },
-    { lei: 'CF — art. 37, § 4º', desc: 'Sanções por atos de improbidade administrativa.' },
-  ],
-  'improbidade-admin': [
-    { lei: 'Lei nº 8.429/1992 — art. 11', desc: 'Violação aos princípios da administração pública (legalidade, impessoalidade, moralidade).' },
-    { lei: 'CF — art. 37, caput', desc: 'Princípios constitucionais da administração pública.' },
-  ],
-  'licitacao-fraudulenta': [
-    { lei: 'Lei nº 14.133/2021 — arts. 178-180', desc: 'Crimes em licitações e contratos administrativos.' },
-    { lei: 'Lei nº 8.429/1992 — art. 10', desc: 'Atos de improbidade que causam dano ao erário.' },
-  ],
-  'uso-bem-publico': [
-    { lei: 'Lei nº 9.504/1997 — art. 73, I e III', desc: 'Veda uso de bens públicos em benefício de candidato, partido ou coligação.' },
-    { lei: 'Lei nº 8.429/1992 — art. 11', desc: 'Violação aos princípios da administração pública.' },
-    { lei: 'CF — art. 37, caput', desc: 'Princípios da legalidade, impessoalidade e moralidade.' },
-    { lei: 'Resolução TSE nº 23.610/2019', desc: 'Veda atos antecipados de campanha e uso de estrutura pública.' },
-  ],
-  'nepotismo': [
-    { lei: 'Súmula Vinculante nº 13 — STF', desc: 'Veda nepotismo em todos os Poderes da República.' },
-    { lei: 'Lei nº 8.429/1992 — art. 11', desc: 'Violação ao princípio da impessoalidade.' },
-  ],
-  'servidor-inatividade': [
-    { lei: 'Lei nº 8.112/1990 — art. 116', desc: 'Deveres do servidor público federal (aplicado analogicamente ao âmbito estadual/municipal).' },
-    { lei: 'CF — art. 37, caput', desc: 'Princípio da eficiência administrativa.' },
-  ],
-  'saude-publica': [
-    { lei: 'CF — art. 196', desc: 'Saúde como direito de todos e dever do Estado.' },
-    { lei: 'Lei nº 8.080/1990', desc: 'Lei Orgânica da Saúde — condições de promoção, proteção e recuperação da saúde.' },
-  ],
-  'falta-medicamentos': [
-    { lei: 'CF — art. 196', desc: 'Saúde como direito de todos e dever do Estado.' },
-    { lei: 'Lei nº 8.080/1990 — art. 6º', desc: 'Assistência farmacêutica incluída no campo de atuação do SUS.' },
-  ],
-  'escola-precaria': [
-    { lei: 'CF — art. 205', desc: 'Educação como direito de todos e dever do Estado.' },
-    { lei: 'Lei nº 9.394/1996 — LDB', desc: 'Diretrizes e bases da educação nacional.' },
-  ],
-  'desmatamento': [
-    { lei: 'Lei nº 12.651/2012 — Código Florestal', desc: 'Proteção da vegetação nativa.' },
-    { lei: 'Lei nº 9.605/1998 — art. 38', desc: 'Crimes ambientais — destruição de floresta.' },
-  ],
-  'poluicao-geral': [
-    { lei: 'Lei nº 9.605/1998 — arts. 54-61', desc: 'Crimes de poluição e crimes contra o meio ambiente.' },
-    { lei: 'CF — art. 225', desc: 'Direito ao meio ambiente ecologicamente equilibrado.' },
-  ],
-  'trafico-drogas': [
-    { lei: 'Lei nº 11.343/2006 — arts. 33-40', desc: 'Lei de Drogas — tráfico e associação para o tráfico.' },
-  ],
-  'crianca-risco': [
-    { lei: 'Lei nº 8.069/1990 — ECA', desc: 'Estatuto da Criança e do Adolescente — proteção integral.' },
-    { lei: 'CF — art. 227', desc: 'Proteção prioritária à criança e ao adolescente.' },
-  ],
-  'idoso-risco': [
-    { lei: 'Lei nº 10.741/2003 — Estatuto do Idoso', desc: 'Direitos assegurados às pessoas com idade igual ou superior a 60 anos.' },
-    { lei: 'CF — art. 230', desc: 'Dever da família, sociedade e Estado de amparar os idosos.' },
-  ],
-}
-
-const BASE_LEGAL_DEFAULT = [
-  { lei: 'Lei nº 13.460/2017', desc: 'Código de Defesa do Usuário do Serviço Público — direito à manifestação e resposta.' },
-  { lei: 'Lei nº 12.527/2011 — LAI', desc: 'Lei de Acesso à Informação — obrigação de resposta no prazo legal.' },
-  { lei: 'CF — art. 5º, XXXIII', desc: 'Direito de receber informações dos órgãos públicos.' },
-]
-
-// ─── Encaminhamentos por Categoria ────────────────────────────────────────────
-
-interface Encaminhamento { orgaoPrimario: string; orgaoSecundario: string; controleInterno: string; prazo: string }
-
-function getEncaminhamento(slug?: string): Encaminhamento {
-  const map: Record<string, Encaminhamento> = {
-    'corrupcao-desvio':      { orgaoPrimario: 'Ministério Público Estadual de MS', orgaoSecundario: 'Tribunal de Contas do Estado de MS', controleInterno: 'Controladoria-Geral do Estado', prazo: '30 dias úteis' },
-    'improbidade-admin':     { orgaoPrimario: 'Ministério Público Estadual de MS', orgaoSecundario: 'Tribunal de Contas do Estado de MS', controleInterno: 'Controladoria-Geral do Município', prazo: '30 dias úteis' },
-    'licitacao-fraudulenta': { orgaoPrimario: 'Ministério Público Estadual de MS', orgaoSecundario: 'Tribunal de Contas do Estado de MS', controleInterno: 'Controladoria-Geral do Estado', prazo: '30 dias úteis' },
-    'uso-bem-publico':       { orgaoPrimario: 'Ministério Público Estadual de MS', orgaoSecundario: 'TRE/MS — Procuradoria Regional Eleitoral', controleInterno: 'Controladoria-Geral do Município', prazo: '30 dias úteis' },
-    'nepotismo':             { orgaoPrimario: 'Ministério Público Estadual de MS', orgaoSecundario: 'Tribunal de Contas do Estado de MS', controleInterno: 'Controladoria-Geral do Estado', prazo: '30 dias úteis' },
-    'trafico-drogas':        { orgaoPrimario: 'Polícia Civil de MS — DENAR', orgaoSecundario: 'Ministério Público Estadual de MS', controleInterno: 'Secretaria de Segurança Pública', prazo: '15 dias úteis' },
-    'desmatamento':          { orgaoPrimario: 'IMASUL — Instituto de Meio Ambiente de MS', orgaoSecundario: 'Ministério Público Estadual de MS', controleInterno: 'Secretaria de Meio Ambiente', prazo: '30 dias úteis' },
-    'saude-publica':         { orgaoPrimario: 'Secretaria Estadual de Saúde de MS', orgaoSecundario: 'Ministério Público Estadual de MS', controleInterno: 'Ouvidoria SUS/MS', prazo: '20 dias úteis' },
-    'escola-precaria':       { orgaoPrimario: 'Secretaria Estadual de Educação de MS', orgaoSecundario: 'Ministério Público Estadual de MS', controleInterno: 'Ouvidoria da Educação', prazo: '20 dias úteis' },
-    'crianca-risco':         { orgaoPrimario: 'Conselho Tutelar — Campo Grande/MS', orgaoSecundario: 'Ministério Público Estadual de MS', controleInterno: 'CREAS/CRAS local', prazo: '10 dias úteis' },
-    'idoso-risco':           { orgaoPrimario: 'Ministério Público Estadual de MS', orgaoSecundario: 'Defensoria Pública de MS', controleInterno: 'CREAS/CRAS local', prazo: '15 dias úteis' },
-  }
-  return map[slug || ''] || { orgaoPrimario: 'Ministério Público Estadual de MS', orgaoSecundario: 'Ouvidoria do Estado de MS', controleInterno: 'Controladoria-Geral', prazo: '30 dias úteis' }
-}
 
 // ─── Helpers de Layout ────────────────────────────────────────────────────────
 
@@ -243,9 +155,6 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
   const dataOcorrido = data.data_ocorrido
     ? new Date(data.data_ocorrido).toLocaleDateString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: 'long', year: 'numeric' })
     : 'Não informado'
-
-  const baseLegal = BASE_LEGAL[data.categoria_slug || ''] || BASE_LEGAL_DEFAULT
-  const encaminhamento = getEncaminhamento(data.categoria_slug)
 
   // ── PÁGINA 1 ────────────────────────────────────────────────────────────────
 
@@ -411,47 +320,34 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
   y = checkPageBreak(doc, y, 30)
   y = drawSectionHeader(doc, 4, 'Relato Circunstanciado', 'NARRATIVA DO DENUNCIANTE', y)
 
-  // Barra lateral azul + texto
-  setFill(doc, C.primary)
-  doc.rect(15, y, 2, 4, 'F') // placeholder, vamos calcular altura depois
-
   const relatoText = data.descricao || ''
-  const relatoLines = doc.splitTextToSize(relatoText, 164)
 
-  // Calcular altura do box
-  const relatoH = Math.max(relatoLines.length * 5.5 + 10, 20)
+  // Quebra o relato em parágrafos preservando quebras de linha do denunciante
+  const paragrafos = relatoText.split(/\n+/).filter(p => p.trim())
+  const lineHeight = 5.5
+  const padding = 8
+
+  let allLines: string[] = []
+  for (const paragrafo of paragrafos) {
+    const lines = doc.splitTextToSize(paragrafo, 166)
+    allLines = [...allLines, ...lines, '']
+  }
+  // Remove última linha em branco extra
+  if (allLines[allLines.length - 1] === '') allLines.pop()
+
+  const relatoH = Math.max(allLines.length * lineHeight + padding * 2, 20)
+
+  // Barra lateral azul + fundo claro
   setFill(doc, C.primary)
-  doc.rect(15, y, 2, relatoH, 'F')
+  doc.rect(15, y, 3, relatoH, 'F')
   setFill(doc, C.light)
-  doc.rect(17, y, 178, relatoH, 'F')
+  doc.rect(18, y, 177, relatoH, 'F')
 
   setColor(doc, C.dark)
-  doc.setFontSize(9)
+  doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
-  doc.text(relatoLines, 22, y + 6)
-  y += relatoH + 4
-
-  // Transcrição literal (se anônima, descricao_original pode ser diferente do relato tratado)
-  // Mostramos como "TRANSCRIÇÃO LITERAL DO RELATO ORIGINAL"
-  y = checkPageBreak(doc, y, 20)
-  setFill(doc, C.light)
-  setDraw(doc, C.border)
-  doc.roundedRect(15, y, 180, 6, 1, 1, 'FD')
-  setColor(doc, C.muted)
-  doc.setFontSize(6.5)
-  doc.setFont('helvetica', 'bold')
-  doc.text('TRANSCRIÇÃO LITERAL DO RELATO ORIGINAL', 20, y + 4)
-  y += 8
-
-  setFill(doc, [240, 240, 240])
-  const transcricaoLines = doc.splitTextToSize(`"${relatoText}"`, 168)
-  const transcricaoH = transcricaoLines.length * 4.5 + 8
-  doc.roundedRect(15, y, 180, transcricaoH, 1, 1, 'F')
-  setColor(doc, C.muted)
-  doc.setFontSize(7.5)
-  doc.setFont('courier', 'normal')
-  doc.text(transcricaoLines, 20, y + 5)
-  y += transcricaoH + 6
+  doc.text(allLines, 23, y + padding)
+  y += relatoH + 6
 
   // ── SEÇÃO 5 — Testemunhas ────────────────────────────────────────────────────
   if (data.testemunhas && data.testemunhas.trim()) {
@@ -570,48 +466,6 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
     }
     y += 4
   }
-
-  // ── SEÇÃO 7 — Possíveis Tipificações e Base Legal ────────────────────────────
-  y = checkPageBreak(doc, y, 20 + baseLegal.length * 14)
-  y = drawSectionHeader(doc, 7, 'Possíveis Tipificações e Base Legal', 'INDICATIVO PRELIMINAR', y)
-
-  for (const item of baseLegal) {
-    y = checkPageBreak(doc, y, 14)
-    setFill(doc, C.light)
-    setDraw(doc, C.border)
-    doc.roundedRect(15, y, 180, 12, 1.5, 1.5, 'FD')
-    setColor(doc, C.primary)
-    doc.setFontSize(7.5)
-    doc.setFont('helvetica', 'bold')
-    doc.text(item.lei, 20, y + 5)
-    setColor(doc, C.dark)
-    doc.setFontSize(7)
-    doc.setFont('helvetica', 'normal')
-    const descLines = doc.splitTextToSize(item.desc, 168)
-    doc.text(descLines[0], 20, y + 9.5)
-    y += 14
-  }
-  y += 4
-
-  // ── SEÇÃO 8 — Encaminhamentos Sugeridos ──────────────────────────────────────
-  y = checkPageBreak(doc, y, 40)
-  y = drawSectionHeader(doc, 8, 'Encaminhamentos Sugeridos', 'ROTEAMENTO INSTITUCIONAL', y)
-
-  setFill(doc, C.light)
-  setDraw(doc, C.border)
-  doc.roundedRect(15, y, 180, 26, 1.5, 1.5, 'FD')
-  drawInfoBox(doc, 'Órgão Primário', encaminhamento.orgaoPrimario, 20, y + 8, 80)
-  drawInfoBox(doc, 'Órgão Secundário', encaminhamento.orgaoSecundario, 105, y + 8, 80)
-  drawInfoBox(doc, 'Controle Interno', encaminhamento.controleInterno, 20, y + 20, 80)
-  setColor(doc, C.muted)
-  doc.setFontSize(7)
-  doc.setFont('helvetica', 'bold')
-  doc.text('PRAZO SUGERIDO', 105, y + 17)
-  setColor(doc, C.primary)
-  doc.setFontSize(10)
-  doc.setFont('helvetica', 'bold')
-  doc.text(encaminhamento.prazo, 105, y + 23)
-  y += 32
 
   // ── BLOCO DE INTEGRIDADE DOCUMENTAL ─────────────────────────────────────────
   y = checkPageBreak(doc, y, 58)
