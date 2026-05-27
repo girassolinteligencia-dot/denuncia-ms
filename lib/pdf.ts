@@ -156,114 +156,117 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
     ? new Date(data.data_ocorrido).toLocaleDateString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: 'long', year: 'numeric' })
     : 'Não informado'
 
+  // Contador de seções — garante numeração sequencial independente de seções opcionais
+  let secNum = 0
+  const nextSec = () => ++secNum
+
   // ── PÁGINA 1 ────────────────────────────────────────────────────────────────
 
-  // Cabeçalho azul
+  // Cabeçalho azul (reduzido de 42→36mm)
   setFill(doc, C.primary)
-  doc.rect(0, 0, 210, 42, 'F')
+  doc.rect(0, 0, 210, 36, 'F')
 
   // Logo / "D" box
   setFill(doc, C.yellow)
-  doc.roundedRect(12, 8, 16, 16, 2, 2, 'F')
+  doc.roundedRect(12, 6, 14, 14, 2, 2, 'F')
   setColor(doc, C.primary)
-  doc.setFontSize(14)
+  doc.setFontSize(13)
   doc.setFont('helvetica', 'bold')
-  doc.text('D', 20, 19.5, { align: 'center' })
+  doc.text('D', 19, 16, { align: 'center' })
 
   // Nome e subtítulo
   setColor(doc, C.white)
-  doc.setFontSize(14)
+  doc.setFontSize(13)
   doc.setFont('helvetica', 'bold')
-  doc.text(appName, 32, 15)
-  doc.setFontSize(7)
+  doc.text(appName, 30, 12)
+  doc.setFontSize(6.5)
   doc.setFont('helvetica', 'normal')
-  doc.text('OUVIDORIA CÍVICA INDEPENDENTE · MATO GROSSO DO SUL', 32, 20)
+  doc.text('OUVIDORIA CÍVICA INDEPENDENTE · MATO GROSSO DO SUL', 30, 17)
 
   // Badge DOCUMENTO OFICIAL (topo direita)
   setFill(doc, C.white)
-  doc.roundedRect(148, 8, 47, 8, 1, 1, 'F')
+  doc.roundedRect(148, 6, 47, 7, 1, 1, 'F')
   setColor(doc, C.primary)
   doc.setFontSize(7)
   doc.setFont('helvetica', 'bold')
-  doc.text('DOCUMENTO OFICIAL', 171.5, 13.3, { align: 'center' })
+  doc.text('DOCUMENTO OFICIAL', 171.5, 11, { align: 'center' })
 
   // Emissão / Versão / Plataforma (direita)
   setColor(doc, C.white)
-  doc.setFontSize(7)
+  doc.setFontSize(6.5)
   doc.setFont('helvetica', 'normal')
-  doc.text(`Emissão: ${dataEmissao}`, 195, 22, { align: 'right' })
-  doc.text('Versão: 1.0 — Original', 195, 27, { align: 'right' })
-  doc.text(`Plataforma: ${appUrl}`, 195, 32, { align: 'right' })
+  doc.text(`Emissão: ${dataEmissao}`, 195, 18, { align: 'right' })
+  doc.text('Versão: 1.0 — Original', 195, 23, { align: 'right' })
+  doc.text(`Plataforma: ${appUrl}`, 195, 28, { align: 'right' })
 
   // Linha amarela decorativa
   setFill(doc, C.yellow)
-  doc.rect(0, 42, 210, 1.5, 'F')
+  doc.rect(0, 36, 210, 1.5, 'F')
 
-  // Título "Registro Oficial de Denúncia"
+  // Título "Registro Oficial de Denúncia" (compactado)
   setColor(doc, C.primary)
-  doc.setFontSize(22)
+  doc.setFontSize(18)
   doc.setFont('helvetica', 'bold')
-  doc.text('Registro Oficial de Denúncia', 105, 56, { align: 'center' })
-  setColor(doc, C.muted)
-  doc.setFontSize(8)
-  doc.setFont('helvetica', 'bold')
-  doc.text('C A N A L   A N Ô N I M O   D E   O U V I D O R I A   C I D A D Ã', 105, 62, { align: 'center' })
-
-  // Box do protocolo
-  setFill(doc, C.light)
-  setDraw(doc, C.border)
-  doc.setLineWidth(0.3)
-  doc.roundedRect(15, 66, 180, 16, 2, 2, 'FD')
+  doc.text('Registro Oficial de Denúncia', 105, 47, { align: 'center' })
   setColor(doc, C.muted)
   doc.setFontSize(7)
   doc.setFont('helvetica', 'bold')
-  doc.text('NÚMERO DE PROTOCOLO', 20, 72)
-  setColor(doc, C.primary)
-  doc.setFontSize(15)
+  doc.text('C A N A L   A N Ô N I M O   D E   O U V I D O R I A   C I D A D Ã', 105, 53, { align: 'center' })
+
+  // Box do protocolo (reduzido de 16→13mm)
+  setFill(doc, C.light)
+  setDraw(doc, C.border)
+  doc.setLineWidth(0.3)
+  doc.roundedRect(15, 57, 180, 13, 2, 2, 'FD')
+  setColor(doc, C.muted)
+  doc.setFontSize(7)
   doc.setFont('helvetica', 'bold')
-  doc.text(data.protocolo, 20, 79)
-  // Badge de status
+  doc.text('NÚMERO DE PROTOCOLO', 20, 62)
+  setColor(doc, C.primary)
+  doc.setFontSize(13)
+  doc.setFont('helvetica', 'bold')
+  doc.text(data.protocolo, 20, 68)
   const statusText = (data.status || 'recebida').toUpperCase().replace('_', ' ').replace('RECEBIDA', 'EM TRIAGEM').replace('EM ANALISE', 'EM ANÁLISE').replace('ENCAMINHADA', 'ENCAMINHADA').replace('RESOLVIDA', 'RESOLVIDA')
-  drawBadge(doc, statusText, 155, 76, C.yellow, C.dark)
+  drawBadge(doc, statusText, 155, 67, C.yellow, C.dark)
 
   // Alerta anônima
-  let y = 88
+  let y = 75
   if (data.anonima) {
     setFill(doc, C.amberBg)
     setDraw(doc, [253, 230, 138])
-    doc.roundedRect(15, y, 180, 14, 2, 2, 'FD')
+    doc.roundedRect(15, y, 180, 12, 2, 2, 'FD')
     setColor(doc, C.amber)
-    doc.setFontSize(7.5)
-    doc.setFont('helvetica', 'bold')
-    doc.text('!   DENÚNCIA ANÔNIMA — IDENTIDADE PROTEGIDA', 20, y + 5.5)
-    doc.setFont('helvetica', 'normal')
     doc.setFontSize(7)
-    const alertText = 'A identidade do denunciante é resguardada por sigilo institucional, em conformidade com o art. 5º, inciso XXXIII, da Constituição Federal, e com a Lei nº 13.460/2017. É vedada qualquer tentativa de identificação do autor do relato.'
+    doc.setFont('helvetica', 'bold')
+    doc.text('!   DENÚNCIA ANÔNIMA — IDENTIDADE PROTEGIDA', 20, y + 5)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(6.5)
+    const alertText = 'A identidade do denunciante é resguardada por sigilo institucional, em conformidade com o art. 5º, inciso XXXIII, da CF, e com a Lei nº 13.460/2017.'
     const alertLines = doc.splitTextToSize(alertText, 168)
-    doc.text(alertLines, 20, y + 10)
-    y += 14 + 4
+    doc.text(alertLines, 20, y + 9)
+    y += 12 + 3
   } else {
-    y += 4
+    y += 3
   }
 
   // ── SEÇÃO 1 — Classificação Preliminar ──────────────────────────────────────
-  y = checkPageBreak(doc, y, 35)
-  y = drawSectionHeader(doc, 1, 'Classificação Preliminar', 'TRIAGEM AUTOMATIZADA', y)
+  y = checkPageBreak(doc, y, 28)
+  y = drawSectionHeader(doc, nextSec(), 'Classificação Preliminar', 'TRIAGEM AUTOMATIZADA', y)
 
   const colW = 56
-  drawInfoBox(doc, 'Categoria', data.categoria, 18, y + 5, colW)
-  drawInfoBox(doc, 'Gravidade', data.anonima ? 'Alta' : 'Média', 18 + colW + 6, y + 5, colW)
-  drawInfoBox(doc, 'Esfera', 'Municipal / Estadual', 18 + (colW + 6) * 2, y + 5, colW)
-  y += 16
+  drawInfoBox(doc, 'Categoria', data.categoria, 18, y + 4, colW)
+  drawInfoBox(doc, 'Gravidade', data.anonima ? 'Alta' : 'Média', 18 + colW + 6, y + 4, colW)
+  drawInfoBox(doc, 'Esfera', 'Municipal / Estadual', 18 + (colW + 6) * 2, y + 4, colW)
+  y += 14
 
   // ── SEÇÃO 2 — Identificação Temporal e Espacial ──────────────────────────────
-  y = checkPageBreak(doc, y, 40)
-  y = drawSectionHeader(doc, 2, 'Identificação Temporal e Espacial', 'FATO DENUNCIADO', y)
+  y = checkPageBreak(doc, y, 34)
+  y = drawSectionHeader(doc, nextSec(), 'Identificação Temporal e Espacial', 'FATO DENUNCIADO', y)
 
-  drawInfoBox(doc, 'Data do Ocorrido', dataOcorrido, 18, y + 5, 60)
-  drawInfoBox(doc, 'Horário Aproximado', data.hora_ocorrido || 'Não informado', 82, y + 5, 40)
-  drawInfoBox(doc, 'Município', data.municipio || data.cidade || 'Não informado', 130, y + 5, 60)
-  y += 16
+  drawInfoBox(doc, 'Data do Ocorrido', dataOcorrido, 18, y + 4, 60)
+  drawInfoBox(doc, 'Horário Aproximado', data.hora_ocorrido || 'Não informado', 82, y + 4, 40)
+  drawInfoBox(doc, 'Município', data.municipio || data.cidade || 'Não informado', 130, y + 4, 60)
+  y += 14
 
   // Endereço completo
   const enderecoPartes = [data.local, data.numero, data.bairro].filter(Boolean).join(', ')
@@ -272,70 +275,69 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
 
   setFill(doc, C.light)
   setDraw(doc, C.border)
-  doc.roundedRect(15, y, 180, 14, 1.5, 1.5, 'FD')
+  doc.roundedRect(15, y, 180, 12, 1.5, 1.5, 'FD')
   setColor(doc, C.muted)
   doc.setFontSize(7)
   doc.setFont('helvetica', 'bold')
-  doc.text('ENDEREÇO COMPLETO', 20, y + 5)
+  doc.text('ENDEREÇO COMPLETO', 20, y + 4.5)
   setColor(doc, C.dark)
-  doc.setFontSize(8.5)
+  doc.setFontSize(8)
   doc.setFont('helvetica', 'bold')
-  doc.text(enderecoCompleto || 'Não informado', 20, y + 11)
-  y += 18
+  const endLine = doc.splitTextToSize(enderecoCompleto || 'Não informado', 168)
+  doc.text(endLine[0], 20, y + 9.5)
+  y += 15
 
-  // ── SEÇÃO 3 — Suposto Autor ──────────────────────────────────────────────────
+  // ── SEÇÃO 3 — Suposto Autor (opcional) ──────────────────────────────────────
   if (data.autor_nome) {
-    y = checkPageBreak(doc, y, 50)
-    y = drawSectionHeader(doc, 3, 'Suposto Autor da Conduta', 'IDENTIFICAÇÃO DECLARADA', y)
+    y = checkPageBreak(doc, y, 44)
+    y = drawSectionHeader(doc, nextSec(), 'Suposto Autor da Conduta', 'IDENTIFICAÇÃO DECLARADA', y)
 
     setFill(doc, C.light)
     setDraw(doc, C.border)
-    doc.roundedRect(15, y, 180, 36, 1.5, 1.5, 'FD')
+    doc.roundedRect(15, y, 180, 32, 1.5, 1.5, 'FD')
 
-    drawInfoBox(doc, 'Nome Completo', data.autor_nome, 20, y + 8, 80)
-    drawInfoBox(doc, 'Cargo Declarado', data.cargo_agente || 'Não informado', 105, y + 8, 80)
+    drawInfoBox(doc, 'Nome Completo', data.autor_nome, 20, y + 7, 80)
+    drawInfoBox(doc, 'Cargo Declarado', data.cargo_agente || 'Não informado', 105, y + 7, 80)
 
-    // Badges servidor / agente
     setColor(doc, C.muted)
     doc.setFontSize(7)
     doc.setFont('helvetica', 'bold')
-    doc.text('SERVIDOR PÚBLICO', 20, y + 20)
-    drawBadge(doc, data.servidor_publico === 'sim' ? 'SIM' : 'NÃO', 20, y + 27,
+    doc.text('SERVIDOR PÚBLICO', 20, y + 18)
+    drawBadge(doc, data.servidor_publico === 'sim' ? 'SIM' : 'NÃO', 20, y + 25,
       data.servidor_publico === 'sim' ? C.green : C.muted, C.white)
 
     setColor(doc, C.muted)
     doc.setFontSize(7)
     doc.setFont('helvetica', 'bold')
-    doc.text('AGENTE POLÍTICO', 70, y + 20)
-    drawBadge(doc, data.agente_politico === 'sim' ? 'SIM' : 'NÃO', 70, y + 27,
+    doc.text('AGENTE POLÍTICO', 70, y + 18)
+    drawBadge(doc, data.agente_politico === 'sim' ? 'SIM' : 'NÃO', 70, y + 25,
       data.agente_politico === 'sim' ? C.green : C.muted, C.white)
 
     if (data.setor_servidor) {
-      drawInfoBox(doc, 'Setor / Vinculação', data.setor_servidor, 105, y + 20, 80)
+      drawInfoBox(doc, 'Setor / Vinculação', data.setor_servidor, 105, y + 18, 80)
     }
-    y += 40
+    y += 36
   }
 
-  // ── SEÇÃO 4 — Relato Circunstanciado ─────────────────────────────────────────
+  // ── SEÇÃO — Relato Circunstanciado ─────────────────────────────────────────
   y = checkPageBreak(doc, y, 30)
-  y = drawSectionHeader(doc, 4, 'Relato Circunstanciado', 'NARRATIVA DO DENUNCIANTE', y)
+  y = drawSectionHeader(doc, nextSec(), 'Relato Circunstanciado', 'NARRATIVA DO DENUNCIANTE', y)
 
   const relatoText = data.descricao || ''
 
   // Quebra o relato em parágrafos preservando quebras de linha do denunciante
   const paragrafos = relatoText.split(/\n+/).filter(p => p.trim())
-  const lineHeight = 5.5
-  const padding = 8
+  const lineHeight = 5
+  const padding = 6
 
   let allLines: string[] = []
   for (const paragrafo of paragrafos) {
-    const lines = doc.splitTextToSize(paragrafo, 166)
+    const lines = doc.splitTextToSize(paragrafo, 168)
     allLines = [...allLines, ...lines, '']
   }
-  // Remove última linha em branco extra
   if (allLines[allLines.length - 1] === '') allLines.pop()
 
-  const relatoH = Math.max(allLines.length * lineHeight + padding * 2, 20)
+  const relatoH = Math.max(allLines.length * lineHeight + padding * 2, 18)
 
   // Barra lateral azul + fundo claro
   setFill(doc, C.primary)
@@ -344,10 +346,10 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
   doc.rect(18, y, 177, relatoH, 'F')
 
   setColor(doc, C.dark)
-  doc.setFontSize(10)
+  doc.setFontSize(9)
   doc.setFont('helvetica', 'normal')
   doc.text(allLines, 23, y + padding)
-  y += relatoH + 6
+  y += relatoH + 4
 
   // ── SEÇÃO 5 — Testemunhas ────────────────────────────────────────────────────
   if (data.testemunhas && data.testemunhas.trim()) {
@@ -357,7 +359,7 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
       .filter(Boolean)
 
     y = checkPageBreak(doc, y, 20 + testemunhasList.length * 12)
-    y = drawSectionHeader(doc, 5, 'Testemunhas Indicadas', `${testemunhasList.length.toString().padStart(2, '0')} PESSOAS APONTADAS`, y)
+    y = drawSectionHeader(doc, nextSec(), 'Testemunhas Indicadas', `${testemunhasList.length.toString().padStart(2, '0')} PESSOAS APONTADAS`, y)
 
     const cardW = 85
     for (let i = 0; i < testemunhasList.length; i++) {
@@ -407,7 +409,7 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
   if (temLinks || temArquivos) {
     const totalEvidencias = (data.links?.length || 0) + (data.arquivos?.length || 0)
     y = checkPageBreak(doc, y, 20 + totalEvidencias * 14)
-    y = drawSectionHeader(doc, 6, 'Evidências Apresentadas', `${String(totalEvidencias).padStart(2, '0')} ${totalEvidencias === 1 ? 'ITEM ANEXADO' : 'ITENS ANEXADOS'}`, y)
+    y = drawSectionHeader(doc, nextSec(), 'Evidências Apresentadas', `${String(totalEvidencias).padStart(2, '0')} ${totalEvidencias === 1 ? 'ITEM ANEXADO' : 'ITENS ANEXADOS'}`, y)
 
     // Links
     if (temLinks) {
@@ -468,14 +470,14 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
   }
 
   // ── BLOCO DE INTEGRIDADE DOCUMENTAL ─────────────────────────────────────────
-  y = checkPageBreak(doc, y, 58)
+  y = checkPageBreak(doc, y, 50)
 
   setDraw(doc, C.border)
   doc.setLineWidth(0.3)
   doc.line(15, y, 195, y)
-  y += 6
+  y += 4
 
-  // QR Code — gerado a partir da URL de verificação pública do protocolo
+  // QR Code (26×26mm) posicionado à direita
   const verificarUrl = `https://${appUrl}/acompanhar/${data.protocolo}`
   let qrYStart = y
   try {
@@ -485,73 +487,63 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
       color: { dark: '#021691', light: '#FFFFFF' },
       errorCorrectionLevel: 'M',
     })
-    // QR code posicionado à direita (32×32mm)
-    doc.addImage(qrDataUrl, 'PNG', 158, y, 32, 32)
+    doc.addImage(qrDataUrl, 'PNG', 162, y, 26, 26)
     setColor(doc, C.muted)
     doc.setFontSize(5.5)
     doc.setFont('helvetica', 'bold')
-    doc.text('VERIFICAR AUTENTICIDADE', 174, y + 34, { align: 'center' })
+    doc.text('VERIFICAR AUTENTICIDADE', 175, y + 28, { align: 'center' })
   } catch (err) {
     console.warn('[pdf] Falha ao gerar QR code:', err)
   }
 
   setColor(doc, C.primary)
-  doc.setFontSize(10)
+  doc.setFontSize(9)
   doc.setFont('helvetica', 'bold')
-  doc.text('VALIDAÇÃO E INTEGRIDADE DOCUMENTAL', 15, y)
-  y += 6
+  doc.text('VALIDAÇÃO E INTEGRIDADE DOCUMENTAL', 15, y + 4)
+  y += 8
 
   setColor(doc, C.muted)
-  doc.setFontSize(7.5)
+  doc.setFontSize(7)
   doc.setFont('helvetica', 'normal')
-  const integridadeText = `Este documento foi gerado automaticamente pela plataforma ${appName} e possui validade como registro de manifestação cidadã, nos termos da Lei nº 13.460/2017. A integridade do conteúdo pode ser verificada mediante o hash criptográfico abaixo ou pelo QR Code ao lado.`
-  const integridadeLines = doc.splitTextToSize(integridadeText, 138)
+  const integridadeText = `Este documento foi gerado automaticamente pela plataforma ${appName} e possui validade como registro de manifestação cidadã, nos termos da Lei nº 13.460/2017. A integridade pode ser verificada pelo hash criptográfico abaixo ou pelo QR Code ao lado.`
+  const integridadeLines = doc.splitTextToSize(integridadeText, 140)
   doc.text(integridadeLines, 15, y)
-  y += integridadeLines.length * 4.5 + 4
+  y += integridadeLines.length * 4 + 3
 
   // Box do hash
   if (data.sha256) {
     setFill(doc, C.primary)
-    doc.roundedRect(15, y, 138, 12, 1.5, 1.5, 'F')
+    doc.roundedRect(15, y, 140, 11, 1.5, 1.5, 'F')
     setColor(doc, C.muted)
     doc.setFontSize(6)
     doc.setFont('helvetica', 'bold')
-    doc.text('SHA-256 · HASH DE INTEGRIDADE', 20, y + 4.5)
+    doc.text('SHA-256 · HASH DE INTEGRIDADE', 20, y + 4)
     setColor(doc, C.yellow)
-    doc.setFontSize(6.5)
+    doc.setFontSize(5.5)
     doc.setFont('courier', 'bold')
-    // Quebra o hash em duas linhas de 32 chars para caber no box
-    doc.text(data.sha256.slice(0, 34), 20, y + 9.5)
-    if (data.sha256.length > 34) {
-      doc.text(data.sha256.slice(34), 20, y + 13.5)
-    }
-    y += 18
+    doc.text(data.sha256.slice(0, 48), 20, y + 8.5)
+    if (data.sha256.length > 48) doc.text(data.sha256.slice(48), 20, y + 12)
+    y += 15
   }
 
-  // Garantir que y avance pelo menos até o fim do QR code
-  y = Math.max(y, qrYStart + 38)
+  y = Math.max(y, qrYStart + 32)
 
   // Rodapé final
-  y += 4
+  y += 3
   setDraw(doc, C.border)
   doc.line(15, y, 195, y)
-  y += 5
+  y += 4
 
   setColor(doc, C.primary)
   doc.setFontSize(7)
   doc.setFont('helvetica', 'bold')
   doc.text(`${appName} · Plataforma Cívica Independente de Ouvidoria Digital · ${appUrl}`, 105, y, { align: 'center' })
-  setFill(doc, C.yellow)
-  const iniciativaW = doc.getTextWidth('INICIATIVA INDEPENDENTE') + 8
-  doc.roundedRect(105 + doc.getTextWidth(`${appName} · Plataforma Cívica Independente de Ouvidoria Digital · ${appUrl}`) / 2 + 4, y - 4, iniciativaW, 6, 1, 1, 'F')
-  setColor(doc, C.primary)
-  doc.text('INICIATIVA INDEPENDENTE', 105 + doc.getTextWidth(`${appName} · Plataforma Cívica Independente de Ouvidoria Digital · ${appUrl}`) / 2 + 4 + iniciativaW / 2, y, { align: 'center' })
 
-  y += 5
+  y += 4
   setColor(doc, C.muted)
   doc.setFontSize(6.5)
   doc.setFont('helvetica', 'normal')
-  doc.text('Em conformidade com a LGPD (Lei nº 13.709/2018), a Lei de Acesso à Informação (Lei nº 12.527/2011) e a Lei nº 13.460/2017.', 105, y, { align: 'center' })
+  doc.text('Em conformidade com a LGPD (Lei nº 13.709/2018), Lei de Acesso à Informação (Lei nº 12.527/2011) e Lei nº 13.460/2017.', 105, y, { align: 'center' })
   y += 4
   doc.text('Governança e Inteligência Cívica · Mato Grosso do Sul, Brasil', 105, y, { align: 'center' })
 
