@@ -261,6 +261,8 @@ export interface SubmitDenunciaRequest {
   longitude?: number | null
   municipio?: string | null
   is_anonima?: boolean
+  agente_politico?: 'sim' | 'nao'
+  cargo_agente?: string
   links?: string[]
 }
 

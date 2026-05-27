@@ -104,7 +104,7 @@ export async function registrarDenuncia(
     // 4. Buscar Categoria para o PDF e Destinatário
     const { data: catData } = await supabase
       .from('categorias')
-      .select('label, email_destino')
+      .select('label, slug, email_destino')
       .eq('id', formData.categoria_id)
       .single()
 
@@ -131,6 +131,14 @@ export async function registrarDenuncia(
         latitude:           formData.latitude || null,
         longitude:          formData.longitude || null,
         data_ocorrido:      formData.data_ocorrido || null,
+        hora_ocorrido:      formData.hora_ocorrido || null,
+        autor_nome:         formData.autor_nome || null,
+        testemunhas:        formData.testemunhas || null,
+        servidor_publico:   formData.servidor_publico || null,
+        setor_servidor:     formData.setor_servidor || null,
+        agente_politico:    formData.agente_politico || null,
+        cargo_agente:       formData.cargo_agente || null,
+        links:              (formData.links || []).filter(Boolean).length > 0 ? (formData.links || []).filter(Boolean) : null,
         status:             'recebida',
         anonima:            formData.is_anonima || false,
       })
@@ -184,25 +192,32 @@ export async function registrarDenuncia(
       // PDF & Fila
       const pdfBuffer = await gerarPDFDenuncia({
         protocolo,
-        categoria:     catData?.label || 'Geral',
-        titulo:        formData.titulo,
-        descricao:     descricaoFinal,
-        local:         localCompleto,
-        data_ocorrido: formData.data_ocorrido || '',
-        hora_ocorrido: formData.hora_ocorrido || '',
-        autor_nome:    formData.autor_nome || '',
-        testemunhas:   formData.testemunhas || '',
+        categoria:        catData?.label || 'Geral',
+        categoria_slug:   catData?.slug || '',
+        titulo:           formData.titulo,
+        descricao:        descricaoFinal,
+        local:            localCompleto,
+        cep:              formData.cep || '',
+        numero:           formData.numero || '',
+        bairro:           formData.bairro || '',
+        cidade:           formData.cidade || '',
+        municipio:        formData.municipio || formData.cidade || '',
+        data_ocorrido:    formData.data_ocorrido || '',
+        hora_ocorrido:    formData.hora_ocorrido || '',
+        autor_nome:       formData.autor_nome || '',
+        testemunhas:      formData.testemunhas || '',
         servidor_publico: formData.servidor_publico || 'nao',
         setor_servidor:   formData.setor_servidor || '',
         agente_politico:  formData.agente_politico || 'nao',
         cargo_agente:     formData.cargo_agente || '',
-        criado_em:     denuncia.criado_em,
-        orgao_nome:    'Denuncia MS',
-        anonima:       !!formData.is_anonima,
-        arquivos:      arquivosVinculados,
-        links:         (formData.links || []).filter(Boolean),
-        nome:          formData.is_anonima ? 'Anônimo' : formData.nome,
-        email:         formData.is_anonima ? '' : emailNorm,
+        criado_em:        denuncia.criado_em,
+        status:           'recebida',
+        orgao_nome:       catData?.label || 'Denuncia MS',
+        anonima:          !!formData.is_anonima,
+        arquivos:         arquivosVinculados,
+        links:            (formData.links || []).filter(Boolean),
+        nome:  formData.is_anonima ? undefined : formData.nome,
+        email: formData.is_anonima ? undefined : emailNorm,
       })
 
       const pdfPath = `oficial_${protocolo}.pdf`
