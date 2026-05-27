@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf'
 import { getConfigsByPrefix } from './config'
+import QRCode from 'qrcode'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -613,12 +614,32 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
   y += 32
 
   // ── BLOCO DE INTEGRIDADE DOCUMENTAL ─────────────────────────────────────────
-  y = checkPageBreak(doc, y, 50)
+  y = checkPageBreak(doc, y, 58)
 
   setDraw(doc, C.border)
   doc.setLineWidth(0.3)
   doc.line(15, y, 195, y)
   y += 6
+
+  // QR Code — gerado a partir da URL de verificação pública do protocolo
+  const verificarUrl = `https://${appUrl}/acompanhar/${data.protocolo}`
+  let qrYStart = y
+  try {
+    const qrDataUrl = await QRCode.toDataURL(verificarUrl, {
+      width: 140,
+      margin: 1,
+      color: { dark: '#021691', light: '#FFFFFF' },
+      errorCorrectionLevel: 'M',
+    })
+    // QR code posicionado à direita (32×32mm)
+    doc.addImage(qrDataUrl, 'PNG', 158, y, 32, 32)
+    setColor(doc, C.muted)
+    doc.setFontSize(5.5)
+    doc.setFont('helvetica', 'bold')
+    doc.text('VERIFICAR AUTENTICIDADE', 174, y + 34, { align: 'center' })
+  } catch (err) {
+    console.warn('[pdf] Falha ao gerar QR code:', err)
+  }
 
   setColor(doc, C.primary)
   doc.setFontSize(10)
@@ -629,15 +650,15 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
   setColor(doc, C.muted)
   doc.setFontSize(7.5)
   doc.setFont('helvetica', 'normal')
-  const integridadeText = `Este documento foi gerado automaticamente pela plataforma ${appName} e possui validade como registro de manifestação cidadã, nos termos da Lei nº 13.460/2017. A integridade do conteúdo pode ser verificada mediante o hash criptográfico abaixo.`
-  const integridadeLines = doc.splitTextToSize(integridadeText, 180)
+  const integridadeText = `Este documento foi gerado automaticamente pela plataforma ${appName} e possui validade como registro de manifestação cidadã, nos termos da Lei nº 13.460/2017. A integridade do conteúdo pode ser verificada mediante o hash criptográfico abaixo ou pelo QR Code ao lado.`
+  const integridadeLines = doc.splitTextToSize(integridadeText, 138)
   doc.text(integridadeLines, 15, y)
   y += integridadeLines.length * 4.5 + 4
 
   // Box do hash
   if (data.sha256) {
     setFill(doc, C.primary)
-    doc.roundedRect(15, y, 130, 12, 1.5, 1.5, 'F')
+    doc.roundedRect(15, y, 138, 12, 1.5, 1.5, 'F')
     setColor(doc, C.muted)
     doc.setFontSize(6)
     doc.setFont('helvetica', 'bold')
@@ -645,18 +666,16 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
     setColor(doc, C.yellow)
     doc.setFontSize(6.5)
     doc.setFont('courier', 'bold')
-    doc.text(data.sha256, 20, y + 9.5)
-
-    // Botão verificar
-    setFill(doc, C.yellow)
-    doc.roundedRect(150, y, 45, 12, 1.5, 1.5, 'F')
-    setColor(doc, C.primary)
-    doc.setFontSize(7)
-    doc.setFont('helvetica', 'bold')
-    doc.text('VERIFICAR', 172.5, y + 5.5, { align: 'center' })
-    doc.text('AUTENTICIDADE', 172.5, y + 9.5, { align: 'center' })
-    y += 16
+    // Quebra o hash em duas linhas de 32 chars para caber no box
+    doc.text(data.sha256.slice(0, 34), 20, y + 9.5)
+    if (data.sha256.length > 34) {
+      doc.text(data.sha256.slice(34), 20, y + 13.5)
+    }
+    y += 18
   }
+
+  // Garantir que y avance pelo menos até o fim do QR code
+  y = Math.max(y, qrYStart + 38)
 
   // Rodapé final
   y += 4
