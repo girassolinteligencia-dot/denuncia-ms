@@ -68,7 +68,7 @@ function clampPercent(value: number) {
 }
 
 function getPublicShareUrl() {
-  const text = encodeURIComponent('Veja a Sala da Situação Cidadã do DenunciaMS: dados públicos, claros e anonimizados.')
+  const text = encodeURIComponent('Veja a Sala da Situacao Cidada do DenunciaMS: dados publicos, agregados e anonimizados.')
   const url = encodeURIComponent('https://www.denunciams.com.br/sala-de-situacao')
   return `https://wa.me/?text=${text}%20${url}`
 }
@@ -88,22 +88,18 @@ function MetricCard({ metric }: { metric: PublicSituationMetric }) {
   const offset = dash - (dash * gauge) / 100
 
   return (
-    <article className={`min-w-0 rounded-card border ${tone.border} ${tone.bg} p-4 shadow-card`}>
+    <article className={`rounded-card border ${tone.border} ${tone.bg} p-4 shadow-card`}>
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="break-words text-[10px] font-black uppercase leading-tight tracking-normal text-slate-500 sm:text-[11px]">
-            {metric.label}
-          </p>
-          <p className="mt-2 break-words text-2xl font-black leading-none tracking-normal text-slate-950 sm:text-3xl">
-            {metric.valueLabel}
-          </p>
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-normal text-slate-500">{metric.label}</p>
+          <p className="mt-2 text-3xl font-black leading-none tracking-normal text-slate-950">{metric.valueLabel}</p>
         </div>
-        <div className={`shrink-0 rounded-btn bg-white p-2 shadow-sm ${tone.icon}`}>
+        <div className={`rounded-btn bg-white p-2 shadow-sm ${tone.icon}`}>
           <Gauge size={20} />
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3 min-[430px]:flex-row min-[430px]:items-center">
+      <div className="mt-4 flex items-center gap-4">
         <svg width="92" height="52" viewBox="0 0 92 52" aria-hidden="true" className="shrink-0">
           <path
             d="M12 46a34 34 0 0 1 68 0"
@@ -122,7 +118,7 @@ function MetricCard({ metric }: { metric: PublicSituationMetric }) {
             strokeWidth="10"
           />
         </svg>
-        <p className="min-w-0 break-words text-xs font-semibold leading-snug text-slate-600">{metric.helper}</p>
+        <p className="text-xs font-semibold leading-snug text-slate-600">{metric.helper}</p>
       </div>
     </article>
   )
@@ -142,10 +138,8 @@ function RankingList({
   return (
     <section className="rounded-card border border-slate-200 bg-white p-4 shadow-card">
       <div className="mb-4 flex items-center gap-2">
-        <div className="shrink-0 rounded-btn bg-primary/10 p-2 text-primary">{icon}</div>
-        <h2 className="min-w-0 break-words text-base font-black uppercase leading-tight tracking-normal text-slate-950">
-          {title}
-        </h2>
+        <div className="rounded-btn bg-primary/10 p-2 text-primary">{icon}</div>
+        <h2 className="text-base font-black uppercase tracking-normal text-slate-950">{title}</h2>
       </div>
 
       {items.length === 0 ? (
@@ -154,14 +148,16 @@ function RankingList({
         <div className="space-y-4">
           {items.map(item => (
             <div key={item.name} className="space-y-2">
-              <div className="flex items-start justify-between gap-4">
-                <p className="min-w-0 break-words text-sm font-black leading-snug text-slate-800">{item.name}</p>
+              <div className="flex items-center justify-between gap-4">
+                <p className="min-w-0 truncate text-sm font-black text-slate-800">{item.name}</p>
                 <p className="shrink-0 text-sm font-black text-primary">{item.percent}%</p>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                 <div className="h-full rounded-full bg-gradient-to-r from-primary to-secondary" style={{ width: `${Math.max(item.percent, 4)}%` }} />
               </div>
-              <p className="break-words text-[11px] font-semibold uppercase tracking-normal text-slate-500">Participação no período</p>
+              <p className="text-[11px] font-semibold uppercase tracking-normal text-slate-500">
+                {item.count.toLocaleString('pt-BR')} registros agregados
+              </p>
             </div>
           ))}
         </div>
@@ -171,30 +167,30 @@ function RankingList({
 }
 
 function TrendBars({ items }: { items: PublicSituationTrend[] }) {
+  const max = Math.max(...items.map(item => item.count), 1)
+
   return (
     <section className="rounded-card border border-slate-200 bg-white p-4 shadow-card">
       <div className="mb-4 flex items-center gap-2">
-        <div className="shrink-0 rounded-btn bg-secondary/10 p-2 text-secondary">
+        <div className="rounded-btn bg-secondary/10 p-2 text-secondary">
           <TrendingUp size={18} />
         </div>
-        <h2 className="min-w-0 break-words text-base font-black uppercase leading-tight tracking-normal text-slate-950">
-          Movimento do período
-        </h2>
+        <h2 className="text-base font-black uppercase tracking-normal text-slate-950">Pulso do periodo</h2>
       </div>
 
       {items.length === 0 ? (
-        <EmptyState label="Sem dados suficientes para tendência." />
+        <EmptyState label="Sem dados suficientes para tendencia." />
       ) : (
         <div className="grid h-40 grid-cols-7 items-end gap-2 sm:grid-cols-10 md:grid-cols-12">
           {items.map(item => {
-            const height = item.percent === 0 ? 8 : Math.max(16, item.percent)
+            const height = item.count === 0 ? 8 : Math.max(16, Math.round((item.count / max) * 100))
             return (
               <div key={item.label} className="flex h-full min-w-0 flex-col justify-end gap-2">
                 <div className="flex h-full items-end rounded-full bg-slate-100 p-1">
                   <div
                     className="w-full rounded-full bg-gradient-to-t from-primary to-electric"
                     style={{ height: `${height}%` }}
-                    title={`${item.label}: ${item.percent}%`}
+                    title={`${item.label}: ${item.count}`}
                   />
                 </div>
                 <span className="truncate text-center text-[10px] font-bold text-slate-500">{item.label}</span>
@@ -211,25 +207,21 @@ function StatusGrid({ items }: { items: PublicSituationStatus[] }) {
   return (
     <section className="rounded-card border border-slate-200 bg-white p-4 shadow-card">
       <div className="mb-4 flex items-center gap-2">
-        <div className="shrink-0 rounded-btn bg-accent/20 p-2 text-amber-700">
+        <div className="rounded-btn bg-accent/20 p-2 text-amber-700">
           <BarChart3 size={18} />
         </div>
-        <h2 className="min-w-0 break-words text-base font-black uppercase leading-tight tracking-normal text-slate-950">
-          Fluxo operacional
-        </h2>
+        <h2 className="text-base font-black uppercase tracking-normal text-slate-950">Fluxo operacional</h2>
       </div>
 
       {items.length === 0 ? (
-        <EmptyState label="Nenhum fluxo público neste período." />
+        <EmptyState label="Nenhum fluxo agregado neste periodo." />
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {items.map(item => (
-            <div key={item.name} className="min-w-0 rounded-card border border-slate-100 bg-slate-50 p-3">
-              <p className="break-words text-[10px] font-black uppercase leading-tight tracking-normal text-slate-500 sm:text-[11px]">
-                {item.name}
-              </p>
+            <div key={item.name} className="rounded-card border border-slate-100 bg-slate-50 p-3">
+              <p className="text-[11px] font-black uppercase tracking-normal text-slate-500">{item.name}</p>
               <p className="mt-1 text-2xl font-black tracking-normal text-slate-950">{item.percent}%</p>
-              <p className="break-words text-xs font-semibold text-slate-500">do período</p>
+              <p className="text-xs font-semibold text-slate-500">{item.count.toLocaleString('pt-BR')} registros</p>
             </div>
           ))}
         </div>
@@ -238,7 +230,7 @@ function StatusGrid({ items }: { items: PublicSituationStatus[] }) {
   )
 }
 
-function PrivacyNotice() {
+function PrivacyNotice({ threshold }: { threshold: number }) {
   return (
     <section className="rounded-card border border-secondary/20 bg-secondary/10 p-4">
       <div className="flex items-start gap-3">
@@ -246,13 +238,10 @@ function PrivacyNotice() {
           <LockKeyhole size={20} />
         </div>
         <div>
-          <h2 className="break-words text-base font-black uppercase leading-tight tracking-normal text-slate-950">
-            Anonimidade preservada
-          </h2>
-          <p className="mt-2 break-words text-sm font-semibold leading-relaxed text-slate-700">
-            Esta página mostra percentuais públicos. Categorias ou municípios com volume inferior ao limite de
-            privacidade não aparecem na lista, para impedir identificação indireta de pessoas, locais ou casos
-            específicos.
+          <h2 className="text-base font-black uppercase tracking-normal text-slate-950">Anonimidade preservada</h2>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-700">
+            Esta pagina mostra somente informacoes agregadas. Grupos com menos de {threshold} registros sao reunidos em
+            blocos gerais para impedir identificacao indireta de pessoas, locais ou casos especificos.
           </p>
         </div>
       </div>
@@ -266,12 +255,12 @@ function DisabledState() {
       <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-white/5 text-secondary">
         <ShieldCheck size={42} />
       </div>
-      <h1 className="max-w-sm text-3xl font-black uppercase tracking-normal">Sala em manutenção</h1>
+      <h1 className="max-w-sm text-3xl font-black uppercase tracking-normal">Sala em manutencao</h1>
       <p className="mt-4 max-w-md text-sm font-semibold leading-relaxed text-white/60">
-        A visualização pública dos indicadores está temporariamente indisponível.
+        A visualizacao publica dos indicadores esta temporariamente indisponivel.
       </p>
       <Link href="/" className="mt-10 inline-flex items-center gap-2 rounded-btn bg-white px-4 py-2 text-sm font-black text-dark">
-        Voltar ao início
+        Voltar ao inicio
         <ArrowRight size={16} />
       </Link>
     </div>
@@ -284,6 +273,9 @@ function FallbackData(period: SituationPeriod): PublicSituationData {
     updatedAt: '--',
     periodLabel: period === 'hoje' ? 'Hoje' : period === 'semana' ? '7 dias' : '30 dias',
     privacyThreshold: 3,
+    total: 0,
+    totalLabel: '0',
+    previousTotal: 0,
     variationLabel: '0%',
     metrics: [],
     categories: [],
@@ -291,8 +283,6 @@ function FallbackData(period: SituationPeriod): PublicSituationData {
     trend: [],
     status: [],
     mapData: [],
-    hasProtectedCategories: false,
-    hasProtectedCities: false,
   }
 }
 
@@ -324,9 +314,9 @@ export default async function SalaDeSituacaoPage({
             <Link href="/" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-normal text-white/70">
               DenunciaMS
             </Link>
-            <span className="inline-flex min-w-0 items-center gap-2 rounded-full border border-secondary/30 bg-secondary/10 px-3 py-1 text-[11px] font-black uppercase tracking-normal text-secondary-100">
+            <span className="inline-flex items-center gap-2 rounded-full border border-secondary/30 bg-secondary/10 px-3 py-1 text-[11px] font-black uppercase tracking-normal text-secondary-100">
               <Radio size={14} />
-              <span className="truncate">Atualizado {data.updatedAt}</span>
+              Atualizado {data.updatedAt}
             </span>
           </div>
 
@@ -334,14 +324,14 @@ export default async function SalaDeSituacaoPage({
             <div>
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-black uppercase tracking-normal text-electric">
                 <ShieldCheck size={14} />
-                Público, claro e LGPD
+                Publico, agregado e LGPD
               </div>
               <h1 className="max-w-3xl text-4xl font-black uppercase leading-none tracking-normal sm:text-5xl">
-                Sala da Situação Cidadã
+                Sala da Situacao Cidada
               </h1>
-              <p className="mt-4 max-w-2xl break-words text-base font-semibold leading-relaxed text-white/70">
-                Um painel rápido para acompanhar o movimento das denúncias em Mato Grosso do Sul, com anonimidade
-                preservada para gestão pública e comunicação social do Bruno Ortiz.
+              <p className="mt-4 max-w-2xl text-base font-semibold leading-relaxed text-white/70">
+                Um painel rapido para acompanhar o pulso das denuncias em Mato Grosso do Sul, com anonimidade preservada
+                para gestao publica e comunicacao social do Bruno Ortiz.
               </p>
             </div>
 
@@ -368,7 +358,7 @@ export default async function SalaDeSituacaoPage({
       </section>
 
       <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur">
-        <nav className="mx-auto grid max-w-2xl grid-cols-3 gap-2" aria-label="Período dos indicadores">
+        <nav className="mx-auto grid max-w-2xl grid-cols-3 gap-2" aria-label="Periodo dos indicadores">
           {periodLinks.map(period => (
             <Link
               key={period.value}
@@ -388,7 +378,7 @@ export default async function SalaDeSituacaoPage({
           <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {data.metrics.length === 0 ? (
               <div className="col-span-2 sm:col-span-4">
-                <EmptyState label="Indicadores indisponíveis no momento." />
+                <EmptyState label="Indicadores indisponiveis no momento." />
               </div>
             ) : (
               data.metrics.map(metric => <MetricCard key={metric.label} metric={metric} />)
@@ -402,13 +392,13 @@ export default async function SalaDeSituacaoPage({
               title="Categorias"
               icon={<Sparkles size={18} />}
               items={data.categories}
-              emptyLabel="Sem categorias com volume público suficiente neste período."
+              emptyLabel="Sem categorias agregadas para este periodo."
             />
             <RankingList
               title="Cidades"
               icon={<MapPin size={18} />}
               items={data.cities}
-              emptyLabel="Sem municípios com volume público suficiente neste período."
+              emptyLabel="Sem municipios com volume publico suficiente."
             />
           </div>
 
@@ -418,39 +408,32 @@ export default async function SalaDeSituacaoPage({
         <aside className="space-y-5">
           <section className="rounded-card border border-slate-200 bg-white p-4 shadow-card">
             <div className="mb-4">
-              <p className="text-[11px] font-black uppercase tracking-normal text-slate-500">Resumo público</p>
-              <h2 className="mt-1 break-words text-2xl font-black uppercase leading-none tracking-normal text-slate-950">
-                Indicadores em percentuais
+              <p className="text-[11px] font-black uppercase tracking-normal text-slate-500">Resumo publico</p>
+              <h2 className="mt-1 text-2xl font-black uppercase leading-none tracking-normal text-slate-950">
+                {data.totalLabel} no periodo
               </h2>
-              <p className="mt-2 break-words text-sm font-semibold leading-relaxed text-slate-600">
-                {data.variationLabel} em relação ao período anterior. Categorias e municípios são exibidos pelo nome
-                quando passam pelo limite de privacidade; quando não passam, ficam protegidos.
+              <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-600">
+                {data.variationLabel} em relacao ao periodo anterior. Dados de cidade e categoria usam agrupamento
+                minimo para proteger a identidade dos denunciantes.
               </p>
-              {(data.hasProtectedCategories || data.hasProtectedCities) && (
-                <p className="mt-3 rounded-btn bg-slate-100 px-3 py-2 text-xs font-bold leading-relaxed text-slate-600">
-                  Alguns itens de baixo volume foram omitidos por segurança, sem criação de grupos genéricos.
-                </p>
-              )}
             </div>
           </section>
 
-          <PrivacyNotice />
+          <PrivacyNotice threshold={data.privacyThreshold} />
 
           <section className="rounded-card border border-slate-200 bg-white p-4 shadow-card">
             <div className="mb-3 flex items-center gap-2">
               <div className="rounded-btn bg-primary/10 p-2 text-primary">
                 <MapPin size={18} />
               </div>
-              <h2 className="min-w-0 break-words text-base font-black uppercase leading-tight tracking-normal text-slate-950">
-                Mapa por município
-              </h2>
+              <h2 className="text-base font-black uppercase tracking-normal text-slate-950">Mapa por municipio</h2>
             </div>
             <div className="h-[340px] overflow-hidden rounded-card border border-slate-100 bg-slate-50 sm:h-[420px] lg:h-[360px]">
               <MSMunicipalityMap data={data.mapData} />
             </div>
             <p className="mt-3 text-xs font-semibold leading-relaxed text-slate-500">
-              O mapa mostra intensidade relativa por município. Pontos, endereços, coordenadas exatas e totais brutos
-              não são publicados.
+              O mapa mostra apenas concentracao municipal agregada. Pontos, enderecos e coordenadas exatas nao sao
+              publicados.
             </p>
           </section>
         </aside>

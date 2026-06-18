@@ -18,16 +18,18 @@ export type PublicSituationMetric = {
 
 export type PublicSituationRank = {
   name: string
+  count: number
   percent: number
 }
 
 export type PublicSituationTrend = {
   label: string
-  percent: number
+  count: number
 }
 
 export type PublicSituationStatus = {
   name: string
+  count: number
   percent: number
 }
 
@@ -36,6 +38,9 @@ export type PublicSituationData = {
   updatedAt: string
   periodLabel: string
   privacyThreshold: number
+  total: number
+  totalLabel: string
+  previousTotal: number
   variationLabel: string
   metrics: PublicSituationMetric[]
   categories: PublicSituationRank[]
@@ -43,8 +48,6 @@ export type PublicSituationData = {
   trend: PublicSituationTrend[]
   status: PublicSituationStatus[]
   mapData: Array<{ name: string; count: number }>
-  hasProtectedCategories: boolean
-  hasProtectedCities: boolean
 }
 
 type PublicSituationRow = {
@@ -70,7 +73,7 @@ const periodDays: Record<SituationPeriod, number> = {
 
 const statusLabels: Record<string, string> = {
   recebida: 'Recebidas',
-  em_analise: 'Em análise',
+  em_analise: 'Em analise',
   encaminhada: 'Encaminhadas',
   resolvida: 'Resolvidas',
   arquivada: 'Arquivadas',
@@ -99,7 +102,7 @@ function formatUpdatedAt(date: Date) {
   }).format(date)
 }
 
-function normalizeName(value?: string | null, fallback = 'Não informado') {
+function normalizeName(value?: string | null, fallback = 'Nao informado') {
   const cleaned = value?.trim()
   if (!cleaned) return fallback
 
@@ -115,35 +118,54 @@ function getCategoryName(row: PublicSituationRow) {
   return relation?.label?.trim() || 'Geral'
 }
 
+function formatPublicTotal(count: number) {
+  if (count > 0 && count < MIN_PUBLIC_GROUP_SIZE) return 'Volume baixo'
+  return count.toLocaleString('pt-BR')
+}
+
 function percent(count: number, total: number) {
   if (total <= 0) return 0
   return Math.round((count / total) * 100)
 }
 
-function buildRanks(
+function groupRanks(
   counts: Record<string, number>,
   total: number,
-  limit: number
-): { items: PublicSituationRank[]; hasProtectedItems: boolean } {
-  let hasProtectedItems = false
+  limit: number,
+  otherLabel: string
+): PublicSituationRank[] {
+  const visible: Array<[string, number]> = []
+  let hiddenCount = 0
 
-  const items = Object.entries(counts)
+  Object.entries(counts)
     .sort((a, b) => b[1] - a[1])
-    .reduce<PublicSituationRank[]>((acc, [name, count]) => {
+    .forEach(([name, count]) => {
       if (count >= MIN_PUBLIC_GROUP_SIZE) {
-        acc.push({
-          name,
-          percent: percent(count, total),
-        })
+        visible.push([name, count])
       } else {
-        hasProtectedItems = true
+        hiddenCount += count
       }
+    })
 
-      return acc
-    }, [])
-    .slice(0, limit)
+  const limited = visible.slice(0, limit)
+  const overflow = visible.slice(limit).reduce((sum, [, count]) => sum + count, 0)
+  const otherCount = hiddenCount + overflow
 
-  return { items, hasProtectedItems }
+  const ranks = limited.map(([name, count]) => ({
+    name,
+    count,
+    percent: percent(count, total),
+  }))
+
+  if (otherCount > 0) {
+    ranks.push({
+      name: otherLabel,
+      count: otherCount,
+      percent: percent(otherCount, total),
+    })
+  }
+
+  return ranks
 }
 
 function buildTrend(rows: PublicSituationRow[], period: SituationPeriod): PublicSituationTrend[] {
@@ -175,18 +197,9 @@ function buildTrend(rows: PublicSituationRow[], period: SituationPeriod): Public
 
   if (period === 'mes') {
     return labels.filter((_, index) => index % 3 === 0 || index === labels.length - 1)
-      .map(item => ({
-        label: item.label,
-        percent: percent(item.count, Math.max(...labels.map(label => label.count), 1)),
-      }))
   }
 
-  const max = Math.max(...labels.map(label => label.count), 1)
-
-  return labels.map(item => ({
-    label: item.label,
-    percent: percent(item.count, max),
-  }))
+  return labels
 }
 
 export async function getPublicSituationData(periodParam?: string) {
@@ -242,7 +255,7 @@ export async function getPublicSituationData(periodParam?: string) {
 
     currentRows.forEach(row => {
       const category = getCategoryName(row)
-      const city = normalizeName(row.municipio || row.cidade, 'NÃO INFORMADO')
+      const city = normalizeName(row.municipio || row.cidade, 'NAO INFORMADO')
       const status = row.status || 'recebida'
 
       categoryCounts[category] = (categoryCounts[category] || 0) + 1
@@ -254,45 +267,44 @@ export async function getPublicSituationData(periodParam?: string) {
     const forwardedCount = statusCounts.encaminhada || 0
     const activeCount = (statusCounts.recebida || 0) + (statusCounts.em_analise || 0)
 
-    const citiesResult = buildRanks(cityCounts, total, 6)
-    const categoriesResult = buildRanks(categoryCounts, total, 6)
-    const cities = citiesResult.items
-    const categories = categoriesResult.items
+    const cities = groupRanks(cityCounts, total, 6, 'Outros municipios')
+    const categories = groupRanks(categoryCounts, total, 6, 'Outras categorias')
 
     const status = Object.entries(statusCounts)
       .sort((a, b) => b[1] - a[1])
       .map(([name, count]) => ({
         name: statusLabels[name] || normalizeName(name.replace(/_/g, ' ')),
+        count,
         percent: percent(count, total),
       }))
 
     const metrics: PublicSituationMetric[] = [
       {
-        label: 'Em acompanhamento',
-        value: percent(activeCount, total),
-        valueLabel: `${percent(activeCount, total)}%`,
-        helper: `Demandas recebidas ou em análise no período`,
+        label: 'Recebidas',
+        value: total,
+        valueLabel: formatPublicTotal(total),
+        helper: `No periodo ${periodLabels[period].toLowerCase()}`,
         tone: 'blue',
       },
       {
-        label: 'Variação',
+        label: 'Variacao',
         value: variation,
         valueLabel: `${variation > 0 ? '+' : ''}${variation}%`,
-        helper: 'Comparado ao período anterior',
+        helper: 'Comparado ao periodo anterior',
         tone: 'cyan',
       },
       {
         label: 'Encaminhadas',
-        value: percent(forwardedCount, total),
-        valueLabel: `${percent(forwardedCount, total)}%`,
-        helper: `Percentual do período`,
+        value: forwardedCount,
+        valueLabel: formatPublicTotal(forwardedCount),
+        helper: `${percent(forwardedCount, total)}% do periodo`,
         tone: 'amber',
       },
       {
         label: 'Resolvidas/arquivadas',
-        value: percent(resolvedCount, total),
-        valueLabel: `${percent(resolvedCount, total)}%`,
-        helper: `Percentual do período`,
+        value: resolvedCount,
+        valueLabel: formatPublicTotal(resolvedCount),
+        helper: `${percent(resolvedCount, total)}% do periodo`,
         tone: 'green',
       },
     ]
@@ -304,16 +316,20 @@ export async function getPublicSituationData(periodParam?: string) {
         updatedAt: formatUpdatedAt(now),
         periodLabel: periodLabels[period],
         privacyThreshold: MIN_PUBLIC_GROUP_SIZE,
+        total,
+        totalLabel: formatPublicTotal(total),
+        previousTotal,
         variationLabel: `${variation > 0 ? '+' : ''}${variation}%`,
         metrics,
         categories,
         cities,
         trend: buildTrend(currentRows, period),
         status,
-        mapData: cities.map(city => ({ name: city.name, count: city.percent })),
-        hasProtectedCategories: categoriesResult.hasProtectedItems,
-        hasProtectedCities: citiesResult.hasProtectedItems,
-      } satisfies PublicSituationData,
+        activeCount,
+        mapData: cities
+          .filter(city => !city.name.startsWith('Outros'))
+          .map(city => ({ name: city.name, count: city.count })),
+      } satisfies PublicSituationData & { activeCount: number },
     }
   } catch (error) {
     console.error('Erro getPublicSituationData:', error)
