@@ -88,7 +88,7 @@ function MetricCard({ metric }: { metric: PublicSituationMetric }) {
   const offset = dash - (dash * gauge) / 100
 
   return (
-    <article className={`rounded-card border ${tone.border} ${tone.bg} p-4 shadow-card`}>
+    <article className={`min-w-0 rounded-card border ${tone.border} ${tone.bg} p-4 shadow-card`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-black uppercase tracking-normal text-slate-500">{metric.label}</p>
@@ -99,8 +99,8 @@ function MetricCard({ metric }: { metric: PublicSituationMetric }) {
         </div>
       </div>
 
-      <div className="mt-4 flex items-center gap-4">
-        <svg width="92" height="52" viewBox="0 0 92 52" aria-hidden="true" className="shrink-0">
+      <div className="mt-4 grid gap-2">
+        <svg width="92" height="52" viewBox="0 0 92 52" aria-hidden="true" className="max-w-full">
           <path
             d="M12 46a34 34 0 0 1 68 0"
             fill="none"
@@ -118,7 +118,7 @@ function MetricCard({ metric }: { metric: PublicSituationMetric }) {
             strokeWidth="10"
           />
         </svg>
-        <p className="text-xs font-semibold leading-snug text-slate-600">{metric.helper}</p>
+        <p className="min-w-0 break-words text-xs font-semibold leading-snug text-slate-600">{metric.helper}</p>
       </div>
     </article>
   )
