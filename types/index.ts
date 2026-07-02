@@ -103,6 +103,18 @@ export interface LocalidadePublica {
   atualizado_em: string
 }
 
+export type TipoCargoPublico = 'servidor_publico' | 'agente_politico' | 'ambos'
+
+export interface CargoPublico {
+  id: string
+  nome: string
+  tipo: TipoCargoPublico
+  setor: string | null
+  ativo: boolean
+  criado_em: string
+  atualizado_em: string
+}
+
 export type TipoIntegracao = 'email' | 'webhook' | 'ambos'
 export type PrioridadeEmail = 'normal' | 'urgente' | 'confidencial'
 export type TipoAuthWebhook = 'none' | 'bearer' | 'basic' | 'apikey'

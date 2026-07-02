@@ -18,7 +18,8 @@ import {
   RefreshCw,
   Share2,
   HeartPulse,
-  Building2
+  Building2,
+  BriefcaseBusiness
 } from 'lucide-react'
 
 import { logout } from '@/lib/actions/auth'
@@ -203,6 +204,19 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
                         </Link>
                       </li>
                     )}
+                    {temAcesso('categorias') && (
+                      <li>
+                        <Link
+                          href="/admin/cargos"
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-bold transition-all group ${
+                            isActive('/admin/cargos') ? 'bg-white/10 text-white border-r-2 border-primary' : 'hover:bg-white/5 hover:text-white'
+                          }`}
+                        >
+                          <BriefcaseBusiness size={18} className="text-white/40 group-hover:text-electric" />
+                          Cargos Públicos
+                        </Link>
+                      </li>
+                    )}
                   </ul>
                 </div>
               )}
@@ -334,5 +348,4 @@ export const AdminSidebar: React.FC<{ isOpen?: boolean, onClose?: () => void }> 
     </>
   )
 }
-
 

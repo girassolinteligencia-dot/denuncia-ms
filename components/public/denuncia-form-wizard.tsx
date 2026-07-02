@@ -21,6 +21,7 @@ import {
   Wifi,
   Trash2,
   Building2,
+  BriefcaseBusiness,
   X
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -61,6 +62,13 @@ interface LocalidadePublicaOption {
   municipio: string
   cnpj: string | null
   telefone: string | null
+}
+
+interface CargoPublicoOption {
+  id: string
+  nome: string
+  tipo: 'servidor_publico' | 'agente_politico' | 'ambos'
+  setor: string | null
 }
 
 interface ArquivoAnexo {
@@ -159,6 +167,9 @@ export function DenunciaFormWizard({
   const [localidadeSearch, setLocalidadeSearch] = useState('')
   const [localidadeOptions, setLocalidadeOptions] = useState<LocalidadePublicaOption[]>([])
   const [localidadeLoading, setLocalidadeLoading] = useState(false)
+  const [cargoSearch, setCargoSearch] = useState('')
+  const [cargoOptions, setCargoOptions] = useState<CargoPublicoOption[]>([])
+  const [cargoLoading, setCargoLoading] = useState(false)
   const otpInputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -232,7 +243,23 @@ export function DenunciaFormWizard({
   }, [formData, step])
 
   const handleInputChange = (field: keyof DenunciaFormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData(prev => {
+      const next = { ...prev, [field]: value }
+
+      if (field === 'servidor_publico' && value === 'nao') {
+        next.setor_servidor = ''
+      }
+
+      if (field === 'servidor_publico' || field === 'agente_politico') {
+        const servidor = field === 'servidor_publico' ? value : prev.servidor_publico
+        const agente = field === 'agente_politico' ? value : prev.agente_politico
+        if (servidor !== 'sim' && agente !== 'sim') {
+          next.cargo_agente = ''
+        }
+      }
+
+      return next
+    })
     
     // Rola para baixo apenas na seleção de categoria (Etapa 1)
     if (field === 'categoria_id') {
@@ -637,6 +664,8 @@ export function DenunciaFormWizard({
 
   const currentCategory = categorias.find(c => c.id === formData.categoria_id)
   const usaLocalidadePublica = currentCategory?.tipo_localizacao === 'orgao_publico'
+  const cargoAutocompleteVisible = formData.is_anonima === true && (formData.servidor_publico === 'sim' || formData.agente_politico === 'sim')
+  const cargoTipoBusca = formData.agente_politico === 'sim' ? 'agente_politico' : 'servidor_publico'
 
   useEffect(() => {
     if (!usaLocalidadePublica) return
@@ -671,6 +700,44 @@ export function DenunciaFormWizard({
     }
   }, [localidadeSearch, usaLocalidadePublica])
 
+  useEffect(() => {
+    if (!cargoAutocompleteVisible) {
+      setCargoSearch('')
+      setCargoOptions([])
+      setCargoLoading(false)
+      return
+    }
+
+    const termo = cargoSearch.trim()
+    if (termo.length < 3) {
+      setCargoOptions([])
+      setCargoLoading(false)
+      return
+    }
+
+    let cancelled = false
+    setCargoLoading(true)
+    const timer = setTimeout(async () => {
+      try {
+        const { searchCargosPublicos } = await import('@/lib/actions/cargos')
+        const result = await searchCargosPublicos(termo, cargoTipoBusca)
+        if (cancelled) return
+        if (result.success) {
+          setCargoOptions(result.data)
+        } else {
+          toast.error(result.error || 'Erro ao buscar cargos')
+        }
+      } finally {
+        if (!cancelled) setCargoLoading(false)
+      }
+    }, 250)
+
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [cargoSearch, cargoAutocompleteVisible, cargoTipoBusca])
+
   const handleLocalidadeSelect = (localidade: LocalidadePublicaOption) => {
     setFormData(prev => ({
       ...prev,
@@ -699,6 +766,17 @@ export function DenunciaFormWizard({
     }))
     setLocalidadeSearch('')
     setLocalidadeOptions([])
+  }
+
+  const handleCargoSelect = (cargo: CargoPublicoOption) => {
+    setFormData(prev => ({
+      ...prev,
+      cargo_agente: cargo.nome,
+      setor_servidor: prev.servidor_publico === 'sim' && !prev.setor_servidor && cargo.setor ? cargo.setor : prev.setor_servidor,
+    }))
+    setCargoSearch(cargo.nome)
+    setCargoOptions([])
+    handleFieldScroll()
   }
 
   const handleTelefoneChange = (v: string) => {
@@ -1217,13 +1295,52 @@ export function DenunciaFormWizard({
                         <label className="text-[10px] font-black uppercase tracking-widest text-dark">
                           Cargo do {formData.agente_politico === 'sim' ? 'Agente Político' : 'Servidor Público'}
                         </label>
-                        <input
-                          id="field-cargo-agente"
-                          className="input h-14 rounded-xl border-2 font-bold"
-                          placeholder={formData.agente_politico === 'sim' ? 'Ex: Vereador, Deputado, Secretário...' : 'Ex: Fiscal, Agente de Saúde, Delegado...'}
-                          value={formData.cargo_agente}
-                          onChange={(e) => handleInputChange('cargo_agente', e.target.value)}
-                        />
+                        <div className="relative">
+                          <BriefcaseBusiness className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={18} />
+                          <input
+                            id="field-cargo-agente"
+                            className="input h-14 rounded-xl border-2 font-bold pl-12"
+                            placeholder={formData.agente_politico === 'sim' ? 'Ex: Vereador, Deputado, Secretário...' : 'Ex: Fiscal, Agente de Saúde, Delegado...'}
+                            value={formData.cargo_agente}
+                            onChange={(e) => {
+                              setCargoSearch(e.target.value)
+                              handleInputChange('cargo_agente', e.target.value)
+                            }}
+                          />
+
+                          {cargoLoading && (
+                            <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-border rounded-xl shadow-card p-4 text-xs font-bold text-muted flex items-center gap-2 z-20">
+                              <Loader2 size={14} className="animate-spin" />
+                              Buscando cargos...
+                            </div>
+                          )}
+
+                          {!cargoLoading && cargoSearch.trim().length >= 3 && cargoOptions.length > 0 && (
+                            <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-border rounded-xl shadow-card overflow-hidden z-20">
+                              {cargoOptions.map((item) => (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onClick={() => handleCargoSelect(item)}
+                                  className="w-full px-4 py-3 text-left hover:bg-primary/5 border-b border-border last:border-b-0 transition-colors"
+                                >
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="text-sm font-black text-dark">{item.nome}</span>
+                                    <span className="text-[9px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded">
+                                      {item.tipo === 'agente_politico' ? 'Agente Político' : item.tipo === 'servidor_publico' ? 'Servidor Público' : 'Ambos'}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] font-bold text-muted mt-1">
+                                    {item.setor || 'Sem setor vinculado'}
+                                  </p>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        {!cargoLoading && cargoSearch.trim().length >= 3 && cargoOptions.length === 0 && (
+                          <p className="text-[10px] text-muted font-bold px-1">Nenhum cargo encontrado. Você pode continuar digitando manualmente.</p>
+                        )}
                       </div>
                     )}
 

@@ -108,6 +108,17 @@ CREATE TABLE IF NOT EXISTS localidades_publicas (
   atualizado_em  timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS cargos_publicos (
+  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  nome           text NOT NULL,
+  tipo           text NOT NULL DEFAULT 'ambos'
+                 CHECK (tipo IN ('servidor_publico', 'agente_politico', 'ambos')),
+  setor          text,
+  ativo          boolean NOT NULL DEFAULT true,
+  criado_em      timestamptz NOT NULL DEFAULT now(),
+  atualizado_em  timestamptz NOT NULL DEFAULT now()
+);
+
 -- Integrações de destino por categoria
 CREATE TABLE IF NOT EXISTS integracoes_destino (
   id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -246,6 +257,10 @@ CREATE INDEX IF NOT EXISTS idx_localidades_publicas_nome_lower ON localidades_pu
 CREATE INDEX IF NOT EXISTS idx_localidades_publicas_sigla_lower ON localidades_publicas(lower(sigla));
 CREATE INDEX IF NOT EXISTS idx_localidades_publicas_municipio_lower ON localidades_publicas(lower(municipio));
 CREATE INDEX IF NOT EXISTS idx_localidades_publicas_cnpj ON localidades_publicas(cnpj);
+CREATE INDEX IF NOT EXISTS idx_cargos_publicos_ativo ON cargos_publicos(ativo);
+CREATE INDEX IF NOT EXISTS idx_cargos_publicos_tipo ON cargos_publicos(tipo);
+CREATE INDEX IF NOT EXISTS idx_cargos_publicos_nome_lower ON cargos_publicos(lower(nome));
+CREATE INDEX IF NOT EXISTS idx_cargos_publicos_setor_lower ON cargos_publicos(lower(setor));
 
 -- ─────────────────────────────────────────────────────────
 -- FUNÇÃO RPC — Incremento Atômico de Protocolo
@@ -277,6 +292,7 @@ ALTER TABLE config_protocolo      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE config_campos_formulario ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categorias            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE localidades_publicas  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cargos_publicos       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE integracoes_destino   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE denuncias             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE arquivos_denuncia     ENABLE ROW LEVEL SECURITY;
@@ -557,6 +573,10 @@ DROP POLICY IF EXISTS "localidades_publicas_public_read" ON localidades_publicas
 DROP POLICY IF EXISTS "localidades_publicas_admin_all" ON localidades_publicas;
 CREATE POLICY "localidades_publicas_public_read" ON localidades_publicas FOR SELECT TO anon, authenticated USING (ativo = true);
 GRANT SELECT ON localidades_publicas TO anon, authenticated;
+
+DROP POLICY IF EXISTS "cargos_publicos_public_read" ON cargos_publicos;
+CREATE POLICY "cargos_publicos_public_read" ON cargos_publicos FOR SELECT TO anon, authenticated USING (ativo = true);
+GRANT SELECT ON cargos_publicos TO anon, authenticated;
 
 -- Policies: integrações — somente admin
 DROP POLICY IF EXISTS "integracoes_admin" ON integracoes_destino;

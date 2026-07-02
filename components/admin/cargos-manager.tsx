@@ -1,26 +1,29 @@
 'use client'
 
 import React, { useMemo, useRef, useState } from 'react'
-import { AlertTriangle, Building2, CheckCircle2, Download, Edit2, FileSpreadsheet, MapPin, Phone, Plus, Search, Trash2, Upload, XCircle } from 'lucide-react'
+import { AlertTriangle, BriefcaseBusiness, CheckCircle2, Download, Edit2, FileSpreadsheet, Plus, Search, Trash2, Upload, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
-import type { LocalidadePublica } from '@/types'
+import type { CargoPublico, TipoCargoPublico } from '@/types'
 import {
-  deleteLocalidadePublica,
-  importLocalidadesPublicas,
-  listLocalidadesPublicas,
-  saveLocalidadePublica,
-  type ImportLocalidadeResult,
-  type ImportLocalidadeRow,
-} from '@/lib/actions/admin-localidades'
+  deleteCargoPublico,
+  importCargosPublicos,
+  listCargosPublicos,
+  saveCargoPublico,
+  type ImportCargoResult,
+  type ImportCargoRow,
+} from '@/lib/actions/admin-cargos'
 
-const emptyLocalidade: Partial<LocalidadePublica> = {
+const emptyCargo: Partial<CargoPublico> = {
   nome: '',
-  sigla: '',
-  endereco: '',
-  municipio: '',
-  cnpj: '',
-  telefone: '',
+  tipo: 'ambos',
+  setor: '',
   ativo: true,
+}
+
+const tipoLabel: Record<TipoCargoPublico, string> = {
+  servidor_publico: 'Servidor Público',
+  agente_politico: 'Agente Político',
+  ambos: 'Ambos',
 }
 
 type PapaParseResult = {
@@ -40,29 +43,28 @@ type PapaParser = {
   ) => void
 }
 
-export function LocalidadesManager({ initialLocalidades }: { initialLocalidades: LocalidadePublica[] }) {
-  const [localidades, setLocalidades] = useState(initialLocalidades)
+export function CargosManager({ initialCargos }: { initialCargos: CargoPublico[] }) {
+  const [cargos, setCargos] = useState(initialCargos)
   const [searchTerm, setSearchTerm] = useState('')
-  const [editing, setEditing] = useState<Partial<LocalidadePublica> | null>(null)
+  const [editing, setEditing] = useState<Partial<CargoPublico> | null>(null)
   const [loading, setLoading] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importFileName, setImportFileName] = useState('')
-  const [importRows, setImportRows] = useState<ImportLocalidadeRow[]>([])
-  const [importResult, setImportResult] = useState<{ summary?: { created: number; updated: number; ignored: number; errors: number }, results: ImportLocalidadeResult[] } | null>(null)
+  const [importRows, setImportRows] = useState<ImportCargoRow[]>([])
+  const [importResult, setImportResult] = useState<{ summary?: { created: number; updated: number; ignored: number; errors: number }, results: ImportCargoResult[] } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const filtered = useMemo(() => {
     const term = searchTerm.toLowerCase().trim()
-    if (!term) return localidades
+    if (!term) return cargos
 
-    return localidades.filter((item) =>
+    return cargos.filter((item) =>
       item.nome.toLowerCase().includes(term) ||
-      item.sigla?.toLowerCase().includes(term) ||
-      item.municipio.toLowerCase().includes(term) ||
-      item.cnpj?.includes(term.replace(/\D/g, ''))
+      item.tipo.toLowerCase().includes(term) ||
+      item.setor?.toLowerCase().includes(term)
     )
-  }, [localidades, searchTerm])
+  }, [cargos, searchTerm])
 
   const importValidation = useMemo(() => {
     const errors: string[] = []
@@ -71,16 +73,11 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
 
     importRows.forEach((row, index) => {
       const nome = String(row.nome || '').trim()
-      const municipio = String(row.municipio || '').trim()
-      const cnpj = String(row.cnpj || '').replace(/\D/g, '')
-      const key = cnpj || `${nome.toLowerCase()}|${municipio.toLowerCase()}`
+      const tipo = String(row.tipo || 'ambos').trim().toLowerCase()
+      const key = `${nome.toLowerCase()}|${tipo}`
 
       if (!nome) {
         errors.push(`Linha ${index + 2}: nome é obrigatório.`)
-        invalidRows.add(index)
-      }
-      if (!municipio) {
-        errors.push(`Linha ${index + 2}: município é obrigatório.`)
         invalidRows.add(index)
       }
       if (key && seen.has(key)) {
@@ -113,15 +110,12 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
       .replace(/[^a-z0-9]+/g, '_')
       .replace(/^_+|_+$/g, '')
 
-    const aliases: Record<string, keyof ImportLocalidadeRow> = {
-      orgao: 'nome',
-      localidade: 'nome',
-      nome_orgao: 'nome',
-      nome_localidade: 'nome',
-      endereco_completo: 'endereco',
-      cidade: 'municipio',
-      municipio_ms: 'municipio',
-      telefone_opcional: 'telefone',
+    const aliases: Record<string, keyof ImportCargoRow> = {
+      cargo: 'nome',
+      funcao: 'nome',
+      nome_cargo: 'nome',
+      area: 'setor',
+      setor_area: 'setor',
       status: 'ativo',
       ativa: 'ativo',
     }
@@ -131,16 +125,19 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
 
   const downloadTemplate = () => {
     const csv = [
-      'nome,sigla,endereco,municipio,cnpj,telefone,ativo',
-      'Secretaria Municipal de Saude,SESAU,"Rua Exemplo, 100",Campo Grande,00111222000133,(67) 3314-0000,true',
-      'Escola Municipal Exemplo,EME,"Avenida Modelo, 50",Dourados,,(67) 99999-0000,true',
+      'nome,tipo,setor,ativo',
+      'Fiscal,servidor_publico,Administrativo,true',
+      'Professor,servidor_publico,Educação,true',
+      'Vereador,agente_politico,Legislativo,true',
+      'Secretário Municipal,agente_politico,Administrativo,true',
+      'Diretor Escolar,ambos,Educação,true',
     ].join('\n')
 
     const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = 'modelo_localidades_publicas.csv'
+    link.download = 'modelo_cargos_publicos.csv'
     document.body.appendChild(link)
     link.click()
     link.remove()
@@ -174,14 +171,11 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
         const rows = (result.data || [])
           .map((row: Record<string, unknown>) => ({
             nome: String(row.nome || '').trim(),
-            sigla: String(row.sigla || '').trim(),
-            endereco: String(row.endereco || '').trim(),
-            municipio: String(row.municipio || '').trim(),
-            cnpj: String(row.cnpj || '').trim(),
-            telefone: String(row.telefone || '').trim(),
+            tipo: String(row.tipo || 'ambos').trim(),
+            setor: String(row.setor || '').trim(),
             ativo: row.ativo === undefined || row.ativo === null || row.ativo === '' ? true : String(row.ativo).trim(),
           }))
-          .filter((row: ImportLocalidadeRow) => Object.values(row).some((value) => String(value || '').trim()))
+          .filter((row: ImportCargoRow) => Object.values(row).some((value) => String(value || '').trim()))
 
         setImportRows(rows)
         setImportFileName(file.name)
@@ -191,6 +185,55 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
     })
   }
 
+  const handleSave = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!editing) return
+
+    setLoading(true)
+    const result = await saveCargoPublico(editing)
+    setLoading(false)
+
+    if (!result.success || !result.data) {
+      toast.error(result.error || 'Erro ao salvar cargo')
+      return
+    }
+
+    setCargos((prev) => {
+      const exists = prev.some((item) => item.id === result.data!.id)
+      const next = exists
+        ? prev.map((item) => item.id === result.data!.id ? result.data! : item)
+        : [...prev, result.data!]
+
+      return next.sort((a, b) => a.nome.localeCompare(b.nome))
+    })
+    setEditing(null)
+    toast.success('Cargo salvo com sucesso')
+  }
+
+  const handleToggleActive = async (item: CargoPublico) => {
+    const result = await saveCargoPublico({ ...item, ativo: !item.ativo })
+    if (!result.success || !result.data) {
+      toast.error(result.error || 'Erro ao atualizar status')
+      return
+    }
+
+    setCargos((prev) => prev.map((row) => row.id === item.id ? result.data! : row))
+    toast.success(`Cargo ${result.data.ativo ? 'ativado' : 'desativado'}`)
+  }
+
+  const handleDelete = async (item: CargoPublico) => {
+    if (!confirm(`Excluir "${item.nome}"?`)) return
+
+    const result = await deleteCargoPublico(item.id)
+    if (!result.success) {
+      toast.error(result.error || 'Erro ao excluir cargo')
+      return
+    }
+
+    setCargos((prev) => prev.filter((row) => row.id !== item.id))
+    toast.success('Cargo excluído')
+  }
+
   const handleConfirmImport = async () => {
     if (importValidation.errors.length > 0) {
       toast.error('Corrija o arquivo antes de importar.')
@@ -198,19 +241,19 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
     }
 
     setImporting(true)
-    const result = await importLocalidadesPublicas(importRows)
+    const result = await importCargosPublicos(importRows)
     setImporting(false)
 
     if (!result.success && !result.results?.length) {
-      toast.error(result.error || 'Erro ao importar localidades')
+      toast.error(result.error || 'Erro ao importar cargos')
       return
     }
 
     setImportResult({ summary: result.summary, results: result.results || [] })
 
-    const refreshed = await listLocalidadesPublicas()
+    const refreshed = await listCargosPublicos()
     if (refreshed.success && refreshed.data) {
-      setLocalidades(refreshed.data)
+      setCargos(refreshed.data)
     }
 
     if (result.summary?.errors) {
@@ -220,98 +263,32 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
     }
   }
 
-  const handleSave = async (event: React.FormEvent) => {
-    event.preventDefault()
-    if (!editing) return
-
-    setLoading(true)
-    const result = await saveLocalidadePublica(editing)
-    setLoading(false)
-
-    if (!result.success || !result.data) {
-      toast.error(result.error || 'Erro ao salvar localidade')
-      return
-    }
-
-    setLocalidades((prev) => {
-      const exists = prev.some((item) => item.id === result.data!.id)
-      const next = exists
-        ? prev.map((item) => item.id === result.data!.id ? result.data! : item)
-        : [...prev, result.data!]
-
-      return next.sort((a, b) => a.nome.localeCompare(b.nome))
-    })
-    setEditing(null)
-    toast.success('Localidade salva com sucesso')
-  }
-
-  const handleToggleActive = async (item: LocalidadePublica) => {
-    const result = await saveLocalidadePublica({ ...item, ativo: !item.ativo })
-    if (!result.success || !result.data) {
-      toast.error(result.error || 'Erro ao atualizar status')
-      return
-    }
-
-    setLocalidades((prev) => prev.map((row) => row.id === item.id ? result.data! : row))
-    toast.success(`Localidade ${result.data.ativo ? 'ativada' : 'desativada'}`)
-  }
-
-  const handleDelete = async (item: LocalidadePublica) => {
-    if (!confirm(`Excluir "${item.nome}"? Se já houver denúncias vinculadas, ela será apenas desativada.`)) return
-
-    const result = await deleteLocalidadePublica(item.id)
-    if (!result.success) {
-      toast.error(result.error || 'Erro ao excluir localidade')
-      return
-    }
-
-    if (result.deactivated) {
-      setLocalidades((prev) => prev.map((row) => row.id === item.id ? { ...row, ativo: false } : row))
-      toast.success('Localidade desativada porque já possui histórico')
-    } else {
-      setLocalidades((prev) => prev.filter((row) => row.id !== item.id))
-      toast.success('Localidade excluída')
-    }
-  }
-
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
           <input
             type="text"
-            placeholder="Pesquisar por nome, sigla, município ou CNPJ..."
+            placeholder="Pesquisar por cargo, tipo ou setor..."
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
             className="input pl-10 h-11 text-sm"
           />
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row gap-2 w-full xl:w-auto">
           <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleImportFile} />
-          <button
-            type="button"
-            onClick={downloadTemplate}
-            className="w-full sm:w-auto h-11 px-4 rounded-xl border border-border bg-white text-dark hover:bg-surface transition-all flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest"
-          >
+          <button type="button" onClick={downloadTemplate} className="w-full sm:w-auto h-11 px-4 rounded-xl border border-border bg-white text-dark hover:bg-surface transition-all flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest">
             <Download size={16} />
             Baixar Modelo
           </button>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full sm:w-auto h-11 px-4 rounded-xl border border-border bg-white text-dark hover:bg-surface transition-all flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest"
-          >
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="w-full sm:w-auto h-11 px-4 rounded-xl border border-border bg-white text-dark hover:bg-surface transition-all flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest">
             <Upload size={16} />
             Importar CSV
           </button>
-          <button
-            type="button"
-            onClick={() => setEditing(emptyLocalidade)}
-            className="btn-primary w-full sm:w-auto gap-2 h-11 text-xs font-black uppercase tracking-widest"
-          >
+          <button type="button" onClick={() => setEditing(emptyCargo)} className="btn-primary w-full sm:w-auto gap-2 h-11 text-xs font-black uppercase tracking-widest">
             <Plus size={18} />
-            Nova Localidade
+            Novo Cargo
           </button>
         </div>
       </div>
@@ -321,58 +298,30 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
           <div key={item.id} className={`bg-white border rounded-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-card-md transition-all ${item.ativo ? 'border-border' : 'border-dashed opacity-60'}`}>
             <div className="flex items-start gap-3 min-w-0">
               <div className="w-11 h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <Building2 size={21} />
+                <BriefcaseBusiness size={21} />
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="font-bold text-dark text-sm sm:text-base">{item.nome}</h3>
-                  {item.sigla && (
-                    <span className="text-[10px] bg-primary-50 text-primary px-2 py-0.5 rounded font-black uppercase">
-                      {item.sigla}
-                    </span>
-                  )}
-                  {!item.ativo && (
-                    <span className="text-[9px] bg-red-50 text-error border border-red-100 px-2 py-0.5 rounded font-black uppercase">
-                      Inativa
-                    </span>
-                  )}
-                </div>
-                <div className="mt-2 flex flex-col gap-1 text-[11px] text-muted font-bold">
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin size={12} /> {item.municipio}{item.endereco ? ` - ${item.endereco}` : ''}
+                  <span className="text-[10px] bg-primary-50 text-primary px-2 py-0.5 rounded font-black uppercase">
+                    {tipoLabel[item.tipo]}
                   </span>
-                  {(item.cnpj || item.telefone) && (
-                    <span className="inline-flex items-center gap-1">
-                      <Phone size={12} /> {[item.cnpj ? `CNPJ ${item.cnpj}` : null, item.telefone].filter(Boolean).join(' | ')}
-                    </span>
+                  {!item.ativo && (
+                    <span className="text-[9px] bg-red-50 text-error border border-red-100 px-2 py-0.5 rounded font-black uppercase">Inativo</span>
                   )}
                 </div>
+                <p className="mt-2 text-[11px] text-muted font-bold">{item.setor || 'Sem setor vinculado'}</p>
               </div>
             </div>
 
             <div className="flex items-center justify-end gap-2 border-t sm:border-t-0 border-border/50 pt-3 sm:pt-0">
-              <button
-                type="button"
-                onClick={() => handleToggleActive(item)}
-                className={`p-2 rounded-lg transition-all ${item.ativo ? 'text-success hover:bg-green-50' : 'text-muted hover:bg-surface'}`}
-                title={item.ativo ? 'Desativar' : 'Ativar'}
-              >
+              <button type="button" onClick={() => handleToggleActive(item)} className={`p-2 rounded-lg transition-all ${item.ativo ? 'text-success hover:bg-green-50' : 'text-muted hover:bg-surface'}`} title={item.ativo ? 'Desativar' : 'Ativar'}>
                 {item.ativo ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
               </button>
-              <button
-                type="button"
-                onClick={() => setEditing(item)}
-                className="p-2 text-muted hover:text-primary hover:bg-primary-50 rounded-lg transition-all"
-                title="Editar"
-              >
+              <button type="button" onClick={() => setEditing(item)} className="p-2 text-muted hover:text-primary hover:bg-primary-50 rounded-lg transition-all" title="Editar">
                 <Edit2 size={18} />
               </button>
-              <button
-                type="button"
-                onClick={() => handleDelete(item)}
-                className="p-2 text-muted hover:text-error hover:bg-red-50 rounded-lg transition-all"
-                title="Excluir"
-              >
+              <button type="button" onClick={() => handleDelete(item)} className="p-2 text-muted hover:text-error hover:bg-red-50 rounded-lg transition-all" title="Excluir">
                 <Trash2 size={18} />
               </button>
             </div>
@@ -381,7 +330,7 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
 
         {filtered.length === 0 && (
           <div className="bg-surface/50 border-2 border-dashed border-border rounded-card p-12 text-center">
-            <p className="text-muted text-sm italic">Nenhuma localidade encontrada.</p>
+            <p className="text-muted text-sm italic">Nenhum cargo encontrado.</p>
           </div>
         )}
       </div>
@@ -392,8 +341,8 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
           <div className="fixed right-0 top-16 sm:top-20 h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)] w-full max-w-md bg-white shadow-2xl z-[80] animate-slide-left border-l border-border flex flex-col overflow-hidden">
             <div className="p-6 border-b border-border bg-surface flex items-center justify-between shrink-0">
               <div>
-                <h2 className="font-extrabold text-dark uppercase tracking-tighter italic">Localidade Pública</h2>
-                <p className="text-[10px] text-muted font-bold uppercase tracking-widest">Cadastro para seleção na denúncia</p>
+                <h2 className="font-extrabold text-dark uppercase tracking-tighter italic">Cargo Público</h2>
+                <p className="text-[10px] text-muted font-bold uppercase tracking-widest">Cadastro para autocomplete da denúncia</p>
               </div>
               <button onClick={() => setEditing(null)} className="p-2 hover:bg-border rounded-full transition-colors" title="Fechar">
                 <XCircle size={20} className="text-muted" />
@@ -402,42 +351,25 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
 
             <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-5">
               <div>
-                <label className="label label-required">Nome</label>
+                <label className="label label-required">Nome do cargo</label>
                 <input className="input h-11" value={editing.nome || ''} onChange={(e) => setEditing({ ...editing, nome: e.target.value })} required />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="label">Sigla</label>
-                  <input className="input h-11 uppercase" value={editing.sigla || ''} onChange={(e) => setEditing({ ...editing, sigla: e.target.value.toUpperCase() })} />
-                </div>
-                <div>
-                  <label className="label label-required">Município</label>
-                  <input className="input h-11" value={editing.municipio || ''} onChange={(e) => setEditing({ ...editing, municipio: e.target.value })} required />
-                </div>
+              <div>
+                <label className="label">Tipo</label>
+                <select className="input h-11 bg-white" value={editing.tipo || 'ambos'} onChange={(e) => setEditing({ ...editing, tipo: e.target.value as TipoCargoPublico })}>
+                  <option value="ambos">Ambos</option>
+                  <option value="servidor_publico">Servidor Público</option>
+                  <option value="agente_politico">Agente Político</option>
+                </select>
               </div>
               <div>
-                <label className="label">Endereço</label>
-                <input className="input h-11" value={editing.endereco || ''} onChange={(e) => setEditing({ ...editing, endereco: e.target.value })} />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="label">CNPJ</label>
-                  <input className="input h-11" inputMode="numeric" value={editing.cnpj || ''} onChange={(e) => setEditing({ ...editing, cnpj: e.target.value })} />
-                </div>
-                <div>
-                  <label className="label">Telefone</label>
-                  <input className="input h-11" value={editing.telefone || ''} onChange={(e) => setEditing({ ...editing, telefone: e.target.value })} />
-                </div>
+                <label className="label">Setor</label>
+                <input className="input h-11" value={editing.setor || ''} onChange={(e) => setEditing({ ...editing, setor: e.target.value })} />
               </div>
 
               <div className="bg-surface rounded-xl p-4 border border-border flex items-center justify-between">
-                <span className="text-[10px] font-black text-dark uppercase tracking-widest">Ativa para seleção</span>
-                <button
-                  type="button"
-                  onClick={() => setEditing({ ...editing, ativo: !(editing.ativo ?? true) })}
-                  className={`w-12 h-6 rounded-full relative transition-all ${(editing.ativo ?? true) ? 'bg-primary' : 'bg-border'}`}
-                  title={(editing.ativo ?? true) ? 'Desativar' : 'Ativar'}
-                >
+                <span className="text-[10px] font-black text-dark uppercase tracking-widest">Ativo para autocomplete</span>
+                <button type="button" onClick={() => setEditing({ ...editing, ativo: !(editing.ativo ?? true) })} className={`w-12 h-6 rounded-full relative transition-all ${(editing.ativo ?? true) ? 'bg-primary' : 'bg-border'}`} title={(editing.ativo ?? true) ? 'Desativar' : 'Ativar'}>
                   <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${(editing.ativo ?? true) ? 'right-1' : 'left-1'}`} />
                 </button>
               </div>
@@ -445,7 +377,7 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
               <div className="pt-4 pb-8">
                 <button type="submit" disabled={loading} className="btn-primary w-full h-14 gap-3 shadow-xl">
                   <CheckCircle2 size={20} />
-                  <span className="font-black uppercase tracking-widest text-xs">{loading ? 'Salvando...' : 'Salvar Localidade'}</span>
+                  <span className="font-black uppercase tracking-widest text-xs">{loading ? 'Salvando...' : 'Salvar Cargo'}</span>
                 </button>
               </div>
             </form>
@@ -459,7 +391,7 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
           <div className="fixed right-0 top-16 sm:top-20 h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)] w-full max-w-2xl bg-white shadow-2xl z-[80] animate-slide-left border-l border-border flex flex-col overflow-hidden">
             <div className="p-6 border-b border-border bg-surface flex items-center justify-between shrink-0">
               <div>
-                <h2 className="font-extrabold text-dark uppercase tracking-tighter italic">Importar Localidades</h2>
+                <h2 className="font-extrabold text-dark uppercase tracking-tighter italic">Importar Cargos</h2>
                 <p className="text-[10px] text-muted font-bold uppercase tracking-widest">{importFileName || 'Arquivo CSV'}</p>
               </div>
               <button onClick={() => setImportOpen(false)} className="p-2 hover:bg-border rounded-full transition-colors" title="Fechar">
@@ -510,9 +442,8 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
                     <thead className="bg-white text-muted uppercase text-[9px] tracking-widest">
                       <tr>
                         <th className="px-4 py-3">Nome</th>
-                        <th className="px-4 py-3">Sigla</th>
-                        <th className="px-4 py-3">Município</th>
-                        <th className="px-4 py-3">CNPJ</th>
+                        <th className="px-4 py-3">Tipo</th>
+                        <th className="px-4 py-3">Setor</th>
                         <th className="px-4 py-3">Ativo</th>
                       </tr>
                     </thead>
@@ -520,9 +451,8 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
                       {importRows.slice(0, 10).map((row, index) => (
                         <tr key={`${row.nome}-${index}`} className="font-bold text-dark">
                           <td className="px-4 py-3 min-w-[220px]">{row.nome}</td>
-                          <td className="px-4 py-3">{row.sigla || '-'}</td>
-                          <td className="px-4 py-3">{row.municipio}</td>
-                          <td className="px-4 py-3">{row.cnpj || '-'}</td>
+                          <td className="px-4 py-3">{row.tipo || 'ambos'}</td>
+                          <td className="px-4 py-3">{row.setor || '-'}</td>
                           <td className="px-4 py-3">{String(row.ativo ?? true)}</td>
                         </tr>
                       ))}
@@ -535,9 +465,9 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
                 <div className="rounded-xl border border-primary/10 bg-primary/5 p-4 space-y-3">
                   <p className="text-[10px] font-black uppercase tracking-widest text-primary">Resultado da importação</p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-black">
-                    <span>Criadas: {importResult.summary?.created || 0}</span>
-                    <span>Atualizadas: {importResult.summary?.updated || 0}</span>
-                    <span>Ignoradas: {importResult.summary?.ignored || 0}</span>
+                    <span>Criados: {importResult.summary?.created || 0}</span>
+                    <span>Atualizados: {importResult.summary?.updated || 0}</span>
+                    <span>Ignorados: {importResult.summary?.ignored || 0}</span>
                     <span>Erros: {importResult.summary?.errors || 0}</span>
                   </div>
                   {(importResult.summary?.errors || 0) > 0 && (
@@ -552,15 +482,8 @@ export function LocalidadesManager({ initialLocalidades }: { initialLocalidades:
             </div>
 
             <div className="p-4 border-t border-border bg-white flex flex-col sm:flex-row gap-2 justify-end shrink-0">
-              <button type="button" onClick={resetImport} className="h-11 px-5 rounded-xl border border-border bg-white text-dark hover:bg-surface transition-all text-xs font-black uppercase tracking-widest">
-                Limpar
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmImport}
-                disabled={importing || importRows.length === 0 || importValidation.errors.length > 0}
-                className="btn-primary h-11 px-6 text-xs font-black uppercase tracking-widest disabled:opacity-40"
-              >
+              <button type="button" onClick={resetImport} className="h-11 px-5 rounded-xl border border-border bg-white text-dark hover:bg-surface transition-all text-xs font-black uppercase tracking-widest">Limpar</button>
+              <button type="button" onClick={handleConfirmImport} disabled={importing || importRows.length === 0 || importValidation.errors.length > 0} className="btn-primary h-11 px-6 text-xs font-black uppercase tracking-widest disabled:opacity-40">
                 {importing ? 'Importando...' : 'Confirmar Importação'}
               </button>
             </div>

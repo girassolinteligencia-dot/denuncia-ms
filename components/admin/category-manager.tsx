@@ -353,8 +353,8 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
       {/* Editor Lateral (Drawer Overlay) */}
       {editingCat && (
         <>
-          <div className="fixed inset-0 bg-dark/20 backdrop-blur-sm z-[100]" onClick={() => setEditingCat(null)}></div>
-          <div className="fixed right-0 top-0 h-screen w-full max-w-md bg-white shadow-2xl z-[101] animate-slide-left border-l border-border flex flex-col overflow-hidden">
+          <div className="fixed inset-x-0 bottom-0 top-16 sm:top-20 bg-dark/20 backdrop-blur-sm z-[60]" onClick={() => setEditingCat(null)}></div>
+          <div className="fixed right-0 top-16 sm:top-20 h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)] w-full max-w-md bg-white shadow-2xl z-[80] animate-slide-left border-l border-border flex flex-col overflow-hidden">
              <div className="p-6 border-b border-border bg-surface flex items-center justify-between shrink-0">
                 <div>
                    <h2 className="font-extrabold text-dark uppercase tracking-tighter italic">Parametrizar Categoria</h2>
