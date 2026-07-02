@@ -82,9 +82,23 @@ export interface Categoria {
   email_destino?: string
   sites_institucionais?: string
   telefones_uteis?: string
+  tipo_localizacao?: 'manual' | 'orgao_publico'
   ativo: boolean
   permite_anonimato: boolean
   ordem: number
+  criado_em: string
+  atualizado_em: string
+}
+
+export interface LocalidadePublica {
+  id: string
+  nome: string
+  sigla: string | null
+  endereco: string | null
+  municipio: string
+  cnpj: string | null
+  telefone: string | null
+  ativo: boolean
   criado_em: string
   atualizado_em: string
 }
@@ -143,10 +157,12 @@ export interface Denuncia {
   latitude?: number | null
   longitude?: number | null
   municipio?: string | null
+  localidade_publica_id?: string | null
   arquivos?: ArquivoDenuncia[]
   arquivos_denuncia?: ArquivoDenuncia[]
   // Virtual fields — populated server-side by getDenunciaDetalhes
   categorias?: { label: string; icon_name: string | null } | null
+  localidades_publicas?: Pick<LocalidadePublica, 'id' | 'nome' | 'sigla' | 'endereco' | 'municipio' | 'cnpj' | 'telefone'> | null
   denunciante_nome?: string | null
   denunciante_email?: string | null
   denunciante_telefone?: string | null
@@ -260,6 +276,7 @@ export interface SubmitDenunciaRequest {
   latitude?: number | null
   longitude?: number | null
   municipio?: string | null
+  localidade_publica_id?: string | null
   is_anonima?: boolean
   agente_politico?: 'sim' | 'nao'
   cargo_agente?: string
@@ -326,4 +343,3 @@ export interface Banner {
   ativo: boolean
   criado_at?: string
 }
-

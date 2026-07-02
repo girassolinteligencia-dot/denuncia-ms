@@ -134,6 +134,7 @@ export async function getDenunciaDetalhes(id: string) {
         criado_em, 
         atualizado_em,
         categorias(label, icon_name), 
+        localidades_publicas(id, nome, sigla, endereco, municipio, cnpj, telefone),
         arquivos_denuncia(*)
       `)
       .eq('id', id)
@@ -178,12 +179,16 @@ export async function getDenunciaDetalhes(id: string) {
     const categoriasNormalizada = Array.isArray(data.categorias)
       ? data.categorias[0] || null
       : data.categorias
+    const localidadesNormalizada = Array.isArray(data.localidades_publicas)
+      ? data.localidades_publicas[0] || null
+      : data.localidades_publicas
 
     return {
       success: true,
       data: {
         ...data,
         categorias: categoriasNormalizada,
+        localidades_publicas: localidadesNormalizada,
         denunciante_nome,
         denunciante_email,
         denunciante_telefone,

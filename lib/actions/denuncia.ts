@@ -44,10 +44,18 @@ export async function registrarDenuncia(
   const emailNorm = formData.email?.toLowerCase().trim()
   const emailHash = emailNorm ? createHash('sha256').update(emailNorm).digest('hex') : ''
 
-  const montarDescricaoAnonima = (data: SubmitDenunciaRequest) => {
+  const montarDescricaoAnonima = (
+    data: SubmitDenunciaRequest,
+    localidade?: { nome: string; sigla: string | null; endereco: string | null; municipio: string | null } | null
+  ) => {
     const enderecoCompleto = [data.local, data.numero, data.bairro, data.cidade, data.cep]
       .filter(Boolean)
       .join(', ') || 'Não informado'
+    const localidadeResumo = localidade
+      ? [localidade.sigla ? `${localidade.sigla} - ${localidade.nome}` : localidade.nome, localidade.endereco, localidade.municipio]
+          .filter(Boolean)
+          .join(', ')
+      : null
 
     const partes = [
       `Nome completo do suposto autor: ${data.autor_nome || 'Não informado'}`,
@@ -58,7 +66,7 @@ export async function registrarDenuncia(
       `Agente político: ${data.agente_politico === 'sim' ? 'Sim' : 'Não'}`,
       (data.servidor_publico === 'sim' || data.agente_politico === 'sim') ? `Cargo: ${data.cargo_agente || 'Não informado'}` : null,
       data.testemunhas ? `Testemunhas: ${data.testemunhas}` : null,
-      `Endereço completo do local: ${enderecoCompleto}`,
+      localidadeResumo ? `Órgão/localidade do fato: ${localidadeResumo}` : `Endereço completo do local: ${enderecoCompleto}`,
       data.links && data.links.length > 0 ? `\nLinks como evidência:\n${data.links.map((l, i) => `  ${i + 1}. ${l}`).join('\n')}` : null,
       '',
       'RELATO ORIGINAL:',
@@ -71,6 +79,16 @@ export async function registrarDenuncia(
   console.log('[denuncia] Iniciando registro:', { categoria: formData.categoria_id, titulo: formData.titulo })
 
   try {
+    const { data: catData, error: catError } = await supabase
+      .from('categorias')
+      .select('label, slug, email_destino, permite_anonimato, tipo_localizacao')
+      .eq('id', formData.categoria_id)
+      .single()
+
+    if (catError || !catData) {
+      return { success: false, error: 'Categoria inválida ou indisponível.' }
+    }
+
     // 1. Validações Iniciais
     if (!formData.is_anonima) {
       if (!emailNorm) return { success: false, error: 'E-mail de identificação é obrigatório.' }
@@ -92,27 +110,45 @@ export async function registrarDenuncia(
       }
     } else {
       // Validar segurança da categoria (impedir manipulação do frontend)
-      const { data: catAnon } = await supabase.from('categorias').select('permite_anonimato').eq('id', formData.categoria_id).single()
-      if (!catAnon?.permite_anonimato) {
+      if (!catData.permite_anonimato) {
         return { success: false, error: 'Esta categoria não permite denúncia anônima.' }
       }
+    }
+
+    const usaLocalidadePublica = catData.tipo_localizacao === 'orgao_publico'
+    let localidadeSelecionada: { id: string; nome: string; sigla: string | null; endereco: string | null; municipio: string | null; ativo: boolean } | null = null
+    if (usaLocalidadePublica) {
+      if (!formData.localidade_publica_id) {
+        return { success: false, error: 'Selecione o órgão público onde ocorreu o fato.' }
+      }
+
+      const { data: localidade } = await supabase
+        .from('localidades_publicas')
+        .select('id, nome, sigla, endereco, municipio, ativo')
+        .eq('id', formData.localidade_publica_id)
+        .eq('ativo', true)
+        .maybeSingle()
+
+      if (!localidade) {
+        return { success: false, error: 'A localidade selecionada está inativa ou não existe.' }
+      }
+      localidadeSelecionada = localidade
     }
 
     // 3. Gerar Protocolo
     const { protocolo, chaveAcesso } = await gerarProtocolo()
 
-    // 4. Buscar Categoria para o PDF e Destinatário
-    const { data: catData } = await supabase
-      .from('categorias')
-      .select('label, slug, email_destino')
-      .eq('id', formData.categoria_id)
-      .single()
-
     // 5. Inserir Registro Principal (Atomicidade)
-    const localCompleto = [formData.local, formData.numero, formData.bairro, formData.cidade]
+    const localCompleto = usaLocalidadePublica ? '' : [formData.local, formData.numero, formData.bairro, formData.cidade]
       .filter(Boolean).join(', ')
 
-    const descricaoFinal = formData.is_anonima ? montarDescricaoAnonima(formData) : formData.descricao_original
+    const localidadeResumo = localidadeSelecionada
+      ? [localidadeSelecionada.sigla ? `${localidadeSelecionada.sigla} - ${localidadeSelecionada.nome}` : localidadeSelecionada.nome, localidadeSelecionada.endereco, localidadeSelecionada.municipio]
+          .filter(Boolean)
+          .join(', ')
+      : ''
+
+    const descricaoFinal = formData.is_anonima ? montarDescricaoAnonima(formData, localidadeSelecionada) : formData.descricao_original
 
     const { data: denuncia, error: denErr } = await supabase
       .from('denuncias')
@@ -123,13 +159,14 @@ export async function registrarDenuncia(
         titulo:             formData.titulo,
         descricao_original: descricaoFinal,
         local:              localCompleto || null,
-        cep:                formData.cep || null,
-        numero:             formData.numero || null,
-        bairro:             formData.bairro || null,
-        cidade:             formData.cidade || null,
-        municipio:          formData.municipio || null,
-        latitude:           formData.latitude || null,
-        longitude:          formData.longitude || null,
+        cep:                usaLocalidadePublica ? null : formData.cep || null,
+        numero:             usaLocalidadePublica ? null : formData.numero || null,
+        bairro:             usaLocalidadePublica ? null : formData.bairro || null,
+        cidade:             usaLocalidadePublica ? null : formData.cidade || null,
+        municipio:          usaLocalidadePublica ? localidadeSelecionada?.municipio || null : formData.municipio || null,
+        latitude:           usaLocalidadePublica ? null : formData.latitude || null,
+        longitude:          usaLocalidadePublica ? null : formData.longitude || null,
+        localidade_publica_id: usaLocalidadePublica ? formData.localidade_publica_id : null,
         data_ocorrido:      formData.data_ocorrido || null,
         hora_ocorrido:      formData.hora_ocorrido || null,
         autor_nome:         formData.autor_nome || null,
@@ -196,12 +233,12 @@ export async function registrarDenuncia(
         categoria_slug:   catData?.slug || '',
         titulo:           formData.titulo,
         descricao:        descricaoFinal,
-        local:            localCompleto,
+        local:            usaLocalidadePublica ? localidadeResumo : localCompleto,
         cep:              formData.cep || '',
         numero:           formData.numero || '',
         bairro:           formData.bairro || '',
         cidade:           formData.cidade || '',
-        municipio:        formData.municipio || formData.cidade || '',
+        municipio:        usaLocalidadePublica ? localidadeSelecionada?.municipio || '' : formData.municipio || formData.cidade || '',
         data_ocorrido:    formData.data_ocorrido || '',
         hora_ocorrido:    formData.hora_ocorrido || '',
         autor_nome:       formData.autor_nome || '',
@@ -303,7 +340,7 @@ export async function registrarDenuncia(
             orgao: catData.label,
             titulo: formData.titulo,
             descricao: formData.descricao_original,
-            local: localCompleto,
+            local: usaLocalidadePublica ? localidadeResumo : localCompleto,
             data_ocorrido: formData.data_ocorrido || new Date().toISOString(),
             anonima: !!formData.is_anonima,
             nome: formData.is_anonima ? undefined : formData.nome,

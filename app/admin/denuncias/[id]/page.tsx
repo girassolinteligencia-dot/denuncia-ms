@@ -65,7 +65,15 @@ export default async function DetalheDenunciaPage({ params }: { params: { id: st
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-10 mt-4 pb-6 border-b border-border">
                        <div className="flex items-start sm:items-center gap-2 text-muted text-[11px] sm:text-xs font-bold min-w-0">
                           <MapPin size={16} className="text-primary shrink-0" />
-                          {denuncia.local ? (
+                          {denuncia.localidades_publicas ? (
+                            <span className="truncate sm:whitespace-normal">
+                               {denuncia.localidades_publicas.sigla ? `${denuncia.localidades_publicas.sigla} - ` : ''}{denuncia.localidades_publicas.nome}<br className="hidden sm:block"/>
+                               <span className="text-[9px] sm:text-[10px] opacity-70">
+                                  {denuncia.localidades_publicas.municipio}
+                                  {denuncia.localidades_publicas.endereco ? ` — ${denuncia.localidades_publicas.endereco}` : ''}
+                                </span>
+                            </span>
+                          ) : denuncia.local ? (
                             <span className="truncate sm:whitespace-normal">
                                {denuncia.local}, {denuncia.numero || 'S/N'}<br className="hidden sm:block"/>
                                <span className="text-[9px] sm:text-[10px] opacity-70">

@@ -19,7 +19,9 @@ import {
   AlertTriangle,
   CloudOff,
   Wifi,
-  Trash2
+  Trash2,
+  Building2,
+  X
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -48,6 +50,17 @@ interface Categoria {
   aviso_legal: string | null
   template_descricao: { topico: string; placeholder: string }[]
   permite_anonimato?: boolean
+  tipo_localizacao?: 'manual' | 'orgao_publico'
+}
+
+interface LocalidadePublicaOption {
+  id: string
+  nome: string
+  sigla: string | null
+  endereco: string | null
+  municipio: string
+  cnpj: string | null
+  telefone: string | null
 }
 
 interface ArquivoAnexo {
@@ -79,6 +92,8 @@ interface DenunciaFormData {
   latitude: number | null
   longitude: number | null
   municipio: string
+  localidade_publica_id: string
+  localidade_publica: LocalidadePublicaOption | null
   nome: string
   email: string
   telefone: string
@@ -141,6 +156,9 @@ export function DenunciaFormWizard({
   const [isOnline, setIsOnline] = useState(true)
   const [geolocalizando, setGeolocalizando] = useState(false)
   const [confirmacaoRelato, setConfirmacaoRelato] = useState<{ campos: string[] } | null>(null)
+  const [localidadeSearch, setLocalidadeSearch] = useState('')
+  const [localidadeOptions, setLocalidadeOptions] = useState<LocalidadePublicaOption[]>([])
+  const [localidadeLoading, setLocalidadeLoading] = useState(false)
   const otpInputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -156,6 +174,8 @@ export function DenunciaFormWizard({
     latitude: null,
     longitude: null,
     municipio: '',
+    localidade_publica_id: '',
+    localidade_publica: null,
     data_ocorrido: new Date().toISOString().split('T')[0],
     hora_ocorrido: '',
     autor_nome: '',
@@ -223,12 +243,27 @@ export function DenunciaFormWizard({
   }
 
   const handleCategoriaSelect = (cat: Categoria) => {
+    const usaOrgaoPublico = cat.tipo_localizacao === 'orgao_publico'
     setFormData(prev => ({
       ...prev,
       categoria_id: cat.id,
       is_anonima: cat.permite_anonimato ? null : false,
       otpToken: '',
+      local: usaOrgaoPublico ? '' : prev.local,
+      cep: usaOrgaoPublico ? '' : prev.cep,
+      numero: usaOrgaoPublico ? '' : prev.numero,
+      bairro: usaOrgaoPublico ? '' : prev.bairro,
+      cidade: usaOrgaoPublico ? '' : prev.cidade,
+      latitude: usaOrgaoPublico ? null : prev.latitude,
+      longitude: usaOrgaoPublico ? null : prev.longitude,
+      municipio: usaOrgaoPublico ? '' : prev.municipio,
+      localidade_publica_id: usaOrgaoPublico ? prev.localidade_publica_id : '',
+      localidade_publica: usaOrgaoPublico ? prev.localidade_publica : null,
     }))
+    if (!usaOrgaoPublico) {
+      setLocalidadeSearch('')
+      setLocalidadeOptions([])
+    }
     setOtpEnviado(false)
     setOtpValidado(false)
 
@@ -265,11 +300,22 @@ export function DenunciaFormWizard({
     const categoria = categorias.find(cat => cat.slug === categoriaSlug)
     if (!categoria) return
 
+    const usaOrgaoPublico = categoria.tipo_localizacao === 'orgao_publico'
     setFormData(prev => ({
       ...prev,
       categoria_id: categoria.id,
       is_anonima: categoria.permite_anonimato ? null : false,
       otpToken: '',
+      local: usaOrgaoPublico ? '' : prev.local,
+      cep: usaOrgaoPublico ? '' : prev.cep,
+      numero: usaOrgaoPublico ? '' : prev.numero,
+      bairro: usaOrgaoPublico ? '' : prev.bairro,
+      cidade: usaOrgaoPublico ? '' : prev.cidade,
+      latitude: usaOrgaoPublico ? null : prev.latitude,
+      longitude: usaOrgaoPublico ? null : prev.longitude,
+      municipio: usaOrgaoPublico ? '' : prev.municipio,
+      localidade_publica_id: usaOrgaoPublico ? prev.localidade_publica_id : '',
+      localidade_publica: usaOrgaoPublico ? prev.localidade_publica : null,
     }))
     setOtpEnviado(false)
     setOtpValidado(false)
@@ -317,6 +363,16 @@ export function DenunciaFormWizard({
 
   const handleNext = () => {
     if (step === 3) {
+      const usaOrgaoPublico = currentCategory?.tipo_localizacao === 'orgao_publico'
+      if (usaOrgaoPublico) {
+        if (!formData.localidade_publica_id) {
+          toast.error('Órgão/localidade obrigatório', { description: 'Selecione o órgão público onde ocorreu o fato para continuar.' })
+          handleFieldScroll('field-localidade-publica')
+          return
+        }
+        handleStepTransition(Math.min(step + 1, 5))
+        return
+      }
       if (!formData.cep) {
         toast.error('CEP obrigatório', { description: 'Informe o CEP do local do ocorrido para continuar.' })
         handleFieldScroll('field-cep')
@@ -488,7 +544,11 @@ export function DenunciaFormWizard({
     }
 
     if (formData.is_anonima) {
-      if (!formData.local || !formData.cep || !formData.bairro || !formData.cidade) {
+      if (usaLocalidadePublica && !formData.localidade_publica_id) {
+        toast.error('Para denúncia anônima, selecione o órgão público onde ocorreu o fato.')
+        return
+      }
+      if (!usaLocalidadePublica && (!formData.local || !formData.cep || !formData.bairro || !formData.cidade)) {
         toast.error('Para denúncia anônima, informe o endereço completo do local do fato.')
         return
       }
@@ -576,6 +636,70 @@ export function DenunciaFormWizard({
   }
 
   const currentCategory = categorias.find(c => c.id === formData.categoria_id)
+  const usaLocalidadePublica = currentCategory?.tipo_localizacao === 'orgao_publico'
+
+  useEffect(() => {
+    if (!usaLocalidadePublica) return
+    const termo = localidadeSearch.trim()
+
+    if (termo.length < 3) {
+      setLocalidadeOptions([])
+      setLocalidadeLoading(false)
+      return
+    }
+
+    let cancelled = false
+    setLocalidadeLoading(true)
+    const timer = setTimeout(async () => {
+      try {
+        const { searchLocalidadesPublicas } = await import('@/lib/actions/localidades')
+        const result = await searchLocalidadesPublicas(termo)
+        if (cancelled) return
+        if (result.success) {
+          setLocalidadeOptions(result.data)
+        } else {
+          toast.error(result.error || 'Erro ao buscar localidades')
+        }
+      } finally {
+        if (!cancelled) setLocalidadeLoading(false)
+      }
+    }, 250)
+
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [localidadeSearch, usaLocalidadePublica])
+
+  const handleLocalidadeSelect = (localidade: LocalidadePublicaOption) => {
+    setFormData(prev => ({
+      ...prev,
+      localidade_publica_id: localidade.id,
+      localidade_publica: localidade,
+      local: '',
+      cep: '',
+      numero: '',
+      bairro: '',
+      cidade: '',
+      latitude: null,
+      longitude: null,
+      municipio: localidade.municipio,
+    }))
+    setLocalidadeSearch(localidade.sigla ? `${localidade.sigla} - ${localidade.nome}` : localidade.nome)
+    setLocalidadeOptions([])
+    handleFieldScroll()
+  }
+
+  const clearLocalidadeSelect = () => {
+    setFormData(prev => ({
+      ...prev,
+      localidade_publica_id: '',
+      localidade_publica: null,
+      municipio: '',
+    }))
+    setLocalidadeSearch('')
+    setLocalidadeOptions([])
+  }
 
   const handleTelefoneChange = (v: string) => {
     const clean = v.replace(/\D/g, '')
@@ -1240,70 +1364,157 @@ export function DenunciaFormWizard({
                 <div className="hidden sm:flex p-5 bg-primary/5 text-primary rounded-[2rem] border border-primary/10"><MapPin size={32} /></div>
               </div>
 
-              {/* Botão de Geolocalização Rápida */}
-              <div className="bg-primary/5 border border-primary/10 p-6 rounded-[2rem] flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
-                <div className="flex items-center gap-4 text-center sm:text-left">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${geolocalizando ? 'bg-primary text-white animate-pulse' : 'bg-primary/10 text-primary'}`}>
-                    <Zap size={24} />
+              {usaLocalidadePublica ? (
+                <div className="space-y-6">
+                  <div className="bg-primary/5 border border-primary/10 p-6 rounded-[2rem] flex items-start gap-4 animate-fade-in">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Building2 size={24} />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-primary uppercase tracking-widest">Seleção de Órgão Público</p>
+                      <p className="text-xs font-bold text-dark/70 italic">
+                        Digite ao menos 3 letras ou números para localizar a unidade cadastrada.
+                      </p>
+                    </div>
                   </div>
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] font-black text-primary uppercase tracking-widest">Preenchimento Automático</p>
-                    <p className="text-xs font-bold text-dark/70 italic">Estou no local agora e quero preencher usando meu GPS.</p>
+
+                  <div className="relative space-y-2">
+                    <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">Órgão / Localidade</label>
+                    <div className="relative">
+                      <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={18} />
+                      <input
+                        id="field-localidade-publica"
+                        className="input h-14 rounded-xl border-2 font-bold pl-12 pr-12"
+                        placeholder="Ex: SEDUC, prefeitura, escola, secretaria..."
+                        value={localidadeSearch}
+                        onChange={(event) => {
+                          setLocalidadeSearch(event.target.value)
+                          setFormData(prev => ({ ...prev, localidade_publica_id: '', localidade_publica: null, municipio: '' }))
+                        }}
+                      />
+                      {formData.localidade_publica_id && (
+                        <button
+                          type="button"
+                          onClick={clearLocalidadeSelect}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-error transition-colors"
+                          title="Limpar seleção"
+                        >
+                          <X size={18} />
+                        </button>
+                      )}
+                    </div>
+
+                    {localidadeLoading && (
+                      <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-border rounded-xl shadow-card p-4 text-xs font-bold text-muted flex items-center gap-2 z-20">
+                        <Loader2 size={14} className="animate-spin" />
+                        Buscando localidades...
+                      </div>
+                    )}
+
+                    {!localidadeLoading && localidadeSearch.trim().length >= 3 && localidadeOptions.length > 0 && (
+                      <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-border rounded-xl shadow-card overflow-hidden z-20">
+                        {localidadeOptions.map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => handleLocalidadeSelect(item)}
+                            className="w-full px-4 py-3 text-left hover:bg-primary/5 border-b border-border last:border-b-0 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-black text-dark">{item.nome}</span>
+                              {item.sigla && <span className="text-[9px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded">{item.sigla}</span>}
+                            </div>
+                            <p className="text-[11px] font-bold text-muted mt-1">
+                              {item.municipio}{item.endereco ? ` - ${item.endereco}` : ''}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {!localidadeLoading && localidadeSearch.trim().length >= 3 && localidadeOptions.length === 0 && !formData.localidade_publica_id && (
+                      <p className="text-[10px] text-muted font-bold px-1">Nenhuma localidade ativa encontrada para esse termo.</p>
+                    )}
                   </div>
-                </div>
-                <button 
-                  type="button"
-                  onClick={handleGeolocalizar}
-                  disabled={geolocalizando}
-                  className="btn-primary w-full sm:w-auto h-12 px-8 rounded-xl bg-primary text-white font-black uppercase text-[10px] tracking-widest shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
-                >
-                  {geolocalizando ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      Localizando...
-                    </>
-                  ) : (
-                    <>
-                      <MapPin size={16} />
-                      Usar minha localização
-                    </>
+
+                  {formData.localidade_publica && (
+                    <div className="rounded-2xl border border-primary/10 bg-primary/5 p-5 text-sm font-bold text-dark/80">
+                      <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Localidade selecionada</p>
+                      <p>{formData.localidade_publica.sigla ? `${formData.localidade_publica.sigla} - ` : ''}{formData.localidade_publica.nome}</p>
+                      <p className="text-xs text-muted mt-1">
+                        {formData.localidade_publica.municipio}{formData.localidade_publica.endereco ? ` - ${formData.localidade_publica.endereco}` : ''}
+                      </p>
+                    </div>
                   )}
-                </button>
-              </div>
+                </div>
+              ) : (
+                <>
+                  {/* Botão de Geolocalização Rápida */}
+                  <div className="bg-primary/5 border border-primary/10 p-6 rounded-[2rem] flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
+                    <div className="flex items-center gap-4 text-center sm:text-left">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${geolocalizando ? 'bg-primary text-white animate-pulse' : 'bg-primary/10 text-primary'}`}>
+                        <Zap size={24} />
+                      </div>
+                      <div className="space-y-0.5">
+                        <p className="text-[10px] font-black text-primary uppercase tracking-widest">Preenchimento Automático</p>
+                        <p className="text-xs font-bold text-dark/70 italic">Estou no local agora e quero preencher usando meu GPS.</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleGeolocalizar}
+                      disabled={geolocalizando}
+                      className="btn-primary w-full sm:w-auto h-12 px-8 rounded-xl bg-primary text-white font-black uppercase text-[10px] tracking-widest shadow-glow-cyan hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                    >
+                      {geolocalizando ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          Localizando...
+                        </>
+                      ) : (
+                        <>
+                          <MapPin size={16} />
+                          Usar minha localização
+                        </>
+                      )}
+                    </button>
+                  </div>
 
-              <div className="flex justify-center -mt-4">
-                <button 
-                  type="button"
-                  onClick={() => handleFieldScroll('field-cep')}
-                  className="text-[9px] font-black text-muted/60 uppercase tracking-widest hover:text-primary transition-colors flex items-center gap-2 group italic"
-                >
-                  <span className="w-4 h-[1px] bg-muted/30 group-hover:bg-primary/30 transition-all"></span>
-                  prefiro preencher manualmente meu endereço
-                  <span className="w-4 h-[1px] bg-muted/30 group-hover:bg-primary/30 transition-all"></span>
-                </button>
-              </div>
+                  <div className="flex justify-center -mt-4">
+                    <button
+                      type="button"
+                      onClick={() => handleFieldScroll('field-cep')}
+                      className="text-[9px] font-black text-muted/60 uppercase tracking-widest hover:text-primary transition-colors flex items-center gap-2 group italic"
+                    >
+                      <span className="w-4 h-[1px] bg-muted/30 group-hover:bg-primary/30 transition-all"></span>
+                      prefiro preencher manualmente meu endereço
+                      <span className="w-4 h-[1px] bg-muted/30 group-hover:bg-primary/30 transition-all"></span>
+                    </button>
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">CEP</label>
-                  <input id="field-cep" className="input h-14 rounded-xl border-2 font-bold" inputMode="numeric" placeholder="00000-000" value={formData.cep} onChange={(e) => handleCepChange(e.target.value)} onBlur={() => handleFieldScroll('field-cidade')} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">Cidade</label>
-                  <input id="field-cidade" className="input h-14 rounded-xl border-2 font-bold" placeholder="Ex: Campo Grande" value={formData.cidade} onChange={(e) => handleInputChange('cidade', e.target.value)} onBlur={() => handleFieldScroll('field-local')} />
-                </div>
-              </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">CEP</label>
+                      <input id="field-cep" className="input h-14 rounded-xl border-2 font-bold" inputMode="numeric" placeholder="00000-000" value={formData.cep} onChange={(e) => handleCepChange(e.target.value)} onBlur={() => handleFieldScroll('field-cidade')} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">Cidade</label>
+                      <input id="field-cidade" className="input h-14 rounded-xl border-2 font-bold" placeholder="Ex: Campo Grande" value={formData.cidade} onChange={(e) => handleInputChange('cidade', e.target.value)} onBlur={() => handleFieldScroll('field-local')} />
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">Logradouro / Rua</label>
-                  <input id="field-local" className="input h-14 rounded-xl border-2 font-bold" placeholder="Rua, Avenida..." value={formData.local} onChange={(e) => handleInputChange('local', e.target.value)} onBlur={() => handleFieldScroll('field-bairro')} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">Bairro</label>
-                  <input id="field-bairro" className="input h-14 rounded-xl border-2 font-bold" placeholder="Ex: Centro" value={formData.bairro} onChange={(e) => handleInputChange('bairro', e.target.value)} onBlur={() => handleFieldScroll()} />
-                </div>
-              </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="md:col-span-2 space-y-2">
+                      <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">Logradouro / Rua</label>
+                      <input id="field-local" className="input h-14 rounded-xl border-2 font-bold" placeholder="Rua, Avenida..." value={formData.local} onChange={(e) => handleInputChange('local', e.target.value)} onBlur={() => handleFieldScroll('field-bairro')} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-dark uppercase tracking-widest px-1">Bairro</label>
+                      <input id="field-bairro" className="input h-14 rounded-xl border-2 font-bold" placeholder="Ex: Centro" value={formData.bairro} onChange={(e) => handleInputChange('bairro', e.target.value)} onBlur={() => handleFieldScroll()} />
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div ref={bottomRef} className="flex items-center justify-between pt-8 border-t border-border/40 pb-20 sm:pb-0">
                 <button onClick={handleBack} className="group flex items-center gap-3 text-[10px] sm:text-[11px] uppercase font-black text-muted hover:text-dark transition-all">

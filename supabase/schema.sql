@@ -86,11 +86,26 @@ CREATE TABLE IF NOT EXISTS categorias (
   instrucao_publica  text,
   aviso_legal        text,
   template_descricao jsonb DEFAULT '[]',
+  tipo_localizacao   text NOT NULL DEFAULT 'manual'
+                       CHECK (tipo_localizacao IN ('manual', 'orgao_publico')),
   ativo              boolean DEFAULT true,
   permite_anonimato  boolean DEFAULT false,
   ordem              int DEFAULT 0,
   criado_em          timestamptz DEFAULT now(),
   atualizado_em      timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS localidades_publicas (
+  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  nome           text NOT NULL,
+  sigla          text,
+  endereco       text,
+  municipio      text NOT NULL,
+  cnpj           text,
+  telefone       text,
+  ativo          boolean NOT NULL DEFAULT true,
+  criado_em      timestamptz NOT NULL DEFAULT now(),
+  atualizado_em  timestamptz NOT NULL DEFAULT now()
 );
 
 -- Integrações de destino por categoria
@@ -130,6 +145,7 @@ CREATE TABLE IF NOT EXISTS denuncias (
   descricao_original        text NOT NULL,
   documento_final           text NOT NULL,
   local                     text,
+  localidade_publica_id     uuid REFERENCES localidades_publicas(id) ON DELETE SET NULL,
   data_ocorrido             date,
   status                    text DEFAULT 'recebida'
                               CHECK (status IN ('recebida','em_analise','encaminhada','resolvida','arquivada')),
@@ -217,6 +233,7 @@ CREATE INDEX IF NOT EXISTS idx_denuncias_protocolo    ON denuncias(protocolo);
 CREATE INDEX IF NOT EXISTS idx_denuncias_status       ON denuncias(status);
 CREATE INDEX IF NOT EXISTS idx_denuncias_categoria    ON denuncias(categoria_id);
 CREATE INDEX IF NOT EXISTS idx_denuncias_criado_em    ON denuncias(criado_em DESC);
+CREATE INDEX IF NOT EXISTS idx_denuncias_localidade_publica ON denuncias(localidade_publica_id);
 CREATE INDEX IF NOT EXISTS idx_log_int_denuncia       ON log_integracoes(denuncia_id);
 CREATE INDEX IF NOT EXISTS idx_log_int_status         ON log_integracoes(status);
 CREATE INDEX IF NOT EXISTS idx_log_audit_usuario      ON log_auditoria(usuario_id);
@@ -224,6 +241,11 @@ CREATE INDEX IF NOT EXISTS idx_log_audit_criado       ON log_auditoria(criado_em
 CREATE INDEX IF NOT EXISTS idx_noticias_slug          ON noticias(slug);
 CREATE INDEX IF NOT EXISTS idx_noticias_publicado     ON noticias(publicado, publicado_em DESC);
 CREATE INDEX IF NOT EXISTS idx_categorias_ativo       ON categorias(ativo, ordem);
+CREATE INDEX IF NOT EXISTS idx_localidades_publicas_ativo ON localidades_publicas(ativo);
+CREATE INDEX IF NOT EXISTS idx_localidades_publicas_nome_lower ON localidades_publicas(lower(nome));
+CREATE INDEX IF NOT EXISTS idx_localidades_publicas_sigla_lower ON localidades_publicas(lower(sigla));
+CREATE INDEX IF NOT EXISTS idx_localidades_publicas_municipio_lower ON localidades_publicas(lower(municipio));
+CREATE INDEX IF NOT EXISTS idx_localidades_publicas_cnpj ON localidades_publicas(cnpj);
 
 -- ─────────────────────────────────────────────────────────
 -- FUNÇÃO RPC — Incremento Atômico de Protocolo
@@ -254,6 +276,7 @@ ALTER TABLE config_templates      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE config_protocolo      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE config_campos_formulario ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categorias            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE localidades_publicas  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE integracoes_destino   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE denuncias             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE arquivos_denuncia     ENABLE ROW LEVEL SECURITY;
@@ -529,6 +552,11 @@ DROP POLICY IF EXISTS "categorias_public_read" ON categorias;
 DROP POLICY IF EXISTS "categorias_admin_all" ON categorias;
 CREATE POLICY "categorias_public_read" ON categorias FOR SELECT USING (ativo = true);
 CREATE POLICY "categorias_admin_all"   ON categorias FOR ALL    USING (tem_role('admin'));
+
+DROP POLICY IF EXISTS "localidades_publicas_public_read" ON localidades_publicas;
+DROP POLICY IF EXISTS "localidades_publicas_admin_all" ON localidades_publicas;
+CREATE POLICY "localidades_publicas_public_read" ON localidades_publicas FOR SELECT TO anon, authenticated USING (ativo = true);
+GRANT SELECT ON localidades_publicas TO anon, authenticated;
 
 -- Policies: integrações — somente admin
 DROP POLICY IF EXISTS "integracoes_admin" ON integracoes_destino;

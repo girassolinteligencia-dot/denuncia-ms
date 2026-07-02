@@ -15,7 +15,9 @@ import {
   FolderOpen,
   UserX,
   Globe,
-  Phone
+  Phone,
+  MapPin,
+  Building2
 } from 'lucide-react'
 import { 
   DndContext, 
@@ -295,6 +297,7 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
             sites_institucionais: '',
             telefones_uteis: '',
             permite_anonimato: false,
+            tipo_localizacao: 'manual',
             ativo: true,
             ordem: categorias.length + 1,
             criado_em: new Date().toISOString(),
@@ -656,6 +659,44 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
                        O modo anônimo exige relato mais completo e não coleta nome, e-mail, telefone ou CPF do denunciante.
                      </div>
                    )}
+                </div>
+
+                <div className="bg-surface rounded-xl p-4 border border-border space-y-4">
+                   <div>
+                      <span className="text-[10px] font-black text-dark uppercase tracking-widest">Tipo de Localização</span>
+                      <p className="text-[10px] text-muted font-bold leading-relaxed mt-1">
+                         Escolha se esta categoria usará endereço manual ou seleção de órgão/localidade cadastrada.
+                      </p>
+                   </div>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setEditingCat({ ...editingCat, tipo_localizacao: 'manual' })}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          (editingCat.tipo_localizacao || 'manual') === 'manual'
+                            ? 'bg-primary/5 border-primary text-primary'
+                            : 'bg-white border-border text-muted hover:border-primary/30'
+                        }`}
+                      >
+                        <MapPin size={18} />
+                        <span className="block text-[10px] font-black uppercase tracking-widest mt-2">Endereço Manual</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingCat({ ...editingCat, tipo_localizacao: 'orgao_publico' })}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          editingCat.tipo_localizacao === 'orgao_publico'
+                            ? 'bg-primary/5 border-primary text-primary'
+                            : 'bg-white border-border text-muted hover:border-primary/30'
+                        }`}
+                      >
+                        <Building2 size={18} />
+                        <span className="block text-[10px] font-black uppercase tracking-widest mt-2">Órgão Público</span>
+                      </button>
+                   </div>
+                   <div className="rounded-lg bg-white border border-border p-3 text-[10px] font-bold text-muted leading-relaxed">
+                     Quando a seleção de órgão público estiver ativa, o preenchimento manual de localização será substituído no formulário.
+                   </div>
                 </div>
                 
                  <div className="pt-4 pb-8">
