@@ -4,6 +4,7 @@
 
 > Status atual (23/05/2026): o diretório oficial do projeto é `c:\.MAIS\denuncia-ms`.
 > A cópia `denuncia-ms-1` foi auditada e está obsoleta; não deve ser usada para desenvolvimento ou deploy.
+> Vínculo oficial permanente: GitHub e Vercel associados a `girassolinteligencia@gmail.com`.
 
 ## DECISÕES ARQUITETURAIS CRÍTICAS (NÃO SOBRESCREVER)
 
@@ -65,6 +66,15 @@
 - ENCRYPTION_KEY, CRON_SECRET
 - NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
 - SUPABASE_SERVICE_ROLE_KEY
+
+### 11. Vínculo oficial GitHub/Vercel
+
+- Conta oficial GitHub/Vercel: `girassolinteligencia@gmail.com`
+- GitHub repo: `github.com/girassolinteligencia-dot/denuncia-ms`
+- Vercel project: `denuncia-ms`
+- Vercel scope: `girassolinteligencia-8661s-projects`
+- Produção: `https://www.denunciams.com.br`
+- NÃO relinkar `.vercel`, alterar remote, promover deploy ou autenticar publicação por outra conta/workspace.
 
 ## PADRÕES QUE DEVEM SER MANTIDOS
 

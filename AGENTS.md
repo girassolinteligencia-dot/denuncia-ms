@@ -13,6 +13,7 @@ Tratar este workspace exclusivamente como **DenunciaMS / denunciams.com.br**.
 | Servico | Valor correto |
 |---|---|
 | Pasta local autorizada | `C:\.MAIS\denuncia-ms` |
+| Conta oficial GitHub/Vercel | `girassolinteligencia@gmail.com` |
 | GitHub repo | `github.com/girassolinteligencia-dot/denuncia-ms` |
 | Git remote | `https://github.com/girassolinteligencia-dot/denuncia-ms.git` |
 | Branch de producao | `main` |
@@ -24,6 +25,8 @@ Tratar este workspace exclusivamente como **DenunciaMS / denunciams.com.br**.
 | Supabase project ref | `jntbmydqvacrjsbsvgml` |
 
 Nunca usar, vincular ou fazer deploy deste projeto a Pulso Eleitoral MS, Voz Publica MS, OneTwoBrand, PE26 ou qualquer outro workspace.
+
+Este projeto deve permanecer definitivamente vinculado às contas GitHub e Vercel associadas a `girassolinteligencia@gmail.com`. Antes de autenticar, publicar, relinkar `.vercel`, alterar remotes ou promover deploy, confirmar que a conta ativa corresponde a esse vínculo oficial.
 
 ## Ambiente seguro
 

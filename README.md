@@ -40,6 +40,15 @@ npm run build
 - Código genuíno: `c:\.MAIS\denuncia-ms`
 - Não usar: `c:\.MAIS\denuncia-ms-1`
 
+## Vínculos oficiais
+
+- Conta oficial GitHub/Vercel: `girassolinteligencia@gmail.com`
+- GitHub: `github.com/girassolinteligencia-dot/denuncia-ms`
+- Vercel: projeto `denuncia-ms` no escopo `girassolinteligencia-8661s-projects`
+- Produção: `https://www.denunciams.com.br`
+
+Este projeto deve permanecer vinculado às contas GitHub e Vercel associadas a `girassolinteligencia@gmail.com`. Não relinkar, publicar ou migrar para outra conta/workspace.
+
 ## Deploy / Produção
 
 Deploy deve ser executado apenas com aprovação explícita e após validação local completa.

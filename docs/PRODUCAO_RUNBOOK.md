@@ -4,6 +4,8 @@ Este runbook existe para preparar deploy profissional sem acionar producao por a
 
 Regra principal: nenhum deploy, migration, alteracao de variavel ou script com service role deve ser executado contra producao sem aprovacao explicita, plano de rollback e janela operacional.
 
+Vinculo oficial permanente: este projeto DenunciaMS deve usar somente as contas GitHub e Vercel associadas a `girassolinteligencia@gmail.com`, com repositorio `github.com/girassolinteligencia-dot/denuncia-ms` e projeto Vercel `denuncia-ms` no escopo `girassolinteligencia-8661s-projects`.
+
 ## 1. Pre-flight obrigatorio
 
 Executar localmente, no diretorio `denuncia-ms`:
