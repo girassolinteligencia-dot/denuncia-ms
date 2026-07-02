@@ -263,9 +263,8 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
   y = checkPageBreak(doc, y, 34)
   y = drawSectionHeader(doc, nextSec(), 'Identificação Temporal e Espacial', 'FATO DENUNCIADO', y)
 
-  drawInfoBox(doc, 'Data do Ocorrido', dataOcorrido, 18, y + 4, 60)
-  drawInfoBox(doc, 'Horário Aproximado', data.hora_ocorrido || 'Não informado', 82, y + 4, 40)
-  drawInfoBox(doc, 'Município', data.municipio || data.cidade || 'Não informado', 130, y + 4, 60)
+  drawInfoBox(doc, 'Data do Ocorrido', dataOcorrido, 18, y + 4, 80)
+  drawInfoBox(doc, 'Município', data.municipio || data.cidade || 'Não informado', 105, y + 4, 85)
   y += 14
 
   // Endereço completo
@@ -296,8 +295,10 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
     setDraw(doc, C.border)
     doc.roundedRect(15, y, 180, 32, 1.5, 1.5, 'FD')
 
-    drawInfoBox(doc, 'Nome Completo', data.autor_nome, 20, y + 7, 80)
-    drawInfoBox(doc, 'Cargo Declarado', data.cargo_agente || 'Não informado', 105, y + 7, 80)
+    drawInfoBox(doc, 'Nome Completo', data.autor_nome, 20, y + 7, data.agente_politico === 'sim' ? 80 : 165)
+    if (data.agente_politico === 'sim') {
+      drawInfoBox(doc, 'Cargo do Agente Político', data.cargo_agente || 'Não informado', 105, y + 7, 80)
+    }
 
     setColor(doc, C.muted)
     doc.setFontSize(7)

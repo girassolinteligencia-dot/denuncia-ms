@@ -69,6 +69,7 @@ const SortableCategoryItem = ({
     transition,
     zIndex: isDragging ? 10 : 1,
   }
+  const usaOrgaoPublico = cat.tipo_localizacao === 'orgao_publico'
 
   return (
     <div 
@@ -96,17 +97,23 @@ const SortableCategoryItem = ({
               {cat.slug}
             </code>
           </div>
-          {!cat.ativo && (
-            <span className="badge bg-red-50 text-error border border-red-100 uppercase tracking-tighter text-[8px] sm:text-[9px] mt-1 inline-block">
-              OMITIDA NO SITE
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            {!cat.ativo && (
+              <span className="badge bg-red-50 text-error border border-red-100 uppercase tracking-tighter text-[8px] sm:text-[9px]">
+                OMITIDA NO SITE
+              </span>
+            )}
+            {cat.permite_anonimato && (
+              <span className="badge bg-primary-50 text-primary border border-primary/10 uppercase tracking-tighter text-[8px] sm:text-[9px]">
+                <UserX size={10} />
+                PERMITE ANONIMATO
+              </span>
+            )}
+            <span className={`badge uppercase tracking-tighter text-[8px] sm:text-[9px] ${usaOrgaoPublico ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-slate-50 text-slate-600 border border-slate-200'}`}>
+              {usaOrgaoPublico ? <Building2 size={10} /> : <MapPin size={10} />}
+              {usaOrgaoPublico ? 'ÓRGÃO PÚBLICO' : 'ENDEREÇO MANUAL'}
             </span>
-          )}
-          {cat.permite_anonimato && (
-            <span className="badge bg-primary-50 text-primary border border-primary/10 uppercase tracking-tighter text-[8px] sm:text-[9px] mt-1 inline-flex items-center gap-1">
-              <UserX size={10} />
-              PERMITE ANONIMATO
-            </span>
-          )}
+          </div>
         </div>
       </div>
 

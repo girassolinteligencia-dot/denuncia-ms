@@ -252,12 +252,8 @@ export function DenunciaFormWizard({
         next.setor_servidor = ''
       }
 
-      if (field === 'servidor_publico' || field === 'agente_politico') {
-        const servidor = field === 'servidor_publico' ? value : prev.servidor_publico
-        const agente = field === 'agente_politico' ? value : prev.agente_politico
-        if (servidor !== 'sim' && agente !== 'sim') {
-          next.cargo_agente = ''
-        }
+      if (field === 'agente_politico' && value !== 'sim') {
+        next.cargo_agente = ''
       }
 
       return next
@@ -589,10 +585,6 @@ export function DenunciaFormWizard({
         toast.error('Informe a data aproximada do ocorrido.')
         return
       }
-      if (!formData.hora_ocorrido) {
-        toast.error('Informe o horário aproximado do ocorrido.')
-        return
-      }
       if (!formData.servidor_publico) {
         toast.error('Informe se você é servidor público ou não.')
         return
@@ -666,8 +658,8 @@ export function DenunciaFormWizard({
 
   const currentCategory = categorias.find(c => c.id === formData.categoria_id)
   const usaLocalidadePublica = currentCategory?.tipo_localizacao === 'orgao_publico'
-  const cargoAutocompleteVisible = formData.is_anonima === true && (formData.servidor_publico === 'sim' || formData.agente_politico === 'sim')
-  const cargoTipoBusca = formData.agente_politico === 'sim' ? 'agente_politico' : 'servidor_publico'
+  const cargoAutocompleteVisible = formData.is_anonima === true && formData.agente_politico === 'sim'
+  const cargoTipoBusca = 'agente_politico'
 
   useEffect(() => {
     if (!usaLocalidadePublica) return
@@ -1176,7 +1168,7 @@ export function DenunciaFormWizard({
                   <input 
                     id="field-titulo"
                     className="input h-16 rounded-2xl text-lg font-bold border-2 focus:ring-4 focus:ring-primary/5 transition-all" 
-                    placeholder="Ex: Obra abandonada no centro" 
+                    placeholder="Resuma o fato em poucas palavras"
                     value={formData.titulo} 
                     onChange={(e) => handleInputChange('titulo', e.target.value)}
                     onBlur={() => { if(formData.titulo) handleFieldScroll('field-descricao') }}
@@ -1233,16 +1225,6 @@ export function DenunciaFormWizard({
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-dark">Horário aproximado</label>
-                        <input
-                          id="field-hora-ocorrido"
-                          type="time"
-                          className="input h-14 rounded-xl border-2 font-bold"
-                          value={formData.hora_ocorrido}
-                          onChange={(e) => handleInputChange('hora_ocorrido', e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-dark">Envolve servidor público?</label>
                         <div className="grid grid-cols-2 gap-3">
                           {(['sim', 'nao'] as const).map((valor) => (
@@ -1256,6 +1238,34 @@ export function DenunciaFormWizard({
                             </button>
                           ))}
                         </div>
+                        {formData.servidor_publico === 'sim' && (
+                          <div className="space-y-2 pt-4">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-dark">Setor de atuação</label>
+                            <select
+                              id="field-setor-servidor"
+                              className="input h-14 rounded-xl border-2 bg-white font-bold"
+                              value={formData.setor_servidor}
+                              onChange={(e) => handleInputChange('setor_servidor', e.target.value)}
+                            >
+                              <option value="">Selecione o setor</option>
+                              <option value="Educação">Educação</option>
+                              <option value="Saúde">Saúde</option>
+                              <option value="Assistência Social">Assistência Social</option>
+                              <option value="Obras">Obras</option>
+                              <option value="Direitos Humanos">Direitos Humanos</option>
+                              <option value="Tecnologia">Tecnologia</option>
+                              <option value="Consumidor">Consumidor</option>
+                              <option value="Administrativo">Administrativo</option>
+                              <option value="Gestão de Pessoas">Gestão de Pessoas</option>
+                              <option value="Segurança Pública">Segurança Pública</option>
+                              <option value="Jurídico">Jurídico</option>
+                              <option value="Meio Ambiente">Meio Ambiente</option>
+                              <option value="Infraestrutura">Infraestrutura</option>
+                              <option value="Transporte">Transporte</option>
+                              <option value="Outros">Outros</option>
+                            </select>
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-2">
@@ -1272,98 +1282,68 @@ export function DenunciaFormWizard({
                             </button>
                           ))}
                         </div>
+                        {formData.agente_politico === 'sim' && (
+                          <div className="space-y-2 pt-4">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-dark">
+                              Cargo do Agente Político
+                            </label>
+                            <div className="relative">
+                              <BriefcaseBusiness className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={18} />
+                              <input
+                                id="field-cargo-agente"
+                                className="input h-14 rounded-xl border-2 font-bold pl-12"
+                                placeholder="Ex: Vereador, Deputado, Secretário..."
+                                value={formData.cargo_agente}
+                                onChange={(e) => {
+                                  setCargoSearch(e.target.value)
+                                  handleInputChange('cargo_agente', e.target.value)
+                                }}
+                              />
+
+                              {cargoLoading && (
+                                <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-border rounded-xl shadow-card p-4 text-xs font-bold text-muted flex items-center gap-2 z-20">
+                                  <Loader2 size={14} className="animate-spin" />
+                                  Buscando cargos...
+                                </div>
+                              )}
+
+                              {!cargoLoading && cargoSearch.trim().length >= 3 && cargoOptions.length > 0 && (
+                                <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-border rounded-xl shadow-card overflow-hidden z-20">
+                                  {cargoOptions.map((item) => (
+                                    <button
+                                      key={item.id}
+                                      type="button"
+                                      onClick={() => handleCargoSelect(item)}
+                                      className="w-full px-4 py-3 text-left hover:bg-primary/5 border-b border-border last:border-b-0 transition-colors"
+                                    >
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <span className="text-sm font-black text-dark">{item.nome}</span>
+                                        <span className="text-[9px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded">
+                                          {item.tipo === 'agente_politico' ? 'Agente Político' : item.tipo === 'servidor_publico' ? 'Servidor Público' : 'Ambos'}
+                                        </span>
+                                      </div>
+                                      <p className="text-[11px] font-bold text-muted mt-1">
+                                        {item.setor || 'Sem setor vinculado'}
+                                      </p>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            {!cargoLoading && cargoSearch.trim().length >= 3 && cargoOptions.length === 0 && (
+                              <p className="text-[10px] text-muted font-bold px-1">Nenhum cargo encontrado. Você pode continuar digitando manualmente.</p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    {formData.servidor_publico === 'sim' && (
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-dark">Setor de atuação</label>
-                        <select
-                          id="field-setor-servidor"
-                          className="input h-14 rounded-xl border-2 bg-white font-bold"
-                          value={formData.setor_servidor}
-                          onChange={(e) => handleInputChange('setor_servidor', e.target.value)}
-                        >
-                          <option value="">Selecione o setor</option>
-                          <option value="Educação">Educação</option>
-                          <option value="Saúde">Saúde</option>
-                          <option value="Assistência Social">Assistência Social</option>
-                          <option value="Obras">Obras</option>
-                          <option value="Direitos Humanos">Direitos Humanos</option>
-                          <option value="Tecnologia">Tecnologia</option>
-                          <option value="Consumidor">Consumidor</option>
-                          <option value="Administrativo">Administrativo</option>
-                          <option value="Gestão de Pessoas">Gestão de Pessoas</option>
-                          <option value="Segurança Pública">Segurança Pública</option>
-                          <option value="Jurídico">Jurídico</option>
-                          <option value="Meio Ambiente">Meio Ambiente</option>
-                          <option value="Infraestrutura">Infraestrutura</option>
-                          <option value="Transporte">Transporte</option>
-                          <option value="Outros">Outros</option>
-                        </select>
-                      </div>
-                    )}
-
-                    {(formData.servidor_publico === 'sim' || formData.agente_politico === 'sim') && (
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-dark">
-                          Cargo do {formData.agente_politico === 'sim' ? 'Agente Político' : 'Servidor Público'}
-                        </label>
-                        <div className="relative">
-                          <BriefcaseBusiness className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={18} />
-                          <input
-                            id="field-cargo-agente"
-                            className="input h-14 rounded-xl border-2 font-bold pl-12"
-                            placeholder={formData.agente_politico === 'sim' ? 'Ex: Vereador, Deputado, Secretário...' : 'Ex: Fiscal, Agente de Saúde, Delegado...'}
-                            value={formData.cargo_agente}
-                            onChange={(e) => {
-                              setCargoSearch(e.target.value)
-                              handleInputChange('cargo_agente', e.target.value)
-                            }}
-                          />
-
-                          {cargoLoading && (
-                            <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-border rounded-xl shadow-card p-4 text-xs font-bold text-muted flex items-center gap-2 z-20">
-                              <Loader2 size={14} className="animate-spin" />
-                              Buscando cargos...
-                            </div>
-                          )}
-
-                          {!cargoLoading && cargoSearch.trim().length >= 3 && cargoOptions.length > 0 && (
-                            <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-border rounded-xl shadow-card overflow-hidden z-20">
-                              {cargoOptions.map((item) => (
-                                <button
-                                  key={item.id}
-                                  type="button"
-                                  onClick={() => handleCargoSelect(item)}
-                                  className="w-full px-4 py-3 text-left hover:bg-primary/5 border-b border-border last:border-b-0 transition-colors"
-                                >
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <span className="text-sm font-black text-dark">{item.nome}</span>
-                                    <span className="text-[9px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded">
-                                      {item.tipo === 'agente_politico' ? 'Agente Político' : item.tipo === 'servidor_publico' ? 'Servidor Público' : 'Ambos'}
-                                    </span>
-                                  </div>
-                                  <p className="text-[11px] font-bold text-muted mt-1">
-                                    {item.setor || 'Sem setor vinculado'}
-                                  </p>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        {!cargoLoading && cargoSearch.trim().length >= 3 && cargoOptions.length === 0 && (
-                          <p className="text-[10px] text-muted font-bold px-1">Nenhum cargo encontrado. Você pode continuar digitando manualmente.</p>
-                        )}
-                      </div>
-                    )}
-
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-dark">Testemunhas</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-dark">Testemunhas (opcional)</label>
                       <textarea
                         id="field-testemunhas"
                         className="input min-h-[140px] rounded-2xl border-2 p-4 text-sm font-bold"
-                        placeholder="Nomes ou descrições de pessoas que presenciaram o fato"
+                        placeholder="Opcional: nomes ou descrições de pessoas que presenciaram o fato"
                         value={formData.testemunhas}
                         onChange={(e) => handleInputChange('testemunhas', e.target.value)}
                       />
@@ -1443,18 +1423,13 @@ export function DenunciaFormWizard({
                         handleFieldScroll('field-data-ocorrido')
                         return
                       }
-                      if (!formData.hora_ocorrido) {
-                        toast.error('Horário aproximado obrigatório')
-                        handleFieldScroll('field-hora-ocorrido')
-                        return
-                      }
                       if (formData.servidor_publico === 'sim' && !formData.setor_servidor) {
                         toast.error('Selecione o setor do servidor público')
                         handleFieldScroll('field-setor-servidor')
                         return
                       }
-                      if ((formData.servidor_publico === 'sim' || formData.agente_politico === 'sim') && !formData.cargo_agente) {
-                        toast.error('Informe o cargo do servidor/agente político')
+                      if (formData.agente_politico === 'sim' && !formData.cargo_agente) {
+                        toast.error('Informe o cargo do agente político')
                         handleFieldScroll('field-cargo-agente')
                         return
                       }
