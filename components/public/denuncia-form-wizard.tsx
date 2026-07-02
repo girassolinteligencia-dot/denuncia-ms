@@ -28,6 +28,8 @@ import { toast } from 'sonner'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { EmailPreview } from './email-preview'
 import { solicitarCodigoOTP, verificarOTP } from '@/lib/actions/auth'
+import { searchCargosPublicos } from '@/lib/actions/cargos'
+import { searchLocalidadesPublicas } from '@/lib/actions/localidades'
 import { salvarRascunhoOffline, removerRascunho } from '@/lib/offline-storage'
 
 const STEPS = [
@@ -681,13 +683,19 @@ export function DenunciaFormWizard({
     setLocalidadeLoading(true)
     const timer = setTimeout(async () => {
       try {
-        const { searchLocalidadesPublicas } = await import('@/lib/actions/localidades')
         const result = await searchLocalidadesPublicas(termo)
         if (cancelled) return
         if (result.success) {
           setLocalidadeOptions(result.data)
         } else {
+          setLocalidadeOptions([])
           toast.error(result.error || 'Erro ao buscar localidades')
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('[wizard] Erro ao buscar localidades:', error)
+          setLocalidadeOptions([])
+          toast.error('Erro ao buscar localidades', { description: 'Tente novamente em instantes.' })
         }
       } finally {
         if (!cancelled) setLocalidadeLoading(false)
@@ -719,13 +727,19 @@ export function DenunciaFormWizard({
     setCargoLoading(true)
     const timer = setTimeout(async () => {
       try {
-        const { searchCargosPublicos } = await import('@/lib/actions/cargos')
         const result = await searchCargosPublicos(termo, cargoTipoBusca)
         if (cancelled) return
         if (result.success) {
           setCargoOptions(result.data)
         } else {
+          setCargoOptions([])
           toast.error(result.error || 'Erro ao buscar cargos')
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('[wizard] Erro ao buscar cargos:', error)
+          setCargoOptions([])
+          toast.error('Erro ao buscar cargos', { description: 'Tente novamente em instantes.' })
         }
       } finally {
         if (!cancelled) setCargoLoading(false)
