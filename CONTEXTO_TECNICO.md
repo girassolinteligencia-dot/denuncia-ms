@@ -5,6 +5,7 @@
 > Status atual (23/05/2026): o diretório oficial do projeto é `c:\.MAIS\denuncia-ms`.
 > A cópia `denuncia-ms-1` foi auditada e está obsoleta; não deve ser usada para desenvolvimento ou deploy.
 > Vínculo oficial permanente: GitHub e Vercel associados a `girassolinteligencia@gmail.com`.
+> Atualização (02/07/2026): commit `a21d2cd` publicado em produção com Localidades Públicas, Cargos Públicos e importações CSV.
 
 ## DECISÕES ARQUITETURAIS CRÍTICAS (NÃO SOBRESCREVER)
 
@@ -76,6 +77,20 @@
 - Produção: `https://www.denunciams.com.br`
 - NÃO relinkar `.vercel`, alterar remote, promover deploy ou autenticar publicação por outra conta/workspace.
 
+### 12. Localidades Públicas e Cargos Públicos
+
+- Categorias podem alternar a localização entre `manual` e `orgao_publico` por `categorias.tipo_localizacao`.
+- Quando `tipo_localizacao = 'orgao_publico'`, o formulário público substitui CEP/GPS/endereço por autocomplete de `localidades_publicas`.
+- Nunca exibir localização manual e seleção de órgão público ao mesmo tempo para a mesma categoria.
+- `localidades_publicas`: tabela pública somente para leitura de registros ativos; manutenção via `/admin/localidades`.
+- `/admin/localidades`: CRUD manual e importação CSV em lote. Duplicidade tratada por CNPJ ou por `nome + municipio`.
+- `cargos_publicos`: tabela pública somente para leitura de registros ativos; manutenção via `/admin/cargos`.
+- `/admin/cargos`: CRUD manual e importação CSV em lote para cargos/funções.
+- `cargos_publicos.tipo`: `servidor_publico`, `agente_politico` ou `ambos`.
+- Denúncia anônima: campo de cargo usa autocomplete a partir de 3 caracteres, mas permanece livre para digitação manual se não houver sugestão.
+- SQL de `cargos_publicos` foi aplicado manualmente no Supabase SQL Editor em 02/07/2026.
+- Evitar policies que dependam de `tem_role` nessas tabelas públicas auxiliares; usar RLS com SELECT público apenas para `ativo = true`.
+
 ## PADRÕES QUE DEVEM SER MANTIDOS
 
 - OTP: armazena email_hash SHA-256, nunca email em texto puro
@@ -84,6 +99,19 @@
 - Deploy: sempre via npx vercel --prod após npm run build
 
 ## MARCOS DE ESTABILIZAÇÃO (TIMESTAMPS)
+
+### 02/07/2026 — Localidades, Cargos e Importação em Lote
+- [x] **Commit produção**: `a21d2cd Add public location and role imports`.
+- [x] **Deploy**: Vercel Production concluído com sucesso para o commit `a21d2cd`.
+- [x] **Localidades Públicas**: `/admin/localidades` com CRUD manual, ativação/desativação e importação CSV.
+- [x] **Categorias**: `tipo_localizacao` permite ativar seleção de órgão público individualmente por categoria.
+- [x] **Denúncia pública**: autocomplete de localidades com 3+ caracteres/números; substitui localização manual quando habilitado.
+- [x] **Cargos Públicos**: `/admin/cargos` com CRUD manual, ativação/desativação e importação CSV.
+- [x] **Denúncia anônima**: autocomplete de cargo para servidor público/agente político, mantendo preenchimento manual.
+- [x] **Layout admin**: gavetas laterais ajustadas para não cortar títulos abaixo do header.
+- [x] **Banco aplicado manualmente**: SQL de `cargos_publicos` aplicado no Supabase SQL Editor.
+- [x] **Build**: `npm run build` validado localmente e no GitHub Actions.
+- [!] **Débitos existentes**: `npm run lint` e `npx tsc --noEmit` ainda falham por pendências antigas fora desta entrega.
 
 ### 24/04/2026 — Estabilização de Branding e UI
 - [x] **Mascote**: Utilizar SEMPRE `mascote_sem_fundo.png` (640.757 bytes) para garantir transparência.
