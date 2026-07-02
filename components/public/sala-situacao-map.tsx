@@ -63,9 +63,11 @@ export const PublicGeoIntelligenceMap = ({ data }: { data: GeoData[] }) => {
   useEffect(() => {
     setIsMounted(true)
     import('leaflet').then(L => {
-      // @ts-expect-error
-      delete L.Icon.Default.prototype._getIconUrl;
-      L.Icon.Default.mergeOptions({
+      const defaultIcon = L.Icon.Default as typeof L.Icon.Default & {
+        prototype: { _getIconUrl?: unknown }
+      }
+      delete defaultIcon.prototype._getIconUrl
+      defaultIcon.mergeOptions({
         iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
         iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',

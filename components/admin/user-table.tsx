@@ -46,7 +46,7 @@ export const UserTable: React.FC<{ initialUsers: Profile[], currentUser: Profile
       } else {
         toast.error('Erro ao alterar status: ' + result.error)
       }
-    } catch (err) {
+    } catch {
       toast.error('Erro de conexão ao alterar status')
     } finally {
       setLoading(null)

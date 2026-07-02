@@ -87,7 +87,7 @@ export default async function LogsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-xs text-muted font-medium italic">"{log.descricao}"</p>
+                    <p className="text-xs text-muted font-medium italic">&quot;{log.descricao}&quot;</p>
                   </td>
                   <td className="px-6 py-4">
                     <code className="text-[10px] bg-surface px-1.5 py-0.5 rounded font-mono text-muted">

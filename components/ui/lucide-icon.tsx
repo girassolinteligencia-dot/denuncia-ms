@@ -7,8 +7,8 @@ interface LucideIconProps extends LucideProps {
 }
 
 export const LucideIcon = ({ name, ...props }: LucideIconProps) => {
-  // @ts-ignore - Dinamicamente acessando o componente pelo nome vindo do banco
-  const IconComponent = LucideIcons[name]
+  const icons = LucideIcons as unknown as Record<string, React.ComponentType<LucideProps>>
+  const IconComponent = icons[name]
 
   if (!IconComponent) {
     // Se não for um ícone do Lucide, renderiza como texto (provavelmente emoji)

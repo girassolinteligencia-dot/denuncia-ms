@@ -1,10 +1,7 @@
 import React from 'react'
-import { 
-  CheckCircle2, 
-  Clock, 
-  AlertTriangle, 
-  Send, 
-  Search, 
+import {
+  AlertTriangle,
+  Send,
   ExternalLink,
   ChevronLeft,
   FileText,

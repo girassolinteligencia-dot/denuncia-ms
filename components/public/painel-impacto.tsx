@@ -2,15 +2,20 @@
 import React, { useEffect, useState } from 'react'
 import { 
   TrendingUp, 
-  CheckCircle2, 
   Zap,
   ShieldAlert,
   Loader2
 } from 'lucide-react'
 import { getImpactoStats } from '@/lib/actions/impacto'
 
+type ImpactoStats = {
+  crescimento: string
+  feedback: string
+  topCidades: { nome: string; count: number }[]
+}
+
 export function PainelImpacto({ isDark = false }: { isDark?: boolean }) {
-  const [stats, setStats] = useState<{ categories: { label: string, percentage: number }[]; topCategories?: { label: string, percentage: number }[]; crescimento: string; resolucao: string } | null>(null)
+  const [stats, setStats] = useState<ImpactoStats | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -47,20 +52,20 @@ export function PainelImpacto({ isDark = false }: { isDark?: boolean }) {
            <div className="absolute top-0 right-0 p-4 text-white/5 group-hover:text-white/10 transition-colors">
               <TrendingUp size={80} />
            </div>
-           <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">Distribuição percentual por categoria</p>
+           <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">Municípios com mais registros</p>
            {loading ? <Loader2 className="animate-spin text-primary" /> : (
              <div className="space-y-3 animate-fade-in relative z-10">
-               {stats?.topCategories?.map((categoria, i) => (
+               {stats?.topCidades.map((cidade, i) => (
                  <div key={i} className="flex justify-between items-center text-sm font-bold border-b border-white/10 pb-2 last:border-0 last:pb-0">
                     <span className="uppercase truncate pr-2">
-                      <span className="text-electric mr-2">{i+1}º</span>{categoria.label}
+                      <span className="text-electric mr-2">{i+1}º</span>{cidade.nome}
                     </span>
-                    <span className="text-white/50">{Math.round(categoria.percentage)}%</span>
+                    <span className="text-white/50">{cidade.count}</span>
                  </div>
                ))}
              </div>
            )}
-           <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold relative z-10">Apresentamos apenas percentuais de categorias, sem volume absoluto de denúncias.</p>
+           <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold relative z-10">Ranking calculado a partir dos registros protocolados.</p>
         </div>
 
         <div className={`p-8 ${isDark ? 'bg-white/5 border border-white/10' : 'bg-dark'} text-white rounded-3xl relative overflow-hidden group shadow-glow-cyan min-h-[220px] flex flex-col justify-center`}>
@@ -71,7 +76,7 @@ export function PainelImpacto({ isDark = false }: { isDark?: boolean }) {
            {loading ? <Loader2 className="animate-spin text-electric" /> : (
              <div className="text-5xl font-black italic animate-fade-in relative z-10">{stats?.crescimento}</div>
            )}
-           <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold relative z-10">Resolução registrada: {stats?.resolucao}</p>
+           <p className="text-[9px] text-white/40 mt-4 leading-relaxed uppercase font-bold relative z-10">Resolução registrada: {stats?.feedback}</p>
         </div>
       </div>
     </div>

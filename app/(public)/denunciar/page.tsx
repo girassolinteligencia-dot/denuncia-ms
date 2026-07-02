@@ -12,8 +12,6 @@ export const metadata = {
 
 export default async function DenunciarPage() {
   let categorias: any[] = []
-  let campos: any[] = []
-  let politicasArquivo: any[] = []
   let errorMsg = ''
 
   try {
@@ -31,9 +29,6 @@ export default async function DenunciarPage() {
     if (politicasRes.error) throw new Error(`Erro politicas: ${politicasRes.error.message}`)
 
     categorias = catRes.data || []
-    campos = camposRes.data || []
-    politicasArquivo = politicasRes.data || []
-
     if (categorias.length === 0) {
       errorMsg = 'Nenhuma categoria ativa encontrada no banco de dados.'
     }

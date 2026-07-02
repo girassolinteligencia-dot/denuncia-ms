@@ -1,5 +1,5 @@
 import React from 'react'
-import { ShieldCheck, Lock, Gavel, Scale, Info, ArrowLeft, ArrowRight, Fingerprint, Zap } from 'lucide-react'
+import { ShieldCheck, Lock, Gavel, Info, ArrowLeft, ArrowRight, Fingerprint, Zap } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = {

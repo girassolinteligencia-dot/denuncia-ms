@@ -500,7 +500,7 @@ export function DenunciaFormWizard({
         } else {
           throw new Error(res.error || 'Erro no upload')
         }
-      } catch (err) {
+      } catch {
         setFormData(prev => ({
           ...prev,
           arquivos: prev.arquivos.map(a => 

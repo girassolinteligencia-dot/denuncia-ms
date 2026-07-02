@@ -21,11 +21,8 @@ import { upsertNoticia, deleteNoticia } from '@/lib/actions/admin-conteudo'
 import { gerarSugestoesDeNoticias, aprovarNoticia } from '@/lib/actions/intelligence'
 import { X, Save, Upload, CheckCircle2 as CheckCircle } from 'lucide-react'
 
-import { setBoletimAtivo } from '@/lib/actions/enquetes'
-
-export const NewsManager: React.FC<{ initialNoticias: Noticia[], boletimAtivo: boolean }> = ({ initialNoticias, boletimAtivo }) => {
+export const NewsManager: React.FC<{ initialNoticias: Noticia[], boletimAtivo: boolean }> = ({ initialNoticias }) => {
   const [noticias, setNoticias] = useState<Noticia[]>(initialNoticias)
-  const [isBoletimAtivo, setIsBoletimAtivo] = useState(boletimAtivo)
   const [generating, setGenerating] = useState(false)
   const [profile, setProfile] = React.useState<Profile | null>(null)
 
@@ -129,23 +126,6 @@ export const NewsManager: React.FC<{ initialNoticias: Noticia[], boletimAtivo: b
       toast.error('Erro ao conectar com o motor de IA: ' + err.message)
     } finally {
       setGenerating(false)
-    }
-  }
-
-  const handleToggleBoletim = async () => {
-    setLoading(true)
-    try {
-      const res = await setBoletimAtivo(!isBoletimAtivo)
-      if (res.success) {
-        setIsBoletimAtivo(!isBoletimAtivo)
-        toast.success(isBoletimAtivo ? 'Boletim desativado para o público' : 'Boletim ativado para o público')
-      } else {
-        toast.error('Erro ao alterar status: ' + res.error)
-      }
-    } catch (err: any) {
-      toast.error('Erro de conexão')
-    } finally {
-      setLoading(false)
     }
   }
 

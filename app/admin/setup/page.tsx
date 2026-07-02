@@ -24,7 +24,7 @@ export default function AdminSetupPage() {
 
     try {
       // 1. Tenta criar o usuário no Auth
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {

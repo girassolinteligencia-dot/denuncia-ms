@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Megaphone, Lock, Mail, AlertCircle, ArrowRight, RefreshCw } from 'lucide-react'
+import { Lock, Mail, AlertCircle, ArrowRight, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 
 function LoginForm() {

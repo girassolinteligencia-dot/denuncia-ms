@@ -59,7 +59,7 @@ export async function getImpactoStats() {
     }, {})
 
     const sortedCidades = Object.entries(contagemCidades).sort((a, b) => b[1] - a[1])
-    let top3 = sortedCidades.slice(0, 3).map(([nome, count]) => ({ nome, count }))
+    const top3 = sortedCidades.slice(0, 3).map(([nome, count]) => ({ nome, count }))
 
     // 3. Índice de Resolução (Em vez de feedback falso)
     const { count: totalDenuncias } = await supabase

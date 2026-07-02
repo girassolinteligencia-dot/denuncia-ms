@@ -79,8 +79,6 @@ export async function processarFilaDespacho(limite = 10) {
 
       // 1. Buscar informações de contato criptografadas
       let contatoHtml = ''
-      let nomeExibicao = 'Não disponível'
-      let emailExibicao = 'N/A'
       
       const { data: ident } = await supabase
         .from('identidades')
@@ -93,8 +91,6 @@ export async function processarFilaDespacho(limite = 10) {
           const nomeCompleto = await decryptData(ident.nome_enc)
           const email = await decryptData(ident.email_enc)
           const primeiroNome = nomeCompleto.split(' ')[0]
-          nomeExibicao = primeiroNome
-          emailExibicao = email
           
           contatoHtml = `
             <tr>

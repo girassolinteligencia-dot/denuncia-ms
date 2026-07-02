@@ -5,10 +5,6 @@ import {
   Settings, 
   ShieldCheck, 
   Share2, 
-  Layout, 
-  Activity,
-  Zap,
-  Lock,
   Globe
 } from 'lucide-react'
 import { IdentidadeConfigForm } from './identidade-config-form'

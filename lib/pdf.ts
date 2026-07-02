@@ -480,7 +480,7 @@ export async function gerarPDFDenuncia(data: PDFData): Promise<Buffer> {
 
   // QR Code (26×26mm) posicionado à direita
   const verificarUrl = `https://${appUrl}/acompanhar/${data.protocolo}`
-  let qrYStart = y
+  const qrYStart = y
   try {
     const qrDataUrl = await QRCode.toDataURL(verificarUrl, {
       width: 140,

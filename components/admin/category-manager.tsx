@@ -256,7 +256,7 @@ export const CategoryManager: React.FC<{ initialCategorias: Categoria[] }> = ({ 
           toast.error(result.error || 'Erro ao salvar alterações')
         }
       }
-    } catch (err: any) {
+    } catch {
       toast.error('Erro interno ao processar requisição')
     } finally {
       setLoading(false)

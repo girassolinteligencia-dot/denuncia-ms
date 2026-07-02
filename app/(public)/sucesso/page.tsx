@@ -3,13 +3,11 @@
 import React, { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { 
+import {
   CheckCircle2, 
   Copy, 
-  ArrowRight, 
   ShieldCheck, 
   FileText, 
-  Download,
   AlertTriangle,
   ExternalLink
 } from 'lucide-react'

@@ -274,7 +274,7 @@ export const SystemSettings = () => {
                 } else {
                    toast.error('Erro ao processar geolocalização: ' + res.error)
                 }
-             } catch (err) {
+             } catch {
                 toast.error('Erro de conexão.')
              } finally {
                 setSaving(false)

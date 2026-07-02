@@ -7,8 +7,6 @@ import {
   Activity, 
   CheckCircle2, 
   XCircle, 
-  Clock,
-  ExternalLink,
   ChevronRight
 } from 'lucide-react'
 import Link from 'next/link'

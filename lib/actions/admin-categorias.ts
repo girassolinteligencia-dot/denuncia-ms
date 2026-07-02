@@ -54,7 +54,8 @@ export async function createCategoria(categoria: Partial<Categoria>) {
 
   try {
     // Remove o ID se for uma string vazia para o Supabase gerar um novo UUID
-    const { id, ...saveData } = categoria
+    const saveData: Partial<Categoria> = { ...categoria }
+    delete saveData.id
     
     // Fallback de slug se ainda estiver vazio
     const finalSlug = saveData.slug || saveData.label?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || `cat-${Date.now()}`

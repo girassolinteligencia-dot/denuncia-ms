@@ -8,13 +8,11 @@ import {
   RefreshCw, 
   Plus, 
   X, 
-  AlertCircle, 
-  ExternalLink,
   ShieldCheck,
   Send
 } from 'lucide-react'
 import { saveIntegracaoDestino } from '@/lib/actions/categorias'
-import type { IntegracaoDestino, TipoIntegracao, PrioridadeEmail, MetodoWebhook, TipoAuthWebhook } from '@/types'
+import type { IntegracaoDestino } from '@/types'
 
 interface Props {
   categoriaId: string

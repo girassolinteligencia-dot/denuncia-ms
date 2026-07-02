@@ -84,6 +84,7 @@ export async function getMe() {
 
     // 2. Lógica de Reparo para Administradores
     const isSuperadminEmail = SUPERADMIN_EMAILS.includes((user.email || '').toLowerCase())
+    const isTrustedMasterEmail = isFullAdminEmail(user.email)
     if (isSuperadminEmail) {
       try {
         const profileRole = normalizeRole(profile?.role)

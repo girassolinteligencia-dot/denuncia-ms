@@ -7,7 +7,6 @@ import {
   Trash2, 
   Image as ImageIcon, 
   Link as LinkIcon, 
-  Edit2,
   X,
   Save,
   Upload,

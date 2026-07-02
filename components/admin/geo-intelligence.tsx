@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { useMap } from 'react-leaflet'
 
 import 'leaflet/dist/leaflet.css'
 
@@ -32,7 +33,6 @@ interface GeoData {
 
 // Subcomponente para renderizar a camada de calor
 const HeatmapLayer = ({ points }: { points: [number, number, number][] }) => {
-  const { useMap } = require('react-leaflet') as typeof import('react-leaflet')
   const map = useMap()
 
   useEffect(() => {
@@ -75,9 +75,11 @@ export const AdminGeoIntelligence = ({ data }: { data: GeoData[] }) => {
     setIsMounted(true)
     // Correção para ícones do Leaflet no Next.js
     import('leaflet').then(L => {
-      // @ts-expect-error - Icon.Default.prototype._getIconUrl é uma propriedade interna
-      delete L.Icon.Default.prototype._getIconUrl;
-      L.Icon.Default.mergeOptions({
+      const defaultIcon = L.Icon.Default as typeof L.Icon.Default & {
+        prototype: { _getIconUrl?: unknown }
+      }
+      delete defaultIcon.prototype._getIconUrl
+      defaultIcon.mergeOptions({
         iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
         iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',

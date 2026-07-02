@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Megaphone, Mail, ArrowLeft, ShieldAlert } from 'lucide-react'
+import { Mail, ArrowLeft, ShieldAlert } from 'lucide-react'
 import Link from 'next/link'
 
 export default function RecuperarSenhaPage() {

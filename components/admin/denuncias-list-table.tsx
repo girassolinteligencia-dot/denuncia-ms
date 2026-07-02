@@ -11,7 +11,7 @@ import {
   CheckSquare,
 } from 'lucide-react'
 import Link from 'next/link'
-import type { Denuncia, StatusDenuncia } from '@/types'
+import type { StatusDenuncia } from '@/types'
 import { reencaminharEmailDespacho, updateDenunciasStatusBatch } from '@/lib/actions/admin-denuncias'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
